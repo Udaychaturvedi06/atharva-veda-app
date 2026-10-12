@@ -1,0 +1,49 @@
+{
+  "atharva-9-2-2": {
+    "transliteration": "Listen via Audio Read-Aloud",
+    "english": "Indra ukthāmadāni yajñe asmin pravidvān yunaktu suyujaḥ svāhā | chandāṃsi yajñāṃ marutaḥ svāhā māteva sons pipṛteha yuktāḥ",
+    "hindi": "इन्द्र उक्तामदानी यज्ञे अस्मिन् प्रविद्वान् युनक्तु सुयुजः स्वाहा | चंदांसि यज्ञं मारुत: स्वाहा मतेव संस पिपृतेहा युक्त:",
+    "practicalMeaning": "Literal translations provided by Free Offline Engine.",
+    "topics": [
+      "ATHARVA Veda"
+    ]
+  },
+  "rig-1-3-2": {
+    "transliteration": "Listen via Audio Read-Aloud",
+    "english": "aśvinā purudaṁsasā nara śavīrayā dhiyā | dhiṣṇyā vanataṁ giraḥ",
+    "hindi": "अश्विन पुरुदंससा नारा शविरया धिया | धिष्णया वनतम् गिरः",
+    "practicalMeaning": "Literal translations provided by Free Offline Engine.",
+    "topics": [
+      "RIG Veda"
+    ]
+  },
+  "rig-1-3-1": {
+    "transliteration": "Listen via Audio Read-Aloud",
+    "english": "aśvinā yajvarīr iṣo dravatpāṇī śubhas patī | purubhujā canasyatam",
+    "hindi": "अश्विना यज्वारि इशो द्रवत्पाणि शुभस पति | पुरुभुजा कैनस्यातम",
+    "practicalMeaning": "Literal translations provided by Free Offline Engine.",
+    "topics": [
+      "RIG Veda"
+    ]
+  },
+  "sama-3-2-2": {
+    "english": "Error: The Sanskrit verse was not provided. Please provide the actual verse from SAMA Veda (Book 3, Hymn 2, Verse 2) for translation and explanation.",
+    "hindi": "त्रुटि: संस्कृत श्लोक प्रदान नहीं किया गया है। कृपया सामवेद (मंडल 3, सूक्त 2, श्लोक 2) का वास्तविक श्लोक प्रदान करें ताकि इसका अनुवाद और व्याख्या की जा सके।",
+    "transliteration": "Error: Verse not provided for transliteration.",
+    "practicalMeaning": "Without the actual Sanskrit verse, it is not possible to provide its profound philosophical and practical meaning for today. Please provide the verse.",
+    "topics": [
+      "Error",
+      "Missing Input"
+    ],
+    "challenge": {
+      "question": "What is the primary reason this request cannot be fully processed?",
+      "options": [
+        "The Sama Veda is not available.",
+        "The JSON schema is incorrect.",
+        "The Sanskrit verse itself was not provided.",
+        "The book and hymn numbers are wrong."
+      ],
+      "correctIndex": 2
+    }
+  }
+}

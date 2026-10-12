@@ -1,0 +1,47 @@
+{
+  "name": "divine-books",
+  "version": "0.5.0",
+  "description": "A comprehensive JavaScript/TypeScript library providing access to sacred Hindu texts including the Bhagavad Gita with Sanskrit, Hindi, and English translations and Mahabharata, Ramcharitmanas, and Vedas",
+  "keywords": [
+    "bhagavad-gita",
+    "mahabharata",
+    "ramcharitmanas",
+    "rigVeda",
+    "atharvaVeda",
+    "samaVeda",
+    "upanishads",
+    "sacred-texts",
+    "hinduism",
+    "sanskrit",
+    "spirituality",
+    "religious-texts",
+    "tulsidas",
+    "vyasa",
+    "epic",
+    "parva"
+  ],
+  "license": "MIT",
+  "author": "rajkeshav",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itz-rajkeshav/sacred-texts"
+  },
+  "homepage": "https://github.com/itz-rajkeshav/sacred-texts#readme",
+  "bugs": {
+    "url": "https://github.com/itz-rajkeshav/sacred-texts/issues"
+  }
+}

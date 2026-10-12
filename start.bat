@@ -1,0 +1,13 @@
+@echo off
+echo Starting Atharva Veda Application...
+echo Checking for dependencies...
+if not exist "node_modules\" (
+    echo Installing dependencies...
+    npm install --legacy-peer-deps
+) else (
+    echo Dependencies found.
+)
+
+echo.
+echo Launching frontend and backend simultaneously...
+npm run dev

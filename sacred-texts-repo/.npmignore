@@ -1,0 +1,11 @@
+src/
+tsconfig.json
+test.mjs
+*.log
+.DS_Store
+node_modules/
+coverage/
+.nyc_output/
+.vscode/
+.idea/
+.dist
