@@ -27,6 +27,7 @@ import { Modal } from '../components/ui/Modal';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import LessonPlayer from '../learning/LessonPlayer';
 import { buildSession } from '../learning/sessionBuilder';
+import { VasukiRing, VasukiPoisonWard } from '../components/ui/VasukiRing';
 
 // Canonical Daily Hymn (Prithvi Sukta)
 const DAILY_HYMN = {
@@ -187,20 +188,24 @@ export const Home = () => {
         </p>
       </div>
 
-      {/* 5 LAMPS SUTRA THREAD BANNER */}
-      <div ref={anchorYajnaRef} style={{ marginBottom: 36 }}>
-        <GlassCard elevation={2} style={{ padding: '20px 24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--gold)', fontWeight: 600, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Flame size={18} color="var(--gold-bright)" /> The 5 Sacred Yajna Lamps
+      {/* VASUKI OUROBOROS 5 LAMPS SAMUDRA MANTHANA DIAL */}
+      <div ref={anchorYajnaRef} style={{ marginBottom: 38 }}>
+        <VasukiRing
+          completedCount={completedCount}
+          isChurning={homaActive || isFeedingGhee}
+          onChurn={() => sounds.playTibetanBowl()}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--silver-moon, #E2E8F0)', fontWeight: 600, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Flame size={18} color="var(--amber-glow, #FFB020)" /> The 5 Sacred Yajna Lamps
             </span>
-            <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.85rem', color: 'var(--gold-bright)' }}>
-              {completedCount} / 5 LAMPS ILLUMINATED
+            <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.85rem', color: 'var(--amber-glow, #FFB020)' }}>
+              {completedCount} / 5 LAMPS ILLUMINATED &bull; {completedCount >= 5 ? 'SAPTA-PHANA AWAKENED' : 'CHURNING IN PROGRESS'}
             </span>
           </div>
 
           {/* 5 Lamps Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
             {['1. Sankalpa', '2. Shloka', '3. Homa', '4. Duel', '5. Rekindle'].map((stepName, i) => {
               const keys = ['sankalpa', 'shloka', 'homa', 'trial', 'review'];
               const isDone = completedLamps[keys[i]];
@@ -208,14 +213,15 @@ export const Home = () => {
                 <div
                   key={stepName}
                   style={{
-                    padding: '10px 8px',
+                    padding: '12px 10px',
                     textAlign: 'center',
-                    borderRadius: 8,
-                    background: isDone ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-                    border: isDone ? '1px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.06)',
-                    color: isDone ? 'var(--gold-bright)' : 'var(--text-2)',
-                    fontSize: '0.8rem',
+                    borderRadius: 10,
+                    background: isDone ? 'rgba(255, 176, 32, 0.16)' : 'rgba(226, 232, 240, 0.04)',
+                    border: isDone ? '1px solid #FFB020' : '1px solid rgba(226, 232, 240, 0.1)',
+                    color: isDone ? '#FFB020' : 'var(--silver-muted, #94A3B8)',
+                    fontSize: '0.82rem',
                     fontWeight: 600,
+                    boxShadow: isDone ? '0 0 14px rgba(255, 176, 32, 0.25)' : 'none',
                     transition: 'all 0.3s ease'
                   }}
                 >
@@ -224,7 +230,7 @@ export const Home = () => {
               );
             })}
           </div>
-        </GlassCard>
+        </VasukiRing>
       </div>
 
       {/* BENTO GRID OF 5 SACRED RITUALS */}
@@ -359,39 +365,40 @@ export const Home = () => {
           </GlassCard>
         </div>
 
-        {/* STEP 4: TRIAL OF THE DAY */}
+        {/* STEP 4: TRIAL OF THE DAY & VASUKI POISON WARD */}
         <GlassCard elevation={2} style={{ padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Chip label="Step 4" variant={completedLamps.trial ? 'gold' : 'neutral'} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--danger)' }}>Inner Enemy Duel</span>
+            <Chip label="Step 4" variant={completedLamps.trial ? 'cyan' : 'danger'} />
+            <span style={{ fontSize: '0.85rem', color: completedLamps.trial ? '#769E84' : '#EF4444', fontWeight: 600 }}>
+              {completedLamps.trial ? 'Kalakuta Transmuted' : 'Inner Enemy Duel'}
+            </span>
           </div>
 
-          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 8px' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--silver-moon, #E2E8F0)', margin: '0 0 8px' }}>
             Duel of Kāma (Untamed Craving)
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-1)', marginBottom: 16 }}>
-            The Asura of fleeting cravings challenges your discernment. Counter with Atharva clarity.
+            The Asura of fleeting cravings challenges your discernment. Vasuki holds the poison boundary.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,77,109,0.2)', border: '1px solid var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)', fontWeight: 700, fontFamily: 'var(--font-sanskrit)', fontSize: '1.2rem' }}>
-              काम
-            </div>
-            <div>
-              <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>Boss HP: 150 &bull; Reward: +200 RP</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>Resets at midnight</div>
-            </div>
+          <div style={{ marginBottom: 20 }}>
+            <VasukiPoisonWard
+              isDefeated={completedLamps.trial}
+              asuraGlyph="काम"
+              asuraName="Kāma &bull; Primordial Urge"
+            />
           </div>
 
           <Button
-            variant="danger"
+            variant={completedLamps.trial ? 'ghost' : 'danger'}
             icon={<Swords size={16} />}
             onClick={() => {
               setCompletedLamps((l) => ({ ...l, trial: true }));
+              sounds.playSuccess();
               navigate('/campaign');
             }}
           >
-            Enter Duel (/campaign)
+            {completedLamps.trial ? 'Revisit Conquest (/campaign)' : 'Engage Asura (/campaign)'}
           </Button>
         </GlassCard>
 

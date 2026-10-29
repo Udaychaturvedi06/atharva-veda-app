@@ -27,7 +27,6 @@ export const SutraProvider = ({ children }) => {
   return (
     <SutraContext.Provider value={{ registerAnchor, unregisterAnchor, anchors }}>
       {children}
-      <SutraThread anchors={anchors} />
     </SutraContext.Provider>
   );
 };
