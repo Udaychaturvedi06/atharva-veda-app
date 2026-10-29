@@ -13,6 +13,7 @@ import './styles/pages/auth.css'
 import './styles/pages/home.css'
 import './styles/pages/library.css'
 import './styles/pages/versedetail.css'
+import './styles/pages/chat.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -1,0 +1,279 @@
+/* ==========================================================================
+   CHAT / RISHI AI ORACLE — CONTEMPLATIVE DISCOURSE CHAMBER
+   ========================================================================== */
+
+.chat-chamber-root {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 150px);
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 16px;
+  position: relative;
+}
+
+.chat-chamber-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chat-chamber-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  color: #FFFFFF;
+  margin: 4px 0 0;
+  letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   PRESET CONTEMPLATIVE INQUIRY CHIPS
+   -------------------------------------------------------------------------- */
+.chat-suggestions-bar {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+}
+
+.chat-suggestions-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-suggestion-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: rgba(19, 17, 28, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-suggestion-chip:hover {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--gold-bright);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   MESSAGES STAGE & SCROLL MANAGEMENT
+   -------------------------------------------------------------------------- */
+.chat-messages-stage {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.chat-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chat-message-row {
+  display: flex;
+  gap: 14px;
+  max-width: 86%;
+  position: relative;
+}
+
+.chat-message-row.rishi {
+  align-self: flex-start;
+}
+
+.chat-message-row.seeker {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-avatar-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-avatar-wrap.rishi {
+  background: radial-gradient(circle, #FFE259 0%, #FF7B00 65%, #07070D 100%);
+  color: #07070D;
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 16px rgba(255, 123, 0, 0.45);
+}
+
+.chat-avatar-wrap.seeker {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+/* Bubble Styling & Markdown Exegesis */
+.chat-bubble {
+  padding: 18px 22px;
+  border-radius: var(--radius-md);
+  line-height: 1.65;
+  font-size: 0.95rem;
+  position: relative;
+}
+
+.chat-bubble.rishi {
+  background: rgba(19, 17, 28, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  color: #FDFBEE;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.chat-bubble.seeker {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #FFFFFF;
+}
+
+.chat-bubble-author {
+  font-family: var(--font-hud);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-bubble.rishi .chat-bubble-author {
+  color: var(--gold-bright);
+}
+
+.chat-bubble.seeker .chat-bubble-author {
+  color: var(--cyan);
+}
+
+/* Styled Markdown Elements inside Exegesis */
+.rishi-devanagari-quote {
+  font-family: var(--font-sanskrit);
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: var(--gold-bright);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid var(--gold);
+  margin: 10px 0;
+}
+
+.rishi-takeaway-box {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 240, 255, 0.06);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  color: #E2E8F0;
+  font-size: 0.88rem;
+  margin-top: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   PULSING DIYA TYPING INDICATOR
+   -------------------------------------------------------------------------- */
+.diya-typing-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  background: rgba(19, 17, 28, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: var(--gold-bright);
+  font-size: 0.88rem;
+  align-self: flex-start;
+}
+
+.diya-flame-svg {
+  width: 24px;
+  height: 24px;
+  animation: diyaPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes diyaPulse {
+  0% { transform: scale(0.9) translateY(1px); filter: drop-shadow(0 0 6px #FF7B00); }
+  100% { transform: scale(1.15) translateY(-2px); filter: drop-shadow(0 0 16px #FFE259); }
+}
+
+/* --------------------------------------------------------------------------
+   JUMP TO LATEST FLOATING PILL
+   -------------------------------------------------------------------------- */
+.jump-to-latest-pill {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  background: rgba(10, 10, 18, 0.92);
+  border: 1px solid var(--gold);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 14px rgba(212, 175, 55, 0.3);
+  color: var(--gold-bright);
+  font-family: var(--font-hud);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.jump-to-latest-pill:hover {
+  background: rgba(25, 20, 35, 0.98);
+  box-shadow: 0 0 22px rgba(212, 175, 55, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   COMPOSER INPUT BAR
+   -------------------------------------------------------------------------- */
+.chat-composer-wrap {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 10, 18, 0.75);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-input-field {
+  flex: 1;
+  background: rgba(19, 17, 28, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.chat-input-field:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.2);
+}

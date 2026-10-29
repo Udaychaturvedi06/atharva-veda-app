@@ -1,44 +1,155 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { sounds } from '../utils/soundEngine';
-import { 
-  MessageSquareQuote, 
-  Send, 
-  Sparkles, 
-  Bot, 
-  User
+import {
+  MessageSquareQuote,
+  Send,
+  Sparkles,
+  Bot,
+  User,
+  ChevronDown,
+  Compass,
+  Flame
 } from 'lucide-react';
+import { GlassCard } from '../components/ui/GlassCard';
+import { Button } from '../components/ui/Button';
+import { Chip } from '../components/ui/Chip';
 
-const SUGGESTIONS = [
-  'What is the spiritual significance of Mother Earth in Atharvaveda?',
-  'Explain the meaning of "Ekam Sat Vipra Bahudha Vadanti".',
-  'How do the Vedas guide us to overcome inner grief and anxiety?',
-  'What is the connection between Atharvaveda and Ayurveda?'
+// Contemplative Preset Inquiries
+const INQUIRY_PRESETS = [
+  {
+    label: 'Mother Earth in Atharvaveda',
+    query: 'What is the esoteric significance of the Bhumi Sukta (Ode to Mother Earth) in the Atharvaveda?'
+  },
+  {
+    label: 'Ekam Sat Vipra Bahudha',
+    query: 'Expound upon the Rigvedic declaration: "एकं सद्विप्रा बहुधा वदन्ति" (Truth is One, the wise speak of it in many ways).'
+  },
+  {
+    label: 'Overcoming Modern Anxiety',
+    query: 'How do the Atharvavedic chants guide seekers to dissolve chronic anxiety, mental restlessness, and grief?'
+  },
+  {
+    label: 'Agni as Inner Fire',
+    query: 'Explain the deeper metaphysical nature of Agni beyond physical combustion as revealed by the Vedic Rishis.'
+  },
+  {
+    label: 'Ayurveda & Atharvaveda',
+    query: 'What is the authentic genetic link between Atharvavedic healing incantations and classical Ayurveda?'
+  }
 ];
 
-const Chat = () => {
+// Helper to format structured Vedic exegesis (quotes & takeaways)
+const renderFormattedExegesis = (content) => {
+  const parts = content.split('\n\n');
+
+  return parts.map((part, pIdx) => {
+    const trimmed = part.trim();
+
+    // Check if this paragraph contains a Devanagari Sanskrit quote
+    const hasDevanagari = /[\u0900-\u097F]/.test(trimmed);
+    const isQuote = trimmed.startsWith('"') || trimmed.startsWith('“') || hasDevanagari;
+
+    if (isQuote && hasDevanagari) {
+      return (
+        <div key={pIdx} className="rishi-devanagari-quote">
+          {trimmed}
+        </div>
+      );
+    }
+
+    if (trimmed.startsWith('💡') || trimmed.startsWith('Key Takeaway:') || trimmed.startsWith('Philosophical Realization:')) {
+      return (
+        <div key={pIdx} className="rishi-takeaway-box">
+          {trimmed}
+        </div>
+      );
+    }
+
+    return (
+      <p key={pIdx} style={{ margin: '0 0 10px', lineHeight: 1.65 }}>
+        {trimmed}
+      </p>
+    );
+  });
+};
+
+export const Chat = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Om Namo Narayanaya. I am your Vedic Companion, tuned to the sacred verses of the Rig, Atharva, Sama, and Yajur Vedas. Inquire into any mystery of the four Vedas—from metaphysics and cosmic time to herbal medicine and daily living.'
+      content:
+        'ॐ शान्तिः। I am Rishi Angiras, the primordial voice of the Atharvaveda. Ask of the celestial fires, the seven Lokas, the sacred meters, or the conquest of the inner enemies. What philosophical inquiry stirs within your consciousness?'
     }
   ]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const chatBottomRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showScrollBottomPill, setShowScrollBottomPill] = useState(false);
+
+  const scrollContainerRef = useRef(null);
+  const scrollBottomAnchorRef = useRef(null);
+
+  // Scroll to bottom smoothly
+  const scrollToBottom = useCallback((smooth = true) => {
+    if (scrollBottomAnchorRef.current) {
+      scrollBottomAnchorRef.current.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+  }, []);
+
+  // Monitor scroll position to surface "Jump to latest" pill
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    setShowScrollBottomPill(distanceFromBottom > 140);
+  };
 
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+    scrollToBottom(true);
+  }, [messages, isTyping, scrollToBottom]);
+
+  // Simulated Streaming Typewriter Effect
+  const streamRishiResponse = useCallback((fullText) => {
+    setIsTyping(true);
+
+    // Initial placeholder empty message
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
+    let currentLength = 0;
+    const chunkSize = 3;
+    const interval = setInterval(() => {
+      currentLength += chunkSize;
+
+      setMessages((prev) => {
+        const next = [...prev];
+        const lastMsg = next[next.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant') {
+          lastMsg.content = fullText.slice(0, currentLength);
+        }
+        return next;
+      });
+
+      if (currentLength >= fullText.length) {
+        clearInterval(interval);
+        setIsTyping(false);
+        sounds.playUnlockChime();
+      }
+    }, 24);
+  }, []);
 
   const sendMessage = async (textToSend) => {
-    const query = textToSend || input;
-    if (!query.trim() || loading) return;
+    const query = (textToSend || input).trim();
+    if (!query || isTyping) return;
 
     sounds.playTibetanBowl();
-    const newMessages = [...messages, { role: 'user', content: query }];
-    setMessages(newMessages);
+    const updatedMessages = [...messages, { role: 'user', content: query }];
+    setMessages(updatedMessages);
     setInput('');
-    setLoading(true);
+    setIsTyping(true);
 
     try {
       const token = localStorage.getItem('sutra_token');
@@ -46,138 +157,179 @@ const Chat = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({ messages: newMessages })
+        body: JSON.stringify({ messages: updatedMessages })
       });
 
       if (res.ok) {
         const data = await res.json();
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
-        sounds.playUnlockChime();
+        streamRishiResponse(data.reply);
       } else {
-        throw new Error('API unready');
+        throw new Error('API offline');
       }
-    } catch (e) {
-      const offlineAnswers = [
-        `"Truth cannot be suppressed by time. The Atharvaveda reminds us that one who walks in harmony with cosmic order (Rta) is protected by all the devas."`,
-        `"In the silence of the heart lies the eternal flame of Agni. Look inward, align your thoughts with dharma, and clarity shall arise naturally."`,
-        `"Earth is our Mother, sustain her and be sustained. When questions perturb the intellect, anchor yourself in breath and selfless action."`
+    } catch {
+      // Offline fallback rich philosophical exegesis
+      const fallbackExegesis = [
+        `"सत्यं बृहदृतमुग्रं दीक्षा तपो ब्रह्म यज्ञः पृथिवीं धारयन्ति"\n\nIn Atharvaveda 12.1.1, the Rishi commands us to recognize that truth (Satya) and cosmic harmony (Ṛta) are not abstract doctrines, but the living energetic foundations that preserve the cosmos.\n\n💡 Philosophical Realization: Align your daily thoughts with universal welfare (Lokasangraha). When the personal ego surrenders to eternal order, inner turbulence dissolves completely.`,
+        `"एकं सद्विप्रा बहुधा वदन्ति अग्निं यमं मातरिश्वानमाहुः"\n\nFrom Rigveda 1.164.46: Reality is indivisible, non-dual consciousness. Sages designate It by countless names—Agni, Yama, or the cosmic breath Matarishvan.\n\n💡 Philosophical Realization: Do not be misled by superficial variations in linguistic terminology. Seek the witness consciousness that remains constant across all waking and sleeping states.`,
+        `"माता भूमिः पुत्रो अहं पृथिव्याः | पर्जन्यः पिता स उ नः पिपर्तु ||"\n\nAtharvaveda 12.1.12 lays down the eternal ecological covenant: Earth is our sacred mother, and we are the children born of her dust. We do not own the earth; we belong to her.\n\n💡 Philosophical Realization: Anxiety dissipates when you ground your barefoot awareness into the soil and remember your immortal kinship with all elemental forms.`
       ];
-      const randomAns = offlineAnswers[Math.floor(Math.random() * offlineAnswers.length)];
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: `[Vedic Oracle Mode] ${randomAns}` 
-      }]);
-      sounds.playUnlockChime();
-    } finally {
-      setLoading(false);
+
+      const chosen = fallbackExegesis[Math.floor(Math.random() * fallbackExegesis.length)];
+      streamRishiResponse(chosen);
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'calc(100vh - 160px)' }}>
+    <div className="chat-chamber-root">
       {/* Header */}
-      <div>
-        <div className="badge gold" style={{ marginBottom: '8px' }}>
-          <MessageSquareQuote size={13} />
-          <span>Vedic AI Companion</span>
+      <div className="chat-chamber-header">
+        <div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--gold-bright)' }}>
+            <MessageSquareQuote size={16} />
+            <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              Vedic AI Oracle Chamber
+            </span>
+          </div>
+          <h1 className="chat-chamber-title">Rishi Angiras AI</h1>
         </div>
-        <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(1.6rem, 2.5vw, 2.2rem)', color: '#FFF', margin: '4px 0 0' }}>
-          Rishi AI Oracle
-        </h1>
+
+        <Chip variant="gold" icon={Sparkles}>
+          Active Discourse
+        </Chip>
       </div>
 
-      {/* Suggested Questions */}
-      {messages.length === 1 && (
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {SUGGESTIONS.map((s, idx) => (
-            <button
-              key={idx}
-              className="cyber-btn"
-              style={{ fontSize: '0.8rem', padding: '8px 14px', whiteSpace: 'nowrap' }}
-              onClick={() => sendMessage(s)}
-            >
-              <Sparkles size={13} style={{ color: '#FFE259' }} />
-              <span>{s}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Preset Contemplative Inquiry Chips */}
+      <div className="chat-suggestions-bar">
+        {INQUIRY_PRESETS.map((item, idx) => (
+          <button
+            key={idx}
+            type="button"
+            className="chat-suggestion-chip"
+            onClick={() => sendMessage(item.query)}
+          >
+            <Compass size={14} style={{ color: 'var(--gold)' }} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
 
-      {/* Chat Messages Card */}
-      <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {messages.map((m, idx) => (
-            <div 
-              key={idx}
-              style={{
-                display: 'flex',
-                gap: '12px',
-                alignSelf: m.role === 'assistant' ? 'flex-start' : 'flex-end',
-                maxWidth: '85%'
-              }}
-            >
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '50%',
-                background: m.role === 'assistant' ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: m.role === 'assistant' ? '#FFE259' : '#FFF',
-                flexShrink: 0
-              }}>
-                {m.role === 'assistant' ? <Bot size={16} /> : <User size={16} />}
-              </div>
-
-              <div 
-                className={m.role === 'assistant' ? 'chat-bubble-bot' : 'chat-bubble-user'}
-                style={{ padding: '14px 18px', borderRadius: '16px', lineHeight: '1.6', fontSize: '0.95rem' }}
+      {/* Main Messages Stage */}
+      <GlassCard spotlight className="chat-messages-stage">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="chat-scroll-area"
+        >
+          {messages.map((m, idx) => {
+            const isRishi = m.role === 'assistant';
+            return (
+              <div
+                key={idx}
+                className={`chat-message-row ${isRishi ? 'rishi' : 'seeker'}`}
               >
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: m.role === 'assistant' ? '#FFE259' : '#94A3B8', marginBottom: '4px' }}>
-                  {m.role === 'assistant' ? 'Rishi Oracle' : 'Seeker'}
+                <div className={`chat-avatar-wrap ${isRishi ? 'rishi' : 'seeker'}`}>
+                  {isRishi ? <Flame size={18} /> : <User size={18} />}
                 </div>
-                <p style={{ margin: 0 }}>{m.content}</p>
-              </div>
-            </div>
-          ))}
 
-          {loading && (
-            <div style={{ display: 'flex', gap: '12px', alignSelf: 'flex-start' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFE259' }}>
-                <Bot size={16} />
+                <div className={`chat-bubble ${isRishi ? 'rishi' : 'seeker'}`}>
+                  <div className="chat-bubble-author">
+                    {isRishi ? (
+                      <>
+                        <span>Rishi Angiras</span>
+                        <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(212,175,55,0.18)', color: 'var(--gold-bright)' }}>
+                          Atharva Seer
+                        </span>
+                      </>
+                    ) : (
+                      <span>Seeker of Truth</span>
+                    )}
+                  </div>
+
+                  <div>
+                    {isRishi
+                      ? renderFormattedExegesis(m.content)
+                      : m.content}
+                  </div>
+                </div>
               </div>
-              <div className="chat-bubble-bot" style={{ padding: '14px 18px', borderRadius: '16px', color: '#FFE259', fontSize: '0.9rem' }}>
-                Reflecting upon the cosmic scriptures...
+            );
+          })}
+
+          {/* Pulsing Diya Typing Indicator */}
+          {isTyping && (
+            <div className="chat-message-row rishi">
+              <div className="chat-avatar-wrap rishi">
+                <Flame size={18} />
+              </div>
+              <div className="diya-typing-box">
+                <svg className="diya-flame-svg" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2C12 2 7 8 7 13C7 16.31 9.24 19 12 19C14.76 19 17 16.31 17 13C17 8 12 2 12 2Z"
+                    fill="url(#diyaGrad)"
+                  />
+                  <ellipse cx="12" cy="20" rx="9" ry="3" fill="#D4AF37" opacity="0.6" />
+                  <defs>
+                    <linearGradient id="diyaGrad" x1="12" y1="2" x2="12" y2="19" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#FFE259" />
+                      <stop offset="0.6" stopColor="#FF7B00" />
+                      <stop offset="1" stopColor="#FF5E1E" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span>Rishi Angiras contemplates the eternal scriptures...</span>
               </div>
             </div>
           )}
-          <div ref={chatBottomRef} />
+
+          <div ref={scrollBottomAnchorRef} />
         </div>
 
-        {/* Input Bar */}
-        <form 
-          onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
-          style={{ padding: '14px 20px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '12px', background: 'rgba(10,10,18,0.4)' }}
+        {/* Floating "Jump to Latest" Pill */}
+        <AnimatePresence>
+          {showScrollBottomPill && (
+            <motion.button
+              type="button"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 15 }}
+              onClick={() => scrollToBottom(true)}
+              className="jump-to-latest-pill"
+            >
+              <ChevronDown size={15} />
+              <span>Jump to Latest</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Composer Input Bar */}
+        <form
+          className="chat-composer-wrap"
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendMessage();
+          }}
         >
           <input
             type="text"
-            placeholder="Ask the Rishi Oracle about any Vedic hymn, ritual, or philosophy..."
+            className="chat-input-field"
+            placeholder="Pose a philosophical inquiry to the Rishi (e.g., 'What is Tapasya?')..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            style={{
-              flex: 1, background: 'none', border: 'none', color: '#FFF', fontSize: '0.95rem', outline: 'none'
-            }}
+            disabled={isTyping}
           />
-          <button 
-            type="submit" 
-            disabled={loading || !input.trim()}
-            className="btn-primary"
-            style={{ width: 'auto', padding: '10px 20px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={!input.trim() || isTyping}
+            icon={Send}
           >
-            <span>Ask</span>
-            <Send size={15} />
-          </button>
+            Inquire
+          </Button>
         </form>
-      </div>
+      </GlassCard>
     </div>
   );
 };
