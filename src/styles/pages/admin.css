@@ -1,0 +1,166 @@
+/* ==========================================================================
+   ADMIN DASHBOARD — SANCTUM OVERSIGHT STYLES
+   ========================================================================== */
+
+.admin-portal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.admin-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  color: #FFFFFF;
+  margin: 4px 0 0;
+  letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   KPI METRIC TILES
+   -------------------------------------------------------------------------- */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.admin-kpi-card {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.admin-kpi-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-kpi-val {
+  font-family: var(--font-hud);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.admin-kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* --------------------------------------------------------------------------
+   SYSTEM ENGAGEMENT CHARTS
+   -------------------------------------------------------------------------- */
+.admin-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .admin-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.admin-chart-card {
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   USERS MANAGEMENT TABLE
+   -------------------------------------------------------------------------- */
+.admin-table-card {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-table-search {
+  max-width: 320px;
+  width: 100%;
+}
+
+.admin-users-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.admin-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-th {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-hud);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.88rem;
+}
+
+/* --------------------------------------------------------------------------
+   ACCESS DENIED STATE
+   -------------------------------------------------------------------------- */
+.admin-denied-wrap {
+  text-align: center;
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-lock-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 77, 109, 0.15);
+  border: 2px solid var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--danger);
+  box-shadow: 0 0 35px rgba(255, 77, 109, 0.4);
+}

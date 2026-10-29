@@ -17,6 +17,7 @@ import './styles/pages/chat.css'
 import './styles/pages/rankings.css'
 import './styles/pages/settings.css'
 import './styles/pages/static.css'
+import './styles/pages/admin.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
