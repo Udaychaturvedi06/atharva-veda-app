@@ -19,6 +19,7 @@ import Contact from './pages/Contact';
 import Legal from './pages/Legal';
 import AdminDashboard from './pages/AdminDashboard';
 import DevPlayground from './pages/DevPlayground';
+import PadaSpiral from './pages/PadaSpiral';
 import { useAuth } from './contexts/AuthContext';
 import { useGameStore } from './store/useGameStore';
 import { pageVariants } from './motion/variants';
@@ -73,6 +74,14 @@ function App() {
                       element={
                         <motion.div initial="initial" animate="in" exit="out" variants={pageVariants}>
                           <Home addRp={addRp} rp={rp} setVedaBg={setVedaBg} hp={hp} takeDamage={takeDamage} heal={heal} />
+                        </motion.div>
+                      }
+                    />
+                    <Route
+                      path="/path"
+                      element={
+                        <motion.div initial="initial" animate="in" exit="out" variants={pageVariants}>
+                          <PadaSpiral />
                         </motion.div>
                       }
                     />

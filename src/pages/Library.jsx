@@ -247,6 +247,9 @@ export const Library = () => {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState('all');
+  const [selectedTheme, setSelectedTheme] = useState('all');
+
+  const THEME_BUBBLES = ['All', 'Sacred Soil', 'Mind Clarity', 'Creation', 'Eternity', 'Illumination', 'Harmony', 'Cosmology'];
 
   // Sync state if URL changes
   useEffect(() => {
@@ -285,6 +288,9 @@ export const Library = () => {
       const matchesBook = selectedBook === 'all' || s.book.toString() === selectedBook;
       if (!matchesBook) return false;
 
+      const matchesTheme = selectedTheme === 'all' || selectedTheme === 'All' || s.tag.toLowerCase().includes(selectedTheme.toLowerCase());
+      if (!matchesTheme) return false;
+
       if (!debouncedQuery.trim()) return true;
 
       const q = debouncedQuery.toLowerCase();
@@ -296,7 +302,7 @@ export const Library = () => {
 
       return matchTitle || matchTag || matchSanskrit || matchTrans || matchNum;
     });
-  }, [suktas, selectedBook, debouncedQuery]);
+  }, [suktas, selectedBook, selectedTheme, debouncedQuery]);
 
   return (
     <div className="library-container">
@@ -394,6 +400,38 @@ export const Library = () => {
           </select>
         </div>
       </GlassCard>
+
+      {/* Theme Lens Bubble Cloud */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '14px 0 24px' }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 4, marginRight: 6 }}>
+          <Sparkles size={14} color="var(--gold)" /> Themes:
+        </span>
+        {THEME_BUBBLES.map((t) => {
+          const isAct = selectedTheme === t;
+          return (
+            <button
+              key={t}
+              onClick={() => {
+                sounds.playTap();
+                setSelectedTheme(t);
+              }}
+              style={{
+                padding: '4px 12px',
+                borderRadius: 'var(--radius-full)',
+                background: isAct ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                border: isAct ? '1px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.08)',
+                color: isAct ? 'var(--gold-bright)' : 'var(--text-2)',
+                fontSize: '0.8rem',
+                fontWeight: isAct ? 600 : 400,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {t}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Suktas / Verses Grid */}
       {filteredSuktas.length > 0 ? (

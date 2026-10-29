@@ -21,6 +21,9 @@ export const useGameStore = create(
       prana: 85, // Mana / Focus energy for chanting
       maxPrana: 100,
       streak: 3,
+      graceDays: 2,
+      lastYajnaDate: null,
+      sankalpa: null,
       vedaBg: '/bg-rig.png',
       soundEnabled: true,
       hapticsEnabled: true,
@@ -74,6 +77,22 @@ export const useGameStore = create(
       restorePrana: (amount) => set((state) => ({
         prana: Math.min(state.maxPrana, state.prana + amount)
       })),
+
+      setSankalpa: (sankalpa) => set({ sankalpa }),
+
+      completeDailyYajna: () => {
+        const today = new Date().toISOString().split('T')[0];
+        const state = get();
+        if (state.lastYajnaDate !== today) {
+          set({
+            lastYajnaDate: today,
+            streak: state.streak + 1,
+            rp: state.rp + 250
+          });
+          return true;
+        }
+        return false;
+      },
 
       setVedaBg: (bgUrl) => set({ vedaBg: bgUrl }),
 

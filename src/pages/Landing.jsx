@@ -308,7 +308,18 @@ export const Landing = () => {
             <polygon points="250,450 420,120 80,120" stroke="#FF7B00" strokeWidth="1.2" opacity="0.75" />
             <polygon points="250,90 390,360 110,360" stroke="#FFE259" strokeWidth="1" opacity="0.5" />
             <polygon points="250,410 390,140 110,140" stroke="#00F0FF" strokeWidth="1" opacity="0.5" />
-            <circle cx="250" cy="250" r="8" fill="#FFE259" />
+            {/* Pulsing Bindu with Breath Sync */}
+            <circle
+              cx="250"
+              cy="250"
+              r="10"
+              fill="#FFE259"
+              style={{
+                filter: 'drop-shadow(0 0 12px #FFE259)',
+                transformOrigin: '250px 250px',
+                transform: 'scale(calc(0.85 + 0.3 * var(--breath, 0.5)))'
+              }}
+            />
           </svg>
         </div>
 

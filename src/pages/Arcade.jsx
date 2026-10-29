@@ -9,6 +9,9 @@ import HighScoreList from '../arcade/ui/HighScoreList';
 import { Gamepad2, ArrowRight } from 'lucide-react';
 
 // Game Modules
+import SvaraStrikeModule from '../arcade/games/SvaraStrike';
+import SandhiSmashModule from '../arcade/games/SandhiSmash';
+import ChandasCraftModule from '../arcade/games/ChandasCraft';
 import AgniStrikeModule from '../arcade/games/AgniStrike';
 import MantraRunnerModule from '../arcade/games/MantraRunner';
 import ChakraBreakerModule from '../arcade/games/ChakraBreaker';
@@ -17,6 +20,9 @@ import OmBeatModule from '../arcade/games/OmBeat';
 import MemoryMandalaModule from '../arcade/games/MemoryMandala';
 
 export const ALL_GAMES = [
+  SvaraStrikeModule,
+  SandhiSmashModule,
+  ChandasCraftModule,
   AgniStrikeModule,
   MantraRunnerModule,
   ChakraBreakerModule,

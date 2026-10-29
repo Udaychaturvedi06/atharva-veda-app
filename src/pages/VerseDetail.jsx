@@ -1,551 +1,409 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { sounds } from '../utils/soundEngine';
 import { useGameStore } from '../store/useGameStore';
+import { useSutraAnchor } from '../systems/sutraContext';
 import {
   Volume2,
-  VolumeX,
+  Mic,
   ArrowLeft,
   ArrowRight,
-  BrainCircuit,
-  CheckCircle2,
-  AlertCircle,
-  BookOpen,
   Sparkles,
-  Save,
-  Clock,
-  Radio
+  BookOpen,
+  MessageSquare,
+  Award,
+  Zap,
+  Star,
+  Activity,
+  Layers,
+  Edit3
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
-import { Tooltip } from '../components/ui/Tooltip';
+import { CANONICAL_VERSES } from '../data/canonicalVerses';
 
-// Detailed Word Glossary Database for Canonical Verses
-const WORD_GLOSSARY_LOOKUP = {
-  'माता': { translit: 'mātā', root: 'मातृ (f. nom. sg.)', meaning: 'The Mother, primeval nourisher' },
-  'भूमिः': { translit: 'bhūmiḥ', root: 'भूमि (f. nom. sg.)', meaning: 'The sacred Earth, foundational soil' },
-  'पुत्रो': { translit: 'putraḥ', root: 'पुत्र (m. nom. sg.)', meaning: 'The child, offspring, son' },
-  'अहं': { translit: 'aham', root: 'अस्मद् (pron. 1st sg.)', meaning: 'I myself, individual conscious self' },
-  'पृथिव्याः': { translit: 'pṛthivyāḥ', root: 'पृथिवी (f. gen. sg.)', meaning: 'Of the expansive sacred Earth' },
-  'पर्जन्यः': { translit: 'parjanyaḥ', root: 'पर्जन्य (m. nom. sg.)', meaning: 'The celestial rain-cloud deity' },
-  'पिता': { translit: 'pitā', root: 'पितृ (m. nom. sg.)', meaning: 'The Father, cosmic protector' },
-  'स': { translit: 'saḥ', root: 'तद् (m. nom. sg.)', meaning: 'He, that divine force' },
-  'उ': { translit: 'u', root: 'उ (indecl. particle)', meaning: 'Indeed, verily, furthermore' },
-  'नः': { translit: 'naḥ', root: 'अस्मद् (pron. dat./acc. pl.)', meaning: 'Unto us all, our entire assembly' },
-  'पिपर्तु': { translit: 'pipartu', root: 'पृ (root, 3rd sg. imperat.)', meaning: 'May he nourish, sustain, and fulfill' },
-  'अग्निमीळे': { translit: 'agnim īḷe', root: 'अग्नि + ईड् (1st sg. pres.)', meaning: 'I adore, magnify the Divine Fire' },
-  'पुरोहितं': { translit: 'purohitam', root: 'पुरोहित (m. acc. sg.)', meaning: 'The supreme priest placed in front' },
-  'यज्ञस्य': { translit: 'yajñasya', root: 'यज्ञ (m. gen. sg.)', meaning: 'Of the cosmic offering and sacrifice' },
-  'देवमृत्विजम्': { translit: 'devam ṛtvijam', root: 'देव + ऋत्विज्', meaning: 'The divine minister of seasonal rites' }
-};
+const MASTERY_LEVELS = ['Seen', 'Read', 'Recited', 'Chanted on Pitch', 'Memorized'];
 
 export const VerseDetail = () => {
-  const { book = 12, hymn = 1, verse = 1 } = useParams();
+  const { book = '12', hymn = '1', verse = '1' } = useParams();
   const [searchParams] = useSearchParams();
-  const veda = searchParams.get('veda') || 'atharva';
+  const veda = searchParams.get('veda') || 'Atharvaveda';
   const navigate = useNavigate();
 
-  const addRp = useGameStore((state) => state.addRp);
+  const scrollRef = useRef(null);
+  useSutraAnchor('verse-detail-scroll', scrollRef);
 
-  const [loading, setLoading] = useState(true);
-  const [verseData, setVerseData] = useState(null);
-  const [activeTab, setActiveTab] = useState('translation'); // 'translation', 'translit', 'insight', 'notes'
+  const { addRp, restorePrana } = useGameStore();
 
-  // Chanting & Recitation State
-  const [isChanting, setIsChanting] = useState(false);
-  const [recitationLine, setRecitationLine] = useState(0);
-  const [recitationTimer, setRecitationTimer] = useState(0);
-  const [challengeAnswered, setChallengeAnswered] = useState(null);
-
-  // Student Notes (persisted to localStorage)
-  const notesStorageKey = `sutra_notes_${veda}_${book}_${hymn}_${verse}`;
+  const [activeTab, setActiveTab] = useState('meaning'); // 'meaning', 'anatomy', 'context', 'reflect', 'practice'
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [singAlongActive, setSingAlongActive] = useState(false);
+  const [pitchScore, setPitchScore] = useState(88);
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [colorSwara, setColorSwara] = useState(true);
+  const [masteryLevel, setMasteryLevel] = useState(2);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const [studentNote, setStudentNote] = useState(() => {
-    return localStorage.getItem(notesStorageKey) || '';
+    return localStorage.getItem(`sutra_notes_${book}_${hymn}_${verse}`) || '';
   });
-  const [noteSavedFeedback, setNoteSavedFeedback] = useState(false);
 
-  // Parse Book, Hymn, Verse integers
-  const bookNum = parseInt(book, 10);
-  const hymnNum = parseInt(hymn, 10);
-  const verseNum = parseInt(verse, 10);
+  // Find canonical verse or default
+  const canonicalVerse = CANONICAL_VERSES.find((v) => v.ref === `${book}.${hymn}.${verse}`) || CANONICAL_VERSES[0];
 
-  // Fetch or generate rich verse exegesis
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
+  // Save student note locally
+  const handleNoteChange = (e) => {
+    const val = e.target.value;
+    setStudentNote(val);
+    localStorage.setItem(`sutra_notes_${book}_${hymn}_${verse}`, val);
+  };
 
-    const fetchVerse = async () => {
-      try {
-        const token = localStorage.getItem('sutra_token');
-        const res = await fetch('/api/verse/translate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify({
-            veda,
-            book: bookNum,
-            hymn: hymnNum,
-            verse: verseNum,
-            sanskrit: 'माता भूमिः पुत्रो अहं पृथिव्याः | पर्जन्यः पिता स उ नः पिपर्तु ||'
-          })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) setVerseData(data);
-        } else {
-          throw new Error('Fallback needed');
-        }
-      } catch {
-        if (isMounted) {
-          setVerseData({
-            sanskritLines: [
-              'माता भूमिः पुत्रो अहं पृथिव्याः ।',
-              'पर्जन्यः पिता स उ नः पिपर्तु ॥'
-            ],
-            sanskrit: 'माता भूमिः पुत्रो अहं पृथिव्याः । पर्जन्यः पिता स उ नः पिपर्तु ॥',
-            transliteration: 'mātā bhūmiḥ putro ahaṁ pṛthivyāḥ | parjanyaḥ pitā sa u naḥ pipartu',
-            english: 'The Earth is my mother and I am the child of the soil. The rain-cloud is my father; may he sustain and nourish us.',
-            hindi: 'पृथ्वी मेरी माता है और मैं इस पवित्र भूमि का पुत्र हूँ। पर्जन्य (मेघ) हमारे पिता हैं, वे हमारा पोषण करें।',
-            practicalMeaning: 'This iconic hymn from the Atharvaveda (Bhumi Sukta) emphasizes humanity’s filial and ecological covenant with nature. Earth is not a dead resource to be exploited, but an animate mother to be venerated.',
-            topics: ['Sacred Ecology', 'Atharvaveda', 'Universal Kinship', 'Bhumi Sukta'],
-            chanda: 'Anushtubh Meter (32 Syllables)',
-            challenge: {
-              question: 'According to this sacred hymn, what is the spiritual relation established between humanity and Mother Earth?',
-              options: [
-                'Imperial exploitation of natural minerals',
-                'Devoted child bound in eternal covenant to a loving mother',
-                'Fearful submission to untamable wrath',
-                'Indifference to worldly elements'
-              ],
-              correctIndex: 1
-            }
-          });
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchVerse();
-    return () => {
-      isMounted = false;
-    };
-  }, [veda, bookNum, hymnNum, verseNum]);
-
-  // Recitation Chanting Loop
-  useEffect(() => {
-    let timerInterval;
-    if (isChanting) {
-      timerInterval = setInterval(() => {
-        setRecitationTimer((t) => t + 1);
-      }, 1000);
-    }
-    return () => clearInterval(timerInterval);
-  }, [isChanting]);
-
-  // Audio Chant Drone Toggle
-  const handleToggleChant = () => {
-    if (!isChanting) {
-      sounds.playChantDrone();
-      setIsChanting(true);
-    } else {
-      setIsChanting(false);
-      setRecitationTimer(0);
+  const handlePlayToggle = () => {
+    sounds.playTap();
+    setIsPlaying(!isPlaying);
+    if (!isPlaying) {
+      sounds.playSuccess();
     }
   };
 
-  // Save Student Notes
-  const handleSaveNotes = () => {
-    sounds.playUnlockChime();
-    localStorage.setItem(notesStorageKey, studentNote);
-    setNoteSavedFeedback(true);
-    setTimeout(() => setNoteSavedFeedback(false), 2000);
-  };
-
-  // Handle Challenge answer
-  const handleChallengeOption = (idx) => {
-    if (challengeAnswered !== null) return;
-    setChallengeAnswered(idx);
-
-    if (verseData?.challenge && idx === verseData.challenge.correctIndex) {
-      sounds.playUnlockChime();
-      addRp(75);
-    } else {
-      sounds.playCombatHit(false);
+  const handleSingAlong = () => {
+    sounds.playTap();
+    setSingAlongActive(!singAlongActive);
+    if (!singAlongActive) {
+      sounds.playSuccess();
+      setPitchScore(Math.floor(82 + Math.random() * 15));
     }
   };
 
-  // Navigations
-  const handlePrevVerse = () => {
-    if (verseNum > 1) {
-      sounds.playTibetanBowl();
-      navigate(`/verse/${bookNum}/${hymnNum}/${verseNum - 1}?veda=${veda}`);
-    }
+  const advanceMastery = () => {
+    sounds.playLevelUp();
+    const next = Math.min(MASTERY_LEVELS.length - 1, masteryLevel + 1);
+    setMasteryLevel(next);
+    addRp(100);
+    restorePrana(20);
   };
-
-  const handleNextVerse = () => {
-    sounds.playTibetanBowl();
-    navigate(`/verse/${bookNum}/${hymnNum}/${verseNum + 1}?veda=${veda}`);
-  };
-
-  const lines = verseData?.sanskritLines || [verseData?.sanskrit || ''];
 
   return (
-    <div className="verse-detail-container">
-      {/* Top Header & Breadcrumb Bar */}
-      <div className="verse-header-bar">
-        <Button
-          variant="ghost"
-          icon={ArrowLeft}
-          onClick={() => navigate(`/library?veda=${veda}`)}
-        >
-          Return to Vedas
+    <div style={{ padding: '24px 20px 120px', maxWidth: 960, margin: '0 auto', position: 'relative', zIndex: 10 }}>
+      {/* Top Breadcrumb & Controls */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <Button size="sm" variant="ghost" icon={<ArrowLeft size={16} />} onClick={() => navigate('/library')}>
+          Back to Manuscripts
         </Button>
-
-        <div className="verse-breadcrumb-meta">
-          {veda.toUpperCase()} VEDA • BOOK {bookNum} • SUKTA {hymnNum} • VERSE {verseNum}
-        </div>
-
-        <div className="verse-nav-arrows">
-          <Button
-            variant="ghost"
-            disabled={verseNum <= 1}
-            icon={ArrowLeft}
-            onClick={handlePrevVerse}
-          >
-            Prev Verse
-          </Button>
-          <Button
-            variant="cyber"
-            icon={ArrowRight}
-            onClick={handleNextVerse}
-          >
-            Next Verse
-          </Button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <Chip label={`${veda} ${book}.${hymn}.${verse}`} variant="gold" />
+          <Chip label={MASTERY_LEVELS[masteryLevel]} variant="cyan" icon={<Star size={12} />} />
         </div>
       </div>
 
-      {loading ? (
-        <GlassCard spotlight style={{ padding: '60px', textAlign: 'center' }}>
-          <Radio size={36} style={{ color: 'var(--gold-bright)', marginBottom: '14px', animation: 'spin 3s linear infinite' }} />
-          <h3 style={{ fontFamily: 'var(--font-display)', color: '#FFF' }}>
-            Attuning to Acoustic Vedic Frequency...
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Synthesizing word-by-word Sanskrit roots and exegesis.
-          </p>
-        </GlassCard>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Main Immersive Reader Panel */}
-          <GlassCard spotlight className="verse-reader-panel">
-            {/* Action Bar: Recitation Chanting Drone & Topic Badges */}
-            <div className="verse-reader-actions-bar">
-              <Button
-                variant={isChanting ? 'primary' : 'cyber'}
-                icon={isChanting ? VolumeX : Volume2}
-                onClick={handleToggleChant}
-              >
-                {isChanting ? 'Silence Sonic Drone' : 'Activate 432Hz Chanting Drone'}
-              </Button>
+      {/* CENTER STAGE: LUMINOUS SCROLL */}
+      <div ref={scrollRef} style={{ marginBottom: 28 }}>
+        <GlassCard elevation={3} style={{ padding: '36px 28px', textAlign: 'center', border: '1px solid rgba(212, 175, 55, 0.35)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>Chandas: {canonicalVerse.meter}</span>
+            <button
+              onClick={() => setColorSwara(!colorSwara)}
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 4,
+                color: colorSwara ? 'var(--gold-bright)' : 'var(--text-2)',
+                fontSize: '0.75rem',
+                padding: '4px 8px',
+                cursor: 'pointer'
+              }}
+            >
+              {colorSwara ? 'Swara Accent Colors: ON' : 'Swara Colors: OFF'}
+            </button>
+          </div>
 
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {verseData?.topics?.map((t, i) => (
-                  <Chip key={i} variant="gold">
-                    {t}
-                  </Chip>
-                ))}
-                {verseData?.chanda && (
-                  <Chip variant="cyber">
-                    {verseData.chanda}
-                  </Chip>
-                )}
-              </div>
-            </div>
+          {/* Interactive Word Tokens */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 12px', margin: '20px 0' }}>
+            {canonicalVerse.words.map((w, idx) => {
+              const swaraType = w.swara?.[0] || 'udatta';
+              const swaraColor = colorSwara
+                ? swaraType === 'udatta'
+                  ? 'var(--gold-bright)'
+                  : swaraType === 'svarita'
+                  ? 'var(--cyan)'
+                  : 'var(--text-1)'
+                : 'var(--text-0)';
 
-            {/* Recitation Active Mode Bar */}
-            {isChanting && (
-              <div className="recitation-bar">
-                <div className="recitation-timer-tag">
-                  <Clock size={16} />
-                  <span>Recitation Meditation: {recitationTimer}s</span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      sounds.playTibetanBowl();
-                      setRecitationLine((l) => (l > 0 ? l - 1 : lines.length - 1));
-                    }}
-                  >
-                    Previous Line
-                  </Button>
-                  <Button
-                    variant="cyber"
-                    onClick={() => {
-                      sounds.playTibetanBowl();
-                      setRecitationLine((l) => (l + 1) % lines.length);
-                    }}
-                  >
-                    Next Line Highlight
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Interactive Devanagari Display with Word-by-Word Hover Glossary Tooltip */}
-            <div className="verse-interactive-display">
-              {lines.map((line, lineIdx) => {
-                const words = line.split(' ');
-                const isActiveRecitation = isChanting && recitationLine === lineIdx;
-
-                return (
-                  <div
-                    key={lineIdx}
-                    className={`sanskrit-verse-line ${isActiveRecitation ? 'active-recitation' : ''}`}
-                  >
-                    {words.map((rawWord, wordIdx) => {
-                      const cleanWord = rawWord.replace(/[।॥|]/g, '').trim();
-                      const gloss = WORD_GLOSSARY_LOOKUP[cleanWord];
-
-                      if (!gloss) {
-                        return (
-                          <span key={wordIdx} className="sanskrit-gloss-word">
-                            {rawWord}
-                          </span>
-                        );
-                      }
-
-                      const tooltipContent = (
-                        <div className="word-glossary-tooltip">
-                          <span className="word-glossary-translit">{gloss.translit}</span>
-                          <span className="word-glossary-root">Root: {gloss.root}</span>
-                          <span className="word-glossary-meaning">{gloss.meaning}</span>
-                        </div>
-                      );
-
-                      return (
-                        <Tooltip key={wordIdx} content={tooltipContent} side="top">
-                          <span className="sanskrit-gloss-word">
-                            {rawWord}
-                          </span>
-                        </Tooltip>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Tabbed Exegesis Panels */}
-            <div className="verse-tabs-header">
-              {[
-                { id: 'translation', label: 'Translations (EN & HI)' },
-                { id: 'translit', label: 'Transliteration & Meter' },
-                { id: 'insight', label: 'Esoteric Wisdom' },
-                { id: 'notes', label: 'Seeker Notes' }
-              ].map((tab) => (
+              return (
                 <button
-                  key={tab.id}
-                  type="button"
-                  className={`verse-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                  key={idx}
                   onClick={() => {
-                    sounds.playTibetanBowl();
-                    setActiveTab(tab.id);
+                    sounds.playTap();
+                    setSelectedWord(w);
+                  }}
+                  onMouseEnter={() => sounds.playHover()}
+                  style={{
+                    fontFamily: 'var(--font-sanskrit)',
+                    fontSize: 'clamp(1.6rem, 3.2vw, 2.2rem)',
+                    color: swaraColor,
+                    background: selectedWord?.text === w.text ? 'rgba(212, 175, 55, 0.2)' : 'transparent',
+                    border: 'none',
+                    borderBottom: selectedWord?.text === w.text ? '2px solid var(--gold)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    transition: 'all 0.15s ease'
                   }}
                 >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <motion.div layoutId="verse-tab-active" className="verse-tab-underline" />
-                  )}
+                  {w.text}
                 </button>
+              );
+            })}
+          </div>
+
+          {/* IAST Transliteration */}
+          <div style={{ fontSize: '1rem', color: 'var(--text-1)', fontStyle: 'italic', marginBottom: 16 }}>
+            {canonicalVerse.iast}
+          </div>
+
+          {/* PITCH RIBBON VISUALIZER */}
+          <div style={{ margin: '24px 0 16px', padding: 16, background: 'rgba(0, 0, 0, 0.4)', borderRadius: 12, border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Activity size={14} /> Sacred Svara Pitch Contour (Sa - Ga - Pa)
+              </span>
+              <Button size="sm" variant={singAlongActive ? 'primary' : 'ghost'} icon={<Mic size={14} />} onClick={handleSingAlong}>
+                {singAlongActive ? `Pitch Score: ${pitchScore}%` : 'Sing Along (Mic)'}
+              </Button>
+            </div>
+
+            {/* Pitch Wave Canvas representation */}
+            <div style={{ height: 48, position: 'relative', overflow: 'hidden', background: 'rgba(10, 10, 20, 0.6)', borderRadius: 8 }}>
+              {/* Target Contour Line */}
+              <svg viewBox="0 0 800 48" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                <path
+                  d="M 0 24 Q 100 8, 200 24 T 400 24 T 600 8 T 800 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="2.5"
+                  strokeDasharray="6 3"
+                />
+                {singAlongActive && (
+                  <path
+                    d="M 0 24 Q 100 12, 200 22 T 400 26 T 600 10 T 800 22"
+                    fill="none"
+                    stroke="var(--cyan)"
+                    strokeWidth="2"
+                    style={{ filter: 'drop-shadow(0 0 6px var(--cyan))' }}
+                  />
+                )}
+              </svg>
+            </div>
+          </div>
+
+          {/* Selected Word Popover Panel */}
+          {selectedWord && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                marginTop: 16,
+                padding: '12px 16px',
+                background: 'rgba(212, 175, 55, 0.1)',
+                border: '1px solid var(--gold)',
+                borderRadius: 8,
+                textAlign: 'left',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <div>
+                <span style={{ fontFamily: 'var(--font-sanskrit)', fontSize: '1.2rem', color: 'var(--gold-bright)', marginRight: 10 }}>
+                  {selectedWord.text}
+                </span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-1)' }}>
+                  Dhatu (Root): <strong>{selectedWord.root}</strong> &bull; Meaning: <strong>{selectedWord.gloss}</strong>
+                </span>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedWord(null)}>
+                Dismiss
+              </Button>
+            </motion.div>
+          )}
+        </GlassCard>
+      </div>
+
+      {/* TABS VIEWPORT */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: 10, marginBottom: 16 }}>
+          {[
+            { id: 'meaning', label: 'Meaning & Insight', icon: BookOpen },
+            { id: 'anatomy', label: 'Meter Anatomy', icon: Layers },
+            { id: 'context', label: 'Context & Deity', icon: Sparkles },
+            { id: 'reflect', label: 'Seeker Notes', icon: Edit3 }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isTabActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  sounds.playTap();
+                  setActiveTab(tab.id);
+                }}
+                style={{
+                  background: isTabActive ? 'rgba(212, 175, 55, 0.15)' : 'transparent',
+                  border: isTabActive ? '1px solid var(--gold)' : '1px solid transparent',
+                  borderRadius: 6,
+                  color: isTabActive ? 'var(--gold-bright)' : 'var(--text-2)',
+                  padding: '8px 14px',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  cursor: 'pointer'
+                }}
+              >
+                <Icon size={14} /> {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab 1: Meaning */}
+        {activeTab === 'meaning' && (
+          <GlassCard elevation={1} style={{ padding: 24 }}>
+            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 8px' }}>
+              Canonical Translation
+            </h4>
+            <p style={{ fontSize: '1rem', color: 'var(--text-0)', lineHeight: 1.6, marginBottom: 16 }}>
+              &ldquo;{canonicalVerse.translation}&rdquo;
+            </p>
+            <h5 style={{ color: 'var(--cyan)', margin: '0 0 6px' }}>Esoteric Realization</h5>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-1)', lineHeight: 1.5 }}>
+              {canonicalVerse.esotericInsight}
+            </p>
+          </GlassCard>
+        )}
+
+        {/* Tab 2: Anatomy */}
+        {activeTab === 'anatomy' && (
+          <GlassCard elevation={1} style={{ padding: 24 }}>
+            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 12px' }}>
+              Chandas (Meter) Architecture: {canonicalVerse.meter}
+            </h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-1)', marginBottom: 16 }}>
+              In the Atharvaveda, the meter acts as the protective sonic armor of the mind. Each syllable is weighed as Laghu (light, 1 matra) or Guru (heavy, 2 matras).
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+              {['Pada 1 (8 Syllables)', 'Pada 2 (8 Syllables)', 'Pada 3 (8 Syllables)', 'Pada 4 (8 Syllables)'].map((p, i) => (
+                <div key={i} style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 8, textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--gold)' }}>{p}</div>
+                  <div style={{ letterSpacing: '4px', fontSize: '1.2rem', color: 'var(--cyan)', marginTop: 4 }}>
+                    • — • —
+                  </div>
+                </div>
               ))}
             </div>
-
-            {/* Tab 1: Translation */}
-            {activeTab === 'translation' && (
-              <div className="verse-tab-content-panel">
-                <div style={{ marginBottom: '20px' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--gold)', fontFamily: 'var(--font-hud)', textTransform: 'uppercase' }}>
-                    English Exegesis
-                  </span>
-                  <p style={{ color: '#FDFBEE', fontSize: '1.08rem', lineHeight: 1.6, margin: '8px 0 0' }}>
-                    "{verseData?.english}"
-                  </p>
-                </div>
-
-                {verseData?.hindi && (
-                  <div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--gold)', fontFamily: 'var(--font-hud)', textTransform: 'uppercase' }}>
-                      हिन्दी भावार्थ
-                    </span>
-                    <p style={{ color: '#FDFBEE', fontSize: '1.05rem', lineHeight: 1.6, margin: '8px 0 0' }}>
-                      {verseData?.hindi}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab 2: Transliteration */}
-            {activeTab === 'translit' && (
-              <div className="verse-tab-content-panel">
-                <span style={{ fontSize: '0.8rem', color: 'var(--soma)', fontFamily: 'var(--font-hud)', textTransform: 'uppercase' }}>
-                  Romanized IAST Phonetics
-                </span>
-                <p style={{ color: '#FFF', fontSize: '1.1rem', fontStyle: 'italic', lineHeight: 1.7, margin: '10px 0 16px' }}>
-                  {verseData?.transliteration}
-                </p>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-                  Preserves authentic tonal pitch accents (Udatta, Anudatta, Svarita) across the canonical Samhita.
-                </div>
-              </div>
-            )}
-
-            {/* Tab 3: Esoteric Insight */}
-            {activeTab === 'insight' && (
-              <div className="verse-tab-content-panel">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gold-bright)', marginBottom: '8px' }}>
-                  <Sparkles size={18} />
-                  <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem' }}>Living Metaphysics & Spiritual Application</strong>
-                </div>
-                <p style={{ color: '#FDFBEE', fontSize: '0.98rem', lineHeight: 1.65, margin: 0 }}>
-                  {verseData?.practicalMeaning}
-                </p>
-              </div>
-            )}
-
-            {/* Tab 4: Student Notes */}
-            {activeTab === 'notes' && (
-              <div className="verse-tab-content-panel">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Personal contemplation reflections saved to local sanctuary memory.
-                  </span>
-                  {noteSavedFeedback && (
-                    <Chip variant="gold" icon={CheckCircle2}>
-                      Saved to Memory
-                    </Chip>
-                  )}
-                </div>
-
-                <textarea
-                  className="student-notes-textarea"
-                  placeholder="Record your realizations, grammatical observations, and meditative insights for this shloka..."
-                  value={studentNote}
-                  onChange={(e) => setStudentNote(e.target.value)}
-                />
-
-                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    variant="primary"
-                    icon={Save}
-                    onClick={handleSaveNotes}
-                  >
-                    Save Seeker Notes
-                  </Button>
-                </div>
-              </div>
-            )}
           </GlassCard>
+        )}
 
-          {/* Comprehension Trial Section */}
-          {verseData?.challenge && (
-            <GlassCard spotlight style={{ padding: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                <BrainCircuit size={20} style={{ color: 'var(--gold-bright)' }} />
-                <h3 style={{ fontFamily: 'var(--font-display)', color: '#FFF', fontSize: '1.25rem', margin: 0 }}>
-                  Spiritual Comprehension Trial
-                </h3>
-              </div>
+        {/* Tab 3: Context */}
+        {activeTab === 'context' && (
+          <GlassCard elevation={1} style={{ padding: 24 }}>
+            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 8px' }}>
+              Scriptural Context
+            </h4>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '12px 0' }}>
+              {canonicalVerse.themes.map((th) => (
+                <Chip key={th} label={`Theme: ${th}`} variant="gold" />
+              ))}
+            </div>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-1)', lineHeight: 1.5 }}>
+              Transmitted through the Shaunaka recension of the Atharvaveda. Preserved through unbroken oral memorization by the Rishis of ancient Aryavarta.
+            </p>
+          </GlassCard>
+        )}
 
-              <p style={{ color: '#FDFBEE', fontSize: '1rem', lineHeight: 1.55, margin: '0 0 20px' }}>
-                {verseData.challenge.question}
-              </p>
+        {/* Tab 4: Reflect */}
+        {activeTab === 'reflect' && (
+          <GlassCard elevation={1} style={{ padding: 24 }}>
+            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 8px' }}>
+              Personal Sadhana Notes
+            </h4>
+            <textarea
+              value={studentNote}
+              onChange={handleNoteChange}
+              placeholder="Record your contemplations, insights, and queries on this hymn..."
+              rows={5}
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 8,
+                padding: 12,
+                color: '#fff',
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.9rem',
+                outline: 'none',
+                resize: 'vertical',
+                marginBottom: 12
+              }}
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={<MessageSquare size={14} />}
+              onClick={() => navigate('/chat')}
+            >
+              Consult Rishi AI on this Verse
+            </Button>
+          </GlassCard>
+        )}
+      </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {verseData.challenge.options.map((opt, i) => {
-                  const isChosen = challengeAnswered === i;
-                  const isCorrect = i === verseData.challenge.correctIndex;
-
-                  let borderClass = 'rgba(255, 255, 255, 0.1)';
-                  let bgClass = 'rgba(10, 10, 18, 0.5)';
-
-                  if (challengeAnswered !== null) {
-                    if (isCorrect) {
-                      borderClass = 'var(--success)';
-                      bgClass = 'rgba(79, 209, 197, 0.15)';
-                    } else if (isChosen) {
-                      borderClass = 'var(--danger)';
-                      bgClass = 'rgba(255, 77, 109, 0.15)';
-                    }
-                  }
-
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      disabled={challengeAnswered !== null}
-                      onClick={() => handleChallengeOption(i)}
-                      style={{
-                        padding: '14px 18px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderRadius: 'var(--radius-sm)',
-                        background: bgClass,
-                        border: `1px solid ${borderClass}`,
-                        color: '#FFF',
-                        fontSize: '0.92rem',
-                        textAlign: 'left',
-                        cursor: challengeAnswered === null ? 'pointer' : 'default',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <span>{opt}</span>
-                      {challengeAnswered !== null && isCorrect && (
-                        <CheckCircle2 size={18} style={{ color: 'var(--success)' }} />
-                      )}
-                      {challengeAnswered !== null && isChosen && !isCorrect && (
-                        <AlertCircle size={18} style={{ color: 'var(--danger)' }} />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {challengeAnswered !== null && (
-                <div
-                  style={{
-                    marginTop: '20px',
-                    padding: '14px 18px',
-                    borderRadius: 'var(--radius-sm)',
-                    background:
-                      challengeAnswered === verseData.challenge.correctIndex
-                        ? 'rgba(212, 175, 55, 0.12)'
-                        : 'rgba(255, 77, 109, 0.12)',
-                    border:
-                      challengeAnswered === verseData.challenge.correctIndex
-                        ? '1px solid var(--gold)'
-                        : '1px solid var(--danger)',
-                    color: '#FFF',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  {challengeAnswered === verseData.challenge.correctIndex
-                    ? '✨ Pure discernment attained! +75 Radiance Points granted to your soul identity.'
-                    : 'Reflect upon the filial bond of the Bhumi Sukta. Contemplation deepens wisdom.'}
-                </div>
-              )}
-            </GlassCard>
-          )}
+      {/* STICKY BOTTOM CONTROLS */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'rgba(10, 10, 18, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(212, 175, 55, 0.2)',
+          padding: '12px 24px',
+          zIndex: 900,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Button size="sm" variant="primary" icon={<Volume2 size={16} />} onClick={handlePlayToggle}>
+            {isPlaying ? 'Pause Chanting' : 'Listen Recitation'}
+          </Button>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>
+            Speed:
+            <select
+              value={playbackSpeed}
+              onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
+              style={{
+                background: 'transparent',
+                color: 'var(--gold)',
+                border: 'none',
+                marginLeft: 4,
+                cursor: 'pointer'
+              }}
+            >
+              <option value="0.75">0.75x</option>
+              <option value="1.0">1.0x</option>
+              <option value="1.25">1.25x</option>
+            </select>
+          </div>
         </div>
-      )}
+
+        <Button size="sm" variant="gold" icon={<Award size={16} />} onClick={advanceMastery}>
+          Elevate Mastery (Next Tier)
+        </Button>
+      </div>
     </div>
   );
 };

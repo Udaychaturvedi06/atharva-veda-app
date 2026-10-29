@@ -179,6 +179,33 @@ export const Settings = () => {
             />
           </div>
 
+          {/* Root Note Sa Selector */}
+          <div className="settings-row">
+            <div className="settings-row-label-wrap">
+              <span className="settings-row-label">Root Frequency (Sa)</span>
+              <span className="settings-row-desc">All synthesizers retune to this tonic</span>
+            </div>
+            <div className="settings-btn-group">
+              {[
+                { label: 'C3 (130Hz)', freq: 130.81 },
+                { label: 'D3 (146Hz)', freq: 146.83 },
+                { label: 'E3 (164Hz)', freq: 164.81 }
+              ].map((note) => (
+                <button
+                  key={note.label}
+                  type="button"
+                  className="settings-segmented-btn"
+                  onClick={() => {
+                    sounds.setRootSa(note.freq);
+                    sounds.playSuccess();
+                  }}
+                >
+                  {note.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Test Chime Button */}
           <div style={{ paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
             <Button

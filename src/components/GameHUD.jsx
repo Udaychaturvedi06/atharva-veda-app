@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { useAuth } from '../contexts/AuthContext';
 import { sounds } from '../utils/soundEngine';
-import { Flame, Zap, Sparkles, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
-import { AnimatedNumber } from './ui/AnimatedNumber';
+import { Flame, Zap, Heart, Volume2, VolumeX, Sun, Moon, Sparkles, User, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import RankMedallion from './ui/RankMedallion';
+import LiquidOrb from './ui/LiquidOrb';
+import { useNavigate } from 'react-router-dom';
 
-// Canvas-driven Ember Particles for Rank-Up Celebration
+// Rank-Up Fullscreen Celebration Canvas
 const RankUpCanvas = () => {
   const canvasRef = useRef(null);
 
@@ -20,7 +22,7 @@ const RankUpCanvas = () => {
     const particles = [];
     const colors = ['#FFE259', '#D4AF37', '#FF7B00', '#FF5E1E', '#FFFFFF'];
 
-    for (let i = 0; i < 110; i++) {
+    for (let i = 0; i < 120; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 8 + 3;
       particles.push({
@@ -46,7 +48,7 @@ const RankUpCanvas = () => {
           alive = true;
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.08; // subtle gravity
+          p.vy += 0.08;
           p.alpha -= p.decay;
 
           ctx.fillStyle = p.color;
@@ -63,7 +65,6 @@ const RankUpCanvas = () => {
     };
 
     animId = requestAnimationFrame(render);
-
     return () => {
       if (animId) cancelAnimationFrame(animId);
     };
@@ -73,17 +74,19 @@ const RankUpCanvas = () => {
     <canvas
       ref={canvasRef}
       style={{
-        position: 'absolute',
+        position: 'fixed',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 1
+        zIndex: 100001
       }}
     />
   );
 };
 
 export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const hp = useGameStore((state) => state.hp);
   const maxHp = useGameStore((state) => state.maxHp);
   const prana = useGameStore((state) => state.prana);
@@ -96,267 +99,435 @@ export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
   const getNextRankThreshold = useGameStore((state) => state.getNextRankThreshold);
 
   const [collapsed, setCollapsed] = useState(false);
-  const lastScrollY = useRef(0);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [rankUpEvent, setRankUpEvent] = useState(null);
-  const prevRankTier = useRef(null);
+  const [rpGainSpark, setRpGainSpark] = useState(false);
+  const lastScrollY = useRef(0);
+  const prevRankRef = useRef(getRank().title);
+  const prevRpRef = useRef(rp);
 
-  // Vitals damage & heal reaction pulse states
-  const prevHp = useRef(hp);
-  const prevPrana = useRef(prana);
-  const [hpFlash, setHpFlash] = useState(null); // 'damage' or 'heal'
-  const [pranaFlash, setPranaFlash] = useState(null);
-
-  const rank = getRank();
+  const currentRank = getRank();
   const nextThreshold = getNextRankThreshold();
-  const prevThreshold = rank.threshold;
-  const rankProgress = Math.min(
-    100,
-    Math.max(5, ((rp - prevThreshold) / (nextThreshold - prevThreshold || 1)) * 100)
-  );
+  const currentThreshold = currentRank.threshold || 0;
+  const progressToNext = nextThreshold > currentThreshold
+    ? Math.min(100, Math.max(0, ((rp - currentThreshold) / (nextThreshold - currentThreshold)) * 100))
+    : 100;
 
-  // Synchronize sound engine with store
-  useEffect(() => {
-    sounds.enabled = soundEnabled;
-  }, [soundEnabled]);
-
-  // Damage / Heal reaction triggers
-  useEffect(() => {
-    if (hp < prevHp.current) {
-      setHpFlash('damage');
-      const timer = setTimeout(() => setHpFlash(null), 600);
-      return () => clearTimeout(timer);
-    } else if (hp > prevHp.current) {
-      setHpFlash('heal');
-      const timer = setTimeout(() => setHpFlash(null), 600);
-      return () => clearTimeout(timer);
-    }
-    prevHp.current = hp;
-  }, [hp]);
-
-  useEffect(() => {
-    if (prana > prevPrana.current) {
-      setPranaFlash('surge');
-      const timer = setTimeout(() => setPranaFlash(null), 600);
-      return () => clearTimeout(timer);
-    }
-    prevPrana.current = prana;
-  }, [prana]);
-
-  // Rank-up celebration detector
-  useEffect(() => {
-    if (prevRankTier.current && prevRankTier.current !== rank.tier) {
-      setRankUpEvent(rank);
-      sounds.playUnlockChime();
-      const timer = setTimeout(() => setRankUpEvent(null), 2500);
-      return () => clearTimeout(timer);
-    }
-    prevRankTier.current = rank.tier;
-  }, [rank]);
-
-  // Scroll detection: collapse on scroll down, expand on scroll up
+  // Collapse on scroll down, expand on scroll up
   useEffect(() => {
     const handleScroll = () => {
-      const currentY = window.scrollY;
-      if (currentY > 80 && currentY > lastScrollY.current) {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > 120 && currentScrollY > lastScrollY.current) {
         setCollapsed(true);
-      } else if (currentY < lastScrollY.current || currentY <= 30) {
+      } else if (currentScrollY < lastScrollY.current) {
         setCollapsed(false);
       }
-      lastScrollY.current = currentY;
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSoundToggle = () => {
+  // RP gain animation spark
+  useEffect(() => {
+    if (rp > prevRpRef.current) {
+      setRpGainSpark(true);
+      const timer = setTimeout(() => setRpGainSpark(false), 800);
+      return () => clearTimeout(timer);
+    }
+    prevRpRef.current = rp;
+  }, [rp]);
+
+  // Rank-up celebration trigger
+  useEffect(() => {
+    if (currentRank.title !== prevRankRef.current) {
+      prevRankRef.current = currentRank.title;
+      setRankUpEvent(currentRank);
+      sounds.playLevelUp();
+      const timer = setTimeout(() => {
+        setRankUpEvent(null);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentRank]);
+
+  const handleMuteClick = () => {
     toggleSound();
-    if (!soundEnabled) sounds.playUnlockChime();
+    sounds.playTap();
   };
 
-  const userInitial = user?.username ? user.username.charAt(0).toUpperCase() : 'ॐ';
+  const handleThemeClick = () => {
+    toggleTheme();
+    sounds.playTap();
+  };
 
   return (
     <>
-      {/* Rank Up Celebration Overlay with Ember Fireworks */}
+      <header
+        className={`game-hud ${collapsed ? 'game-hud--collapsed' : ''}`}
+        onClick={() => collapsed && setCollapsed(false)}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: collapsed ? 44 : 64,
+          background: 'rgba(7, 7, 13, 0.82)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(212, 175, 55, 0.18)',
+          zIndex: 900,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 20px',
+          transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      >
+        {/* LEFT: Rank Medallion */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <RankMedallion rank={currentRank} rp={rp} nextThreshold={nextThreshold} />
+          {!collapsed && (
+            <div style={{ display: 'none', flexDirection: 'column' }} className="hud-rank-label">
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: currentRank.color }}>
+                {currentRank.title}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>
+                {rp} RP / {nextThreshold} RP
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* CENTER: Sutra Thread Progress Meter */}
+        <div
+          style={{
+            flex: 1,
+            maxWidth: 360,
+            margin: '0 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative'
+          }}
+        >
+          {rpGainSpark && (
+            <motion.div
+              initial={{ opacity: 0, y: 0 }}
+              animate={{ opacity: 1, y: -20 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: 'absolute',
+                top: -16,
+                color: 'var(--gold-bright)',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                fontFamily: 'var(--font-hud)'
+              }}
+            >
+              +RP Elevated!
+            </motion.div>
+          )}
+
+          {/* Glowing horizontal Sutra Thread */}
+          <div
+            style={{
+              width: '100%',
+              height: 3,
+              background: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: 2,
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div
+              style={{
+                width: `${progressToNext}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--gold), var(--gold-bright))',
+                boxShadow: '0 0 10px rgba(255, 226, 89, 0.8)',
+                transition: 'width 0.4s ease'
+              }}
+            />
+          </div>
+          {!collapsed && (
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-2)', marginTop: 4, fontFamily: 'var(--font-hud)' }}>
+              SUTRA THREAD ELEVATION &bull; {Math.round(progressToNext)}%
+            </span>
+          )}
+        </div>
+
+        {/* RIGHT: Vitals Orbs + Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Liquid Orb: HP */}
+          <LiquidOrb
+            type="hp"
+            current={hp}
+            max={maxHp}
+            icon={<Heart size={16} />}
+            label="Fortitude (HP)"
+            color="#FF4D6D"
+            secondaryColor="rgba(255, 77, 109, 0.3)"
+            details="Your spiritual endurance. Regenerates during calm and sacred homa rituals."
+          />
+
+          {/* Liquid Orb: Prana */}
+          <LiquidOrb
+            type="prana"
+            current={prana}
+            max={maxPrana}
+            icon={<Zap size={16} />}
+            label="Prana (Mana)"
+            color="#00F0FF"
+            secondaryColor="rgba(0, 240, 255, 0.3)"
+            details="Breath and focus energy used for chanting, invocations, and arcade abilities."
+          />
+
+          {/* Liquid Orb: Streak */}
+          <LiquidOrb
+            type="streak"
+            current={streak}
+            max={30}
+            icon={<Flame size={16} />}
+            label="Tapasya Streak"
+            color="#FF7B00"
+            secondaryColor="rgba(255, 123, 0, 0.3)"
+            details={`${streak} consecutive days of Vedic sadhana. Safeguarded by earned Grace days.`}
+          />
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 24, background: 'rgba(255, 255, 255, 0.1)', margin: '0 4px' }} />
+
+          {/* Sound Toggle */}
+          <button
+            onClick={handleMuteClick}
+            onMouseEnter={() => sounds.playHover()}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: soundEnabled ? 'var(--gold)' : 'var(--text-2)',
+              cursor: 'pointer',
+              padding: 6,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            aria-label={soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
+          >
+            {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={handleThemeClick}
+            onMouseEnter={() => sounds.playHover()}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: theme === 'light' ? 'var(--gold)' : 'var(--soma)',
+              cursor: 'pointer',
+              padding: 6,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          {/* Avatar Menu */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setShowAvatarMenu(!showAvatarMenu);
+              }}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: '50%',
+                background: 'rgba(212, 175, 55, 0.15)',
+                border: '1px solid var(--gold)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--gold-bright)',
+                cursor: 'pointer'
+              }}
+              aria-label="Seeker Profile Menu"
+            >
+              <User size={16} />
+            </button>
+
+            <AnimatePresence>
+              {showAvatarMenu && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  style={{
+                    position: 'absolute',
+                    top: '44px',
+                    right: 0,
+                    width: 180,
+                    background: 'rgba(15, 13, 24, 0.95)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '8px 0',
+                    zIndex: 1000,
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.6)'
+                  }}
+                >
+                  <div style={{ padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#fff' }}>
+                      {user?.username || 'Seeker'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>
+                      {currentRank.tier}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setShowAvatarMenu(false);
+                      navigate('/settings');
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <SettingsIcon size={14} /> Sanctum Settings
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowAvatarMenu(false);
+                      logout();
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--danger)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <LogOut size={14} /> Exit Sanctuary
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </header>
+
+      {/* Rank-Up Celebration Modal */}
       <AnimatePresence>
         {rankUpEvent && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.08 }}
-            transition={{ duration: 0.4 }}
+          <div
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 9999,
+              background: 'rgba(7, 7, 13, 0.9)',
+              backdropFilter: 'blur(20px)',
+              zIndex: 100000,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'radial-gradient(circle at center, rgba(212, 175, 55, 0.3) 0%, rgba(7, 7, 13, 0.94) 80%)',
-              backdropFilter: 'blur(20px)',
-              pointerEvents: 'none'
+              textAlign: 'center',
+              padding: 20
             }}
           >
             <RankUpCanvas />
-
-            <div style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
-              <Sparkles size={56} style={{ color: 'var(--gold-bright)', marginBottom: '16px' }} />
-              <span
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.1, y: -30 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              style={{ position: 'relative', zIndex: 100002 }}
+            >
+              <div
                 style={{
-                  fontSize: '0.95rem',
-                  color: 'var(--gold-bright)',
-                  fontWeight: 800,
-                  letterSpacing: '5px',
-                  textTransform: 'uppercase'
+                  width: 90,
+                  height: 90,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 70%)',
+                  border: `2px solid ${rankUpEvent.color}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 20px',
+                  boxShadow: `0 0 30px ${rankUpEvent.color}`
                 }}
               >
-                Ascension Attained
-              </span>
+                <Sparkles size={42} color={rankUpEvent.color} />
+              </div>
+
               <h1
                 style={{
                   fontFamily: 'var(--font-display)',
-                  color: '#FFF',
-                  fontSize: 'clamp(2.5rem, 6vw, 3.8rem)',
-                  margin: '10px 0',
-                  textShadow: '0 0 30px rgba(212, 175, 55, 0.6)'
+                  fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+                  color: 'var(--gold-bright)',
+                  margin: '0 0 10px',
+                  textShadow: '0 0 30px rgba(255, 226, 89, 0.6)'
+                }}
+              >
+                SEEKER ASCENSION
+              </h1>
+
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.4rem',
+                  color: rankUpEvent.color,
+                  fontWeight: 700,
+                  marginBottom: 16
                 }}
               >
                 {rankUpEvent.title}
-              </h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem' }}>
-                Tier: <strong style={{ color: rankUpEvent.color }}>{rankUpEvent.tier}</strong>
+              </div>
+
+              <p style={{ color: 'var(--text-1)', maxWidth: 440, margin: '0 auto 24px', fontSize: '1rem' }}>
+                Your Tapasya and dedication have awakened a deeper resonance within the Atharva realms.
               </p>
-            </div>
-          </motion.div>
+
+              <button
+                onClick={() => setRankUpEvent(null)}
+                style={{
+                  padding: '10px 28px',
+                  background: 'var(--gold)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-full)',
+                  color: '#07070D',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 20px rgba(212, 175, 55, 0.6)'
+                }}
+              >
+                Accept Mantle
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-
-      {/* Main HUD */}
-      <header
-        className={`game-hud-container ${collapsed ? 'hud-collapsed' : ''}`}
-        style={{
-          transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          transform: collapsed ? 'translateY(-10px) scale(0.97)' : 'none',
-          opacity: collapsed ? 0.92 : 1
-        }}
-      >
-        {/* Left: Avatar Ring + Player Vital Bars */}
-        <div className="hud-vitals" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          {/* Avatar Ring with Rank Color */}
-          <div
-            className="hud-avatar-ring"
-            title={`${user?.username || 'Seeker'} — ${rank.title}`}
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
-              border: `2px solid ${rank.color}`,
-              boxShadow: `0 0 12px ${rank.color}55`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(19, 17, 28, 0.85)',
-              color: '#FFF',
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              flexShrink: 0
-            }}
-          >
-            {userInitial}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {/* HP Fortitude Meter with Damage / Heal flash */}
-            <div
-              className={`hud-meter-wrap hp-meter ${hpFlash === 'damage' ? 'meter-damage-flash' : hpFlash === 'heal' ? 'meter-heal-pulse' : ''}`}
-              title={`Spiritual Fortitude: ${hp}/${maxHp}`}
-            >
-              <div className="meter-icon agni-glow">
-                <Flame size={14} />
-              </div>
-              <div className="meter-track">
-                <div
-                  className="meter-fill hp-fill"
-                  style={{ width: `${Math.min(100, (hp / maxHp) * 100)}%` }}
-                />
-              </div>
-              <span className="meter-val">{hp} HP</span>
-            </div>
-
-            {/* Prana Chanting Focus Meter with Surge pulse */}
-            <div
-              className={`hud-meter-wrap prana-meter ${pranaFlash === 'surge' ? 'meter-surge-pulse' : ''}`}
-              title={`Prana Chanting Focus: ${prana}/${maxPrana}`}
-            >
-              <div className="meter-icon prana-glow">
-                <Zap size={13} />
-              </div>
-              <div className="meter-track">
-                <div
-                  className="meter-fill prana-fill"
-                  style={{ width: `${Math.min(100, (prana / maxPrana) * 100)}%` }}
-                />
-              </div>
-              <span className="meter-val">{prana} PR</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Center: Rank Badge & Radiance Progress */}
-        <div className="hud-center">
-          <div className="rank-badge" style={{ borderColor: rank.color }}>
-            <Sparkles size={13} color={rank.color} />
-            <div className="rank-details">
-              <span className="rank-tier" style={{ color: rank.color }}>{rank.tier}</span>
-              <span className="rank-title">{rank.title}</span>
-            </div>
-          </div>
-          <div className="xp-bar-container" title={`${rp} / ${nextThreshold} RP`}>
-            <div
-              className="xp-bar-fill"
-              style={{
-                width: `${rankProgress}%`,
-                transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Right: Streak Flame with Animated Number, Mute, Theme */}
-        <div className="hud-actions">
-          <div className="streak-pill" title={`${streak} Day Tapasya Meditation Streak`}>
-            <Flame size={15} className="streak-flame" />
-            <span className="streak-count">
-              <AnimatedNumber value={streak} />d
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className="hud-icon-btn"
-            onClick={handleSoundToggle}
-            aria-label={soundEnabled ? 'Mute Sacred Soundscapes' : 'Enable Sacred Soundscapes'}
-            title={soundEnabled ? 'Mute Sacred Soundscapes' : 'Enable Sacred Soundscapes'}
-          >
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
-
-          {toggleTheme && (
-            <button
-              type="button"
-              className="hud-icon-btn"
-              onClick={toggleTheme}
-              aria-label="Toggle Theme"
-              title="Toggle Theme"
-            >
-              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-          )}
-        </div>
-      </header>
     </>
   );
 };

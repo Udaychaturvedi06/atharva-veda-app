@@ -87,11 +87,45 @@ export const Rankings = ({ playerRp: propPlayerRp }) => {
   const getRank = useGameStore((state) => state.getRank);
   const storeRp = useGameStore((state) => state.rp);
   const streak = useGameStore((state) => state.streak);
+  const consumePrana = useGameStore((state) => state.consumePrana);
 
   const playerRp = propPlayerRp !== undefined ? propPlayerRp : storeRp;
   const currentRank = getRank();
 
+  const [activeTab, setActiveTab] = useState('leagues'); // 'leagues' or 'sangha'
   const [activeLeague, setActiveLeague] = useState('all');
+  const [sanghaNotice, setSanghaNotice] = useState(null);
+
+  // Cooperative Sangha Circle Data
+  const [sanghaMembers] = useState([
+    { name: user?.username || 'You', rp: playerRp, status: 'Chanting', color: '#D4AF37', avatar: '🧘' },
+    { name: 'Ananda_Sage', rp: 640, status: 'Meditating', color: '#00F0FF', avatar: '🌿' },
+    { name: 'Soma_Kavi', rp: 520, status: 'Resting', color: '#FF7B00', avatar: '✨' },
+    { name: 'Maitri_Devi', rp: 480, status: 'Chanting', color: '#9F7AEA', avatar: '🕊️' },
+    { name: 'Brahma_Jijnasu', rp: 390, status: 'Resting', color: '#4FD1C5', avatar: '🌱' },
+    { name: 'Rishi_Vani', rp: 420, status: 'Meditating', color: '#FF4D6D', avatar: '🔥' }
+  ]);
+
+  const sanghaTotalRp = sanghaMembers.reduce((sum, m) => sum + m.rp, 0);
+  const sanghaGoal = 3000;
+  const sanghaProgress = Math.min(100, Math.round((sanghaTotalRp / sanghaGoal) * 100));
+
+  const handleGiftPrana = (memberName) => {
+    if (!consumePrana(15)) {
+      setSanghaNotice('Not enough Prana! Need 15');
+      setTimeout(() => setSanghaNotice(null), 2500);
+      return;
+    }
+    sounds.playSuccess();
+    setSanghaNotice(`15 Prana gifted to ${memberName}!`);
+    setTimeout(() => setSanghaNotice(null), 2500);
+  };
+
+  const handleNudge = (memberName) => {
+    sounds.playTap();
+    setSanghaNotice(`Gentle Vedic encouragement sent to ${memberName}.`);
+    setTimeout(() => setSanghaNotice(null), 2500);
+  };
 
   // Top 3 Podium Seekers
   const first = GLOBAL_LEADERS[0];
@@ -122,11 +156,132 @@ export const Rankings = ({ playerRp: propPlayerRp }) => {
             Hall of Sages & Celestial Leagues
           </span>
         </div>
-        <h1 className="rankings-title">Astral Leaderboards</h1>
+        <h1 className="rankings-title">Astral Leaderboards & Sangha Circles</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', margin: 0 }}>
           Witness seekers ascending through tapasya, mantra recitation, and inner conquests across the 7 Lokas.
         </p>
+
+        {/* Top Tab Switcher */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+          <button
+            onClick={() => {
+              sounds.playTap();
+              setActiveTab('leagues');
+            }}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 'var(--radius-full)',
+              background: activeTab === 'leagues' ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255,255,255,0.04)',
+              border: activeTab === 'leagues' ? '1.5px solid var(--gold)' : '1px solid rgba(255,255,255,0.08)',
+              color: activeTab === 'leagues' ? 'var(--gold-bright)' : 'var(--text-2)',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Weekly Leagues
+          </button>
+          <button
+            onClick={() => {
+              sounds.playTap();
+              setActiveTab('sangha');
+            }}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 'var(--radius-full)',
+              background: activeTab === 'sangha' ? 'rgba(0, 240, 255, 0.25)' : 'rgba(255,255,255,0.04)',
+              border: activeTab === 'sangha' ? '1.5px solid var(--cyan)' : '1px solid rgba(255,255,255,0.08)',
+              color: activeTab === 'sangha' ? 'var(--cyan)' : 'var(--text-2)',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Cooperative Sangha Circle
+          </button>
+        </div>
       </div>
+
+      {sanghaNotice && (
+        <div style={{ background: 'rgba(0, 240, 255, 0.15)', border: '1px solid var(--cyan)', color: 'var(--cyan)', padding: '10px 16px', borderRadius: 8, textAlign: 'center', marginBottom: 20 }}>
+          {sanghaNotice}
+        </div>
+      )}
+
+      {activeTab === 'sangha' ? (
+        /* COOPERATIVE SANGHA CIRCLE VIEW */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 32 }}>
+          <GlassCard elevation={2} style={{ padding: 28, textAlign: 'center' }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 6px', fontSize: '1.6rem' }}>
+              Weekly Sangha Sacred Mandala
+            </h3>
+            <p style={{ color: 'var(--text-1)', fontSize: '0.9rem', maxWidth: 520, margin: '0 auto 20px' }}>
+              6 seekers walking together. When the shared yantra reaches 3,000 RP, the collective Soma Chest unlocks for all.
+            </p>
+
+            {/* Circular Shared Yantra Progress */}
+            <div
+              style={{
+                width: 140,
+                height: 140,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%)',
+                border: '3px solid var(--cyan)',
+                margin: '0 auto 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 30px rgba(0, 240, 255, 0.3)'
+              }}
+            >
+              <span style={{ fontFamily: 'var(--font-hud)', fontSize: '1.8rem', fontWeight: 700, color: '#fff' }}>
+                {sanghaProgress}%
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--cyan)' }}>
+                {sanghaTotalRp} / {sanghaGoal} RP
+              </span>
+            </div>
+
+            <ProgressBar value={sanghaTotalRp} max={sanghaGoal} variant="cyan" size="md" shimmer />
+          </GlassCard>
+
+          {/* Sangha Members Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+            {sanghaMembers.map((m) => (
+              <GlassCard key={m.name} elevation={1} style={{ padding: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: '1.8rem' }}>{m.avatar}</span>
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#fff' }}>{m.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: m.color }}>{m.status}</div>
+                    </div>
+                  </div>
+                  <Chip label={`${m.rp} RP`} variant="gold" />
+                </div>
+
+                {m.name !== (user?.username || 'You') && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <button
+                      onClick={() => handleNudge(m.name)}
+                      style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
+                    >
+                      Nudge
+                    </button>
+                    <button
+                      onClick={() => handleGiftPrana(m.name)}
+                      style={{ padding: '6px 12px', background: 'rgba(0,240,255,0.2)', border: '1px solid var(--cyan)', borderRadius: 6, color: 'var(--cyan)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      Gift Prana (-15)
+                    </button>
+                  </div>
+                )}
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* LEAGUES COMPETITION VIEW */
+        <>
 
       {/* League Division Navigation Tabs */}
       <div className="league-tabs-wrap">
@@ -350,6 +505,8 @@ export const Rankings = ({ playerRp: propPlayerRp }) => {
           </table>
         </div>
       </GlassCard>
+      </>
+      )}
     </div>
   );
 };
