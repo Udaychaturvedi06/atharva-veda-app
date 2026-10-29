@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 export const GlassCard = ({
   children,
   className = '',
+  variant = 'default', // 'default', 'naga', 'bhurjapatra'
   tilt = false,
   spotlight = true,
   onClick,
@@ -15,6 +16,12 @@ export const GlassCard = ({
   const [rotateY, setRotateY] = useState(0);
   const [spotlightPos, setSpotlightPos] = useState({ x: 50, y: 50 });
   const shouldReduceMotion = useReducedMotion();
+
+  const variantClass = variant === 'naga'
+    ? 'glass-panel--naga'
+    : variant === 'bhurjapatra'
+      ? 'bhurjapatra-card'
+      : '';
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -47,7 +54,7 @@ export const GlassCard = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className={`glass-panel ${tilt ? 'card-tilt-stage' : ''} ${className}`}
+      className={`glass-panel ${variantClass} ${tilt ? 'card-tilt-stage' : ''} ${className}`}
       style={{
         transform: tilt && !shouldReduceMotion ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` : undefined,
         transition: 'transform 0.15s ease-out',

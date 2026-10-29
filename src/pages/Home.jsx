@@ -62,6 +62,7 @@ export const Home = () => {
     addRp,
     heal,
     restorePrana,
+    hp: rawHp,
     streak: rawStreak,
     graceDays: rawGraceDays,
     relics: rawRelics,
@@ -70,6 +71,7 @@ export const Home = () => {
     completeDailyYajna
   } = useGameStore();
 
+  const hp = typeof rawHp === 'number' ? rawHp : 100;
   const streak = typeof rawStreak === 'number' ? rawStreak : 1;
   const graceDays = typeof rawGraceDays === 'number' ? rawGraceDays : 2;
   const relics = Array.isArray(rawRelics) && rawRelics.length > 0 ? rawRelics : [
@@ -174,16 +176,30 @@ export const Home = () => {
 
   return (
     <div className="home-dashboard" style={{ padding: '24px 20px 100px', maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 10 }}>
+      {/* Critical Fortitude (HP < 25%) Emergency Red Vignette */}
+      {hp < 25 && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 9999,
+            boxShadow: 'inset 0 0 95px rgba(239, 68, 68, 0.45)',
+            animation: 'pulse 1.6s infinite ease-in-out'
+          }}
+        />
+      )}
+
       {/* 0. GREETING BAND */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <Chip label="Daily Sadhana" variant="gold" icon={<Sparkles size={14} />} />
           <span style={{ fontSize: '0.85rem', color: 'var(--text-2)' }}>Tithi: Shukla Paksha Trayodashi &bull; Nakshatra: Rohini</span>
         </div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', color: 'var(--gold-bright)', margin: 0 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', color: 'var(--amber-radiance, #FFE082)', margin: 0 }}>
           {greeting}
         </h1>
-        <p style={{ color: 'var(--text-1)', fontSize: '0.95rem', margin: '6px 0 0' }}>
+        <p style={{ color: 'var(--silver-muted, #94A3B8)', fontSize: '0.95rem', margin: '6px 0 0' }}>
           Step forth into the 5-fold Yajna of the day to maintain cosmic order (Rta).
         </p>
       </div>
@@ -193,6 +209,7 @@ export const Home = () => {
         <VasukiRing
           completedCount={completedCount}
           isChurning={homaActive || isFeedingGhee}
+          hp={hp}
           onChurn={() => sounds.playTibetanBowl()}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
@@ -236,12 +253,12 @@ export const Home = () => {
       {/* BENTO GRID OF 5 SACRED RITUALS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 40 }}>
         {/* STEP 1: SANKALPA (INTENTION) */}
-        <GlassCard elevation={2} style={{ padding: 24 }}>
+        <GlassCard variant="naga" elevation={2} style={{ padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <Chip label="Step 1" variant={completedLamps.sankalpa ? 'gold' : 'neutral'} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--gold)' }}>Daily Sankalpa</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--amber-glow, #FFB020)' }}>Daily Sankalpa</span>
           </div>
-          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 12px' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--silver-moon, #E2E8F0)', margin: '0 0 12px' }}>
             Choose Your Sacred Intention
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -253,8 +270,8 @@ export const Home = () => {
                   onClick={() => handleSelectSankalpa(s)}
                   style={{
                     padding: '12px 10px',
-                    background: isChosen ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255,255,255,0.03)',
-                    border: isChosen ? '1.5px solid var(--gold)' : '1px solid rgba(255,255,255,0.06)',
+                    background: isChosen ? 'rgba(255, 176, 32, 0.22)' : 'rgba(226, 232, 240, 0.03)',
+                    border: isChosen ? '1.5px solid var(--amber-glow, #FFB020)' : '1px solid rgba(226, 232, 240, 0.08)',
                     borderRadius: 8,
                     color: '#fff',
                     textAlign: 'left',
@@ -263,10 +280,10 @@ export const Home = () => {
                   }}
                 >
                   <div style={{ fontSize: '1.2rem', marginBottom: 4 }}>{s.icon}</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isChosen ? 'var(--gold-bright)' : 'var(--text-0)' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isChosen ? 'var(--amber-radiance, #FFE082)' : 'var(--silver-moon, #E2E8F0)' }}>
                     {s.title}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-2)', marginTop: 2 }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--silver-muted, #94A3B8)', marginTop: 2 }}>
                     {s.buff}
                   </div>
                 </button>
@@ -275,8 +292,8 @@ export const Home = () => {
           </div>
         </GlassCard>
 
-        {/* STEP 2: DAILY SHLOKA (3D FLIP) */}
-        <GlassCard elevation={2} style={{ padding: 24, perspective: 1000 }}>
+        {/* STEP 2: DAILY SHLOKA (3D FLIP & BHURJAPATRA PARCHMENT) */}
+        <GlassCard variant="bhurjapatra" elevation={2} style={{ padding: 24, perspective: 1000 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <Chip label="Step 2" variant={completedLamps.shloka ? 'gold' : 'neutral'} />
             <Button size="sm" variant="ghost" icon={<RotateCcw size={14} />} onClick={() => setIsFlipped(!isFlipped)}>
@@ -287,20 +304,20 @@ export const Home = () => {
           <div style={{ minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {!isFlipped ? (
               <div>
-                <div style={{ fontFamily: 'var(--font-sanskrit)', fontSize: '1.4rem', color: 'var(--gold-bright)', lineHeight: 1.6, marginBottom: 8 }}>
+                <div className="bhurjapatra-text" style={{ fontFamily: 'var(--font-sanskrit)', fontSize: '1.4rem', color: 'var(--silver-moon, #E2E8F0)', lineHeight: 1.6, marginBottom: 8 }}>
                   {DAILY_HYMN.sanskrit}
                 </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-1)', fontStyle: 'italic', marginBottom: 12 }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--silver-muted, #C5D0D6)', fontStyle: 'italic', marginBottom: 12 }}>
                   &ldquo;{DAILY_HYMN.english}&rdquo;
                 </div>
               </div>
             ) : (
               <div>
-                <div style={{ fontWeight: 600, color: 'var(--cyan)', marginBottom: 6 }}>Esoteric Realization</div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-1)', lineHeight: 1.5 }}>
+                <div style={{ fontWeight: 600, color: 'var(--amber-glow, #FFB020)', marginBottom: 6 }}>Esoteric Realization</div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--silver-moon, #E2E8F0)', lineHeight: 1.5 }}>
                   {DAILY_HYMN.insight}
                 </p>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--silver-muted, #8E9BAE)' }}>
                   Atharvaveda Kandam 12 &bull; Suktam 1 &bull; Shloka 12
                 </div>
               </div>
@@ -319,7 +336,7 @@ export const Home = () => {
 
         {/* STEP 3: HOMA FOCUS FIRE */}
         <div ref={anchorHomaRef}>
-          <GlassCard elevation={2} style={{ padding: 24, textAlign: 'center' }}>
+          <GlassCard variant="naga" elevation={2} style={{ padding: 24, textAlign: 'center' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <Chip label="Step 3" variant={completedLamps.homa ? 'gold' : 'neutral'} />
               <span style={{ fontSize: '0.85rem', color: 'var(--saffron)' }}>Homa Flame</span>

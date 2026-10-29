@@ -12,6 +12,7 @@ import { sounds } from '../../utils/soundEngine';
 export const VasukiRing = ({
   completedCount = 0,
   isChurning = false,
+  hp = 100,
   onChurn,
   children
 }) => {
@@ -33,6 +34,8 @@ export const VasukiRing = ({
     if (onChurn) onChurn();
     setTimeout(() => setInternalRipple(false), 1200);
   };
+
+  const isLowHp = hp < 25;
 
   // 7 Hoods (Sapta-Phana) positions across the top crown (-45deg to +45deg)
   const hoods = [
@@ -80,11 +83,33 @@ export const VasukiRing = ({
       }}
       onMouseEnter={() => {
         setIsHovered(true);
-        sounds.playTap();
+        sounds.playTibetanBowl();
+        setTimeout(() => sounds.playTap(), 140);
       }}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleRingClick}
     >
+      {/* ===================================================================
+          0. VASUKI BREATHING EMERGENCY SHIELD (When HP < 25%)
+          =================================================================== */}
+      {isLowHp && (
+        <motion.div
+          animate={{
+            scale: [1, 1.025, 1],
+            opacity: [0.4, 0.85, 0.4]
+          }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            position: 'absolute',
+            inset: -8,
+            borderRadius: 'calc(var(--radius-xl, 20px) + 8px)',
+            border: '2px dashed #EF4444',
+            boxShadow: '0 0 32px rgba(239, 68, 68, 0.45), inset 0 0 24px rgba(239, 68, 68, 0.25)',
+            pointerEvents: 'none',
+            zIndex: 1
+          }}
+        />
+      )}
       {/* ===================================================================
           1. SAPTA-PHANA: THE 7 CROWNING HOODS OF VASUKI
           =================================================================== */}
