@@ -267,39 +267,39 @@ export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
 
         {/* RIGHT: Vitals Orbs + Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Liquid Orb: HP */}
+          {/* Liquid Orb: Fortitude (Signal Red) */}
           <LiquidOrb
             type="hp"
             current={hp}
             max={maxHp}
             icon={<Heart size={16} />}
             label="Fortitude (HP)"
-            color="#FF4D6D"
-            secondaryColor="rgba(255, 77, 109, 0.3)"
+            color="var(--signal-red, #EF4444)"
+            secondaryColor="var(--signal-red-glow, rgba(239, 68, 68, 0.4))"
             details="Your spiritual endurance. Regenerates during calm and sacred homa rituals."
           />
 
-          {/* Liquid Orb: Prana */}
+          {/* Liquid Orb: Prana (Sage Green) */}
           <LiquidOrb
             type="prana"
             current={prana}
             max={maxPrana}
             icon={<Zap size={16} />}
             label="Prana (Mana)"
-            color="#00F0FF"
-            secondaryColor="rgba(0, 240, 255, 0.3)"
+            color="var(--sage-healing, #769E84)"
+            secondaryColor="var(--sage-glow, rgba(118, 158, 132, 0.35))"
             details="Breath and focus energy used for chanting, invocations, and arcade abilities."
           />
 
-          {/* Liquid Orb: Streak */}
+          {/* Liquid Orb: Streak (Amber Glow) */}
           <LiquidOrb
             type="streak"
             current={streak}
             max={30}
             icon={<Flame size={16} />}
             label="Tapasya Streak"
-            color="#FF7B00"
-            secondaryColor="rgba(255, 123, 0, 0.3)"
+            color="var(--amber-glow, #FFB020)"
+            secondaryColor="rgba(255, 176, 32, 0.4)"
             details={`${streak} consecutive days of Vedic sadhana. Safeguarded by earned Grace days.`}
           />
 

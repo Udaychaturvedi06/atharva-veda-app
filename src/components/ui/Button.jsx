@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export const Button = ({
   children,
-  variant = 'primary', // 'primary', 'ghost', 'danger', 'cyber'
+  variant = 'primary', // 'primary', 'ghost', 'danger', 'combat', 'healing', 'cyber'
   className = '',
   icon: Icon,
   disabled = false,
@@ -15,6 +15,8 @@ export const Button = ({
     primary: 'btn-primary-gold',
     ghost: 'btn-ghost',
     danger: 'btn-danger',
+    combat: 'btn-combat',
+    healing: 'btn-healing',
     cyber: 'btn-cyber'
   }[variant] || 'btn-primary-gold';
 

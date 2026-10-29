@@ -472,11 +472,24 @@ export const Home = () => {
           </p>
         </GlassCard>
 
-        {/* Relic Shelf */}
-        <GlassCard elevation={1} style={{ padding: 24 }}>
-          <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 16px' }}>
-            Sacred Relics Shelf
-          </h4>
+        {/* Relic Shelf: Walnut Wood texture backing with carved golden-amber sockets */}
+        <GlassCard
+          elevation={1}
+          style={{
+            padding: 24,
+            background: 'linear-gradient(135deg, rgba(46, 33, 24, 0.85) 0%, rgba(20, 15, 11, 0.95) 100%)',
+            border: '1.5px solid var(--wood-border, rgba(139, 90, 43, 0.35))',
+            boxShadow: '0 12px 32px rgba(20, 14, 10, 0.7)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--amber-radiance, #FFE082)', margin: 0 }}>
+              Sacred Relics Shelf
+            </h4>
+            <span style={{ fontSize: '0.75rem', color: 'var(--silver-muted, #94A3B8)', fontStyle: 'italic' }}>
+              Walnut Altar Inlay
+            </span>
+          </div>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             {relics.map((relic) => {
               if (!relic || !relic.id) return null;
@@ -489,21 +502,22 @@ export const Home = () => {
                     setSelectedRelic(relic);
                   }}
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 12,
-                    background: 'rgba(212, 175, 55, 0.1)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    width: 82,
+                    height: 82,
+                    borderRadius: 14,
+                    background: 'radial-gradient(circle at 50% 30%, rgba(255, 176, 32, 0.15) 0%, rgba(30, 20, 14, 0.9) 100%)',
+                    border: '1px solid rgba(255, 176, 32, 0.35)',
+                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.6), 0 4px 12px rgba(20, 14, 10, 0.8)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    transition: 'transform 0.2s ease'
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                   }}
                 >
                   <span style={{ fontSize: '1.8rem', marginBottom: 4 }}>{relic.icon || '📜'}</span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--gold-bright)', fontWeight: 600 }}>{shortName}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--amber-glow, #FFB020)', fontWeight: 600 }}>{shortName}</span>
                 </div>
               );
             })}

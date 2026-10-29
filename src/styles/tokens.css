@@ -1,36 +1,51 @@
 :root {
-  /* Cyber-Vedic Color Palette */
-  --bg-0: #07070D;
-  --bg-1: #0A0A12;
-  --bg-2: #13111C;
-  --bg-3: #1D1A2F;
+  /* Organic Mineral & Sacred Elements Palette */
+  --bg-space: #0B0C0E; /* Deep Charcoal Void */
+  --bg-card: rgba(22, 24, 29, 0.78); /* Charcoal Ash Glass */
+  --bg-card-hover: rgba(30, 33, 40, 0.88);
+  --wood-walnut: #2E2118; /* Ancient Birch Bark / Walnut Wood */
+  --wood-border: rgba(139, 90, 43, 0.3);
+  --silver-moon: #E2E8F0; /* Moonlit Churned Silver */
+  --silver-muted: #8E9BAE;
+  --sage-healing: #769E84; /* Oshadhi Herbal Green */
+  --sage-glow: rgba(118, 158, 132, 0.35);
+  --signal-red: #EF4444; /* Kalakuta Poison / Agni Strike */
+  --signal-red-glow: rgba(239, 68, 68, 0.4);
+  --amber-glow: #FFB020; /* Ghee Lamp Flame / Pure Amrita */
+  --amber-radiance: #FFE082;
+
+  /* Cyber-Vedic Baseline Aliases */
+  --bg-0: var(--bg-space);
+  --bg-1: #121316;
+  --bg-2: #1A1C22;
+  --bg-3: #22242A;
 
   /* Accent Radiance */
-  --gold: #D4AF37;
-  --gold-bright: #FFE259;
-  --gold-muted: rgba(212, 175, 55, 0.4);
+  --gold: var(--amber-glow);
+  --gold-bright: var(--amber-radiance);
+  --gold-muted: rgba(255, 176, 32, 0.35);
   --saffron: #FF7B00;
-  --agni: #FF5E1E;
+  --agni: var(--signal-red);
   --cyan: #00F0FF;
-  --soma: #63B3ED;
-  --success: #4FD1C5;
-  --danger: #FF4D6D;
+  --soma: var(--silver-moon);
+  --success: var(--sage-healing);
+  --danger: var(--signal-red);
 
   /* Text Hierarchies */
-  --text-primary: #FDFBEE;
-  --text-secondary: #C5D0D6;
-  --text-muted: #85899A;
-  --text-inverse: #07070D;
+  --text-primary: var(--silver-moon);
+  --text-secondary: var(--silver-muted);
+  --text-muted: #6B7280;
+  --text-inverse: #0B0C0E;
 
   /* Glassmorphism & Borders */
-  --glass-bg: rgba(19, 17, 28, 0.65);
-  --glass-bg-hover: rgba(29, 26, 47, 0.75);
-  --glass-border: rgba(253, 251, 238, 0.08);
-  --glass-border-hover: rgba(253, 251, 238, 0.18);
-  --glass-border-gold: rgba(212, 175, 55, 0.3);
-  --glass-border-gold-bright: rgba(255, 226, 89, 0.6);
-  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --glass-shadow-heavy: 0 24px 64px rgba(0, 0, 0, 0.85);
+  --glass-bg: var(--bg-card);
+  --glass-bg-hover: var(--bg-card-hover);
+  --glass-border: rgba(226, 232, 240, 0.12);
+  --glass-border-hover: rgba(226, 232, 240, 0.25);
+  --glass-border-gold: rgba(255, 176, 32, 0.4);
+  --glass-border-gold-bright: rgba(255, 224, 130, 0.7);
+  --glass-shadow: 0 12px 32px rgba(20, 14, 10, 0.6);
+  --glass-shadow-heavy: 0 20px 48px rgba(10, 8, 6, 0.85);
 
   /* Spacing Scale */
   --space-1: 4px;

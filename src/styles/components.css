@@ -61,17 +61,17 @@
 }
 
 .btn-primary-gold {
-  background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 60%, var(--saffron) 100%);
-  color: var(--bg-0);
+  background: linear-gradient(135deg, var(--amber-radiance, #FFE082) 0%, var(--amber-glow, #FFB020) 65%, #D97706 100%);
+  color: #0B0C0E;
   font-weight: 700;
-  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 18px rgba(255, 176, 32, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .btn-primary-gold:hover {
   transform: translateY(-2px);
-  box-shadow: var(--glow-gold-lg);
-  filter: brightness(1.06);
+  box-shadow: 0 0 28px rgba(255, 176, 32, 0.6);
+  filter: brightness(1.08);
 }
 
 .btn-primary-gold:active {
@@ -79,27 +79,44 @@
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-primary);
+  background: rgba(226, 232, 240, 0.04);
+  color: var(--silver-moon, #E2E8F0);
   border: 1px solid var(--glass-border);
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--glass-border-gold);
-  color: var(--gold-bright);
+  background: rgba(226, 232, 240, 0.1);
+  border-color: var(--silver-moon, #E2E8F0);
+  color: #FFFFFF;
 }
 
-.btn-danger {
-  background: rgba(255, 77, 109, 0.12);
-  color: var(--danger);
-  border: 1px solid rgba(255, 77, 109, 0.3);
+.btn-danger,
+.btn-combat {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--signal-red, #EF4444);
+  border: 1.5px solid var(--signal-red, #EF4444);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
 }
 
-.btn-danger:hover {
-  background: rgba(255, 77, 109, 0.22);
-  border-color: var(--danger);
-  box-shadow: 0 0 20px rgba(255, 77, 109, 0.4);
+.btn-danger:hover,
+.btn-combat:hover {
+  background: rgba(239, 68, 68, 0.24);
+  border-color: #FF6B6B;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.5);
+}
+
+.btn-healing {
+  background: rgba(118, 158, 132, 0.18);
+  color: var(--silver-moon, #E2E8F0);
+  border: 1.5px solid var(--sage-healing, #769E84);
+  box-shadow: 0 0 16px rgba(118, 158, 132, 0.25);
+  border-radius: var(--radius-full);
+}
+
+.btn-healing:hover {
+  background: rgba(118, 158, 132, 0.3);
+  box-shadow: 0 0 24px rgba(118, 158, 132, 0.5);
+  color: #FFFFFF;
 }
 
 .btn-cyber {
