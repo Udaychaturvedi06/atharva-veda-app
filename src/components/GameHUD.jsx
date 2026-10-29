@@ -259,8 +259,8 @@ export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
             />
           </div>
           {!collapsed && (
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-2)', marginTop: 4, fontFamily: 'var(--font-hud)' }}>
-              SUTRA THREAD ELEVATION &bull; {Math.round(progressToNext)}%
+            <span style={{ fontSize: '0.7rem', color: 'var(--silver-muted, #94A3B8)', marginTop: 4, fontFamily: 'var(--font-hud)' }}>
+              TAPASYA ASCENSION &bull; {Math.round(progressToNext)}%
             </span>
           )}
         </div>
