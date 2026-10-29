@@ -1,0 +1,28 @@
+{
+  "title": "Gayatri Chanting Rhythm",
+  "bpm": 84,
+  "notes": [
+    { "time": 1.0, "lane": 0, "sanskrit": "तत्" },
+    { "time": 1.8, "lane": 1, "sanskrit": "स" },
+    { "time": 2.5, "lane": 2, "sanskrit": "वि" },
+    { "time": 3.2, "lane": 3, "sanskrit": "तुर्" },
+    { "time": 4.0, "lane": 0, "sanskrit": "व" },
+    { "time": 4.8, "lane": 1, "sanskrit": "रे" },
+    { "time": 5.5, "lane": 2, "sanskrit": "ण्यम्" },
+    { "time": 6.4, "lane": 3, "sanskrit": "भर्" },
+    { "time": 7.2, "lane": 0, "sanskrit": "गो" },
+    { "time": 8.0, "lane": 1, "sanskrit": "दे" },
+    { "time": 8.8, "lane": 2, "sanskrit": "व" },
+    { "time": 9.6, "lane": 3, "sanskrit": "स्य" },
+    { "time": 10.5, "lane": 0, "sanskrit": "धी" },
+    { "time": 11.3, "lane": 1, "sanskrit": "म" },
+    { "time": 12.0, "lane": 2, "sanskrit": "हि" },
+    { "time": 13.0, "lane": 3, "sanskrit": "धियो" },
+    { "time": 14.0, "lane": 0, "sanskrit": "यो" },
+    { "time": 14.8, "lane": 1, "sanskrit": "नः" },
+    { "time": 15.6, "lane": 2, "sanskrit": "प्र" },
+    { "time": 16.4, "lane": 3, "sanskrit": "चो" },
+    { "time": 17.2, "lane": 1, "sanskrit": "द" },
+    { "time": 18.0, "lane": 2, "sanskrit": "यात्" }
+  ]
+}

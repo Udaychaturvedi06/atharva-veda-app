@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
       try {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
-      } catch (e) {
+      } catch {
         localStorage.removeItem('sutra_token');
         localStorage.removeItem('sutra_user');
       }
@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('sutra_token', data.token);
       localStorage.setItem('sutra_user', JSON.stringify(data.user));
       return { success: true };
-    } catch (e) {
+    } catch {
       const guestId = Math.floor(1000 + Math.random() * 9000);
       const guestUser = { username: `Seeker_${guestId}`, role: 'user', isGuest: true };
       const dummyToken = 'guest_token_' + Date.now();

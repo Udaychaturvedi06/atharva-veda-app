@@ -1,91 +1,90 @@
 import React from 'react';
-import { GlassCard, Button, SectionHeading, Chip } from '../components/ui';
-import { Gamepad2, Flame, Shield, Zap, Sparkles } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { sounds } from '../utils/soundEngine';
+import { GlassCard } from '../components/ui/GlassCard';
+import { Button } from '../components/ui/Button';
+import { SectionHeading } from '../components/ui/SectionHeading';
+import { Chip } from '../components/ui/Chip';
+import HighScoreList from '../arcade/ui/HighScoreList';
+import { Gamepad2, ArrowRight } from 'lucide-react';
 
-const ARCADE_GAMES = [
-  {
-    id: 'agni-strike',
-    title: 'Agni Strike',
-    subtitle: 'Shoot-Em-Up',
-    desc: 'Purify the descending Arishadvarga illusions with charged mantra beams.',
-    glyph: '🔥',
-    badge: 'Shooter'
-  },
-  {
-    id: 'mantra-runner',
-    title: 'Mantra Runner',
-    subtitle: 'Endless Temple Run',
-    desc: 'Traverse sacred forests and cosmic temples, clearing Vedic trivia gates.',
-    glyph: '🏃',
-    badge: 'Runner'
-  },
-  {
-    id: 'chakra-breaker',
-    title: 'Chakra Breaker',
-    subtitle: 'Brick Breaker',
-    desc: 'Shatter dense obstacle bricks across 7 chakras using the glowing bindu.',
-    glyph: '🌀',
-    badge: 'Arcade'
-  },
-  {
-    id: 'naga-coil',
-    title: 'Naga Coil',
-    subtitle: 'Snake of Wisdom',
-    desc: 'Guide the sacred kundalini serpent through offering bhogs and amrit.',
-    glyph: '🐍',
-    badge: 'Classic'
-  },
-  {
-    id: 'om-beat',
-    title: 'Om Beat',
-    subtitle: 'Chant Rhythm',
-    desc: 'Strike 4-lane cadences in sync with authentic Gayatri and Vedic meters.',
-    glyph: '🥁',
-    badge: 'Rhythm'
-  },
-  {
-    id: 'memory-mandala',
-    title: 'Memory Mandala',
-    subtitle: 'Card Matching',
-    desc: 'Uncover and pair ancient Sanskrit root words with their philosophical essences.',
-    glyph: '🃏',
-    badge: 'Puzzle'
-  }
+// Game Modules
+import AgniStrikeModule from '../arcade/games/AgniStrike';
+import MantraRunnerModule from '../arcade/games/MantraRunner';
+import ChakraBreakerModule from '../arcade/games/ChakraBreaker';
+import NagaCoilModule from '../arcade/games/NagaCoil';
+import OmBeatModule from '../arcade/games/OmBeat';
+import MemoryMandalaModule from '../arcade/games/MemoryMandala';
+
+export const ALL_GAMES = [
+  AgniStrikeModule,
+  MantraRunnerModule,
+  ChakraBreakerModule,
+  NagaCoilModule,
+  OmBeatModule,
+  MemoryMandalaModule
 ];
 
 export const Arcade = () => {
+  const { gameId } = useParams();
+  const navigate = useNavigate();
+
+  // If gameId is present in route, render the selected Game Chamber
+  if (gameId) {
+    const activeModule = ALL_GAMES.find((g) => g.id === gameId);
+
+    if (activeModule) {
+      const GameComponent = activeModule.Component;
+      return (
+        <div style={{ padding: '10px 0' }}>
+          <GameComponent />
+        </div>
+      );
+    }
+  }
+
+  // Otherwise, render the Arcade Hub Sanctum
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div className="arcade-hub-container">
       <SectionHeading
         title="Vedic Arcade Sanctum"
-        subtitle="Step into interactive sacred gaming modules designed to hone focus, reflexes, and memory."
+        subtitle="Hone sharp reflexes, mental concentration, and Sanskrit memory through 60 FPS sacred arcade simulations."
         icon={Gamepad2}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-        {ARCADE_GAMES.map((game) => (
-          <GlassCard key={game.id} tilt spotlight style={{ padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <div className="arcade-hub-grid">
+        {ALL_GAMES.map((game) => (
+          <GlassCard
+            key={game.id}
+            tilt
+            spotlight
+            className="arcade-hub-card"
+          >
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <span style={{ fontSize: '2.4rem' }}>{game.glyph}</span>
-                <Chip variant="gold">{game.badge}</Chip>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <span className="arcade-hub-glyph">{game.glyph}</span>
+                <HighScoreList gameId={game.id} />
               </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', color: '#FFF', fontSize: '1.3rem', margin: '0 0 4px' }}>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', color: '#FFF', fontSize: '1.4rem', margin: '0 0 6px' }}>
                 {game.title}
               </h3>
-              <p style={{ color: 'var(--gold-bright)', fontSize: '0.8rem', fontWeight: 700, margin: '0 0 12px' }}>
-                {game.subtitle}
-              </p>
-              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                {game.desc}
+
+              <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55, margin: '0 0 16px' }}>
+                {game.controls}
               </p>
             </div>
 
-            <div style={{ marginTop: '24px' }}>
-              <Button variant="cyber" style={{ width: '100%' }}>
-                Enter Game Chamber
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              icon={ArrowRight}
+              onClick={() => {
+                sounds.playUnlockChime();
+                navigate(`/arcade/${game.id}`);
+              }}
+            >
+              Enter Game Chamber
+            </Button>
           </GlassCard>
         ))}
       </div>

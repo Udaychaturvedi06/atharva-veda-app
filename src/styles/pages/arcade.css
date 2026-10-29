@@ -1,0 +1,143 @@
+/* ==========================================================================
+   ARCADE SANCTUM & RETRO CABINET STYLES
+   ========================================================================== */
+
+.arcade-hub-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.arcade-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 22px;
+}
+
+.arcade-hub-card {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.arcade-hub-card:hover {
+  transform: translateY(-5px);
+  border-left-color: var(--gold);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.2);
+}
+
+.arcade-hub-glyph {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 10px rgba(255, 226, 89, 0.4));
+}
+
+/* --------------------------------------------------------------------------
+   ARCADE CABINET & CRT DISPLAY
+   -------------------------------------------------------------------------- */
+.arcade-cabinet-frame {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  background: #050509;
+  border: 3px solid #1E1A2E;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.15);
+  overflow: hidden;
+}
+
+.arcade-marquee-header {
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #0A0A14 0%, #171324 50%, #0A0A14 100%);
+  border-bottom: 2px solid var(--gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 16px rgba(212, 175, 55, 0.25);
+}
+
+.arcade-marquee-title {
+  font-family: var(--font-hud);
+  font-size: 1.1rem;
+  letter-spacing: 0.14em;
+  color: var(--gold-bright);
+  text-shadow: 0 0 12px rgba(255, 226, 89, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arcade-crt-screen-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 580px;
+  background: #07070D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.arcade-canvas-display {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* CRT Scanlines Overlay */
+.arcade-scanlines-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 5;
+  opacity: 0.65;
+}
+
+/* CRT Glass Curvature / Vignette */
+.arcade-crt-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.85);
+  z-index: 6;
+}
+
+/* --------------------------------------------------------------------------
+   COUNTDOWN & GAME OVER MODALS
+   -------------------------------------------------------------------------- */
+.countdown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 7, 13, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+
+.countdown-number {
+  font-family: var(--font-hud);
+  font-size: 5rem;
+  font-weight: 900;
+  color: var(--gold-bright);
+  text-shadow: 0 0 35px rgba(255, 226, 89, 0.8);
+}

@@ -62,6 +62,15 @@ export const useGameStore = create(
         return false;
       },
 
+      consumePrana: (amount) => {
+        const current = get().prana;
+        if (current >= amount) {
+          set({ prana: current - amount });
+          return true;
+        }
+        return false;
+      },
+
       restorePrana: (amount) => set((state) => ({
         prana: Math.min(state.maxPrana, state.prana + amount)
       })),
@@ -103,7 +112,32 @@ export const useGameStore = create(
         completedTrials: [...new Set([...state.completedTrials, trialId])],
         rp: state.rp + rewardRp,
         unlockedRealms: Math.max(state.unlockedRealms, state.completedTrials.length + 2)
-      }))
+      })),
+
+      completeQuiz: (rewardRp = 150) => set((state) => ({
+        rp: state.rp + rewardRp,
+        quizzesWon: state.quizzesWon + 1
+      })),
+
+      awardArcade: (gameId, score) => {
+        const earnedRp = Math.min(500, Math.floor(score / 50));
+        set((state) => ({
+          rp: state.rp + earnedRp,
+          quizzesWon: state.quizzesWon + 1
+        }));
+
+        // Relic unlocking milestones
+        if (score >= 3000) {
+          get().unlockRelic({
+            id: 'soma_chalice',
+            name: 'Golden Soma Chalice',
+            desc: '+20% Pranic resonance in all arcade realms',
+            rarity: 'Legendary',
+            icon: '🏆'
+          });
+        }
+        return earnedRp;
+      }
     }),
     {
       name: 'sutra-game-store',

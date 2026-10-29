@@ -197,7 +197,7 @@ try {
     translationCache = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
     console.log(`Loaded ${Object.keys(translationCache).length} cached verses.`);
   }
-} catch(e) {
+} catch {
   console.log("Translation cache empty or unreadable. Bootstrapping freshly.");
 }
 
@@ -223,11 +223,12 @@ const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: "Invalid or expired session token." });
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const verifyAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: "Access forbidden. Admin role required." });
@@ -441,7 +442,7 @@ app.post('/api/verse', validate(verseRequestSchema), async (req, res) => {
         practicalMeaning: "Extracting insights...",
         topics: ["Vedic"]
     });
-  } catch(e) {
+  } catch {
     res.status(500).json({ error: "Failed to grab base verse mapping." });
   }
 });
