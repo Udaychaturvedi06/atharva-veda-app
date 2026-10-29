@@ -253,8 +253,8 @@ export const Landing = () => {
     sounds.playUnlockChime();
     try {
       const res = await loginAsGuest();
-      if (res.success) {
-        navigate('/dashboard');
+      if (res && res.success) {
+        navigate('/dashboard', { replace: true });
       }
     } catch (err) {
       console.error('Guest access error:', err);

@@ -63,42 +63,57 @@ export const SutraThread = ({ anchors }) => {
   // Calculate smooth Bezier curve connecting anchors
   useEffect(() => {
     const updatePath = () => {
-      const elements = Object.values(anchors).filter((el) => el && el.getBoundingClientRect);
-      const w = window.innerWidth;
-      const h = window.innerHeight;
+      try {
+        const elements = Object.values(anchors).filter((el) => el && typeof el.getBoundingClientRect === 'function');
+        const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+        const h = typeof window !== 'undefined' ? window.innerHeight : 800;
 
-      if (elements.length === 0) {
-        // Fallback gentle wave spine down the viewport
+        if (elements.length === 0) {
+          // Fallback gentle wave spine down the viewport
+          setPathData(`M ${w * 0.5} 0 C ${w * 0.46} ${h * 0.3}, ${w * 0.54} ${h * 0.7}, ${w * 0.5} ${h}`);
+          return;
+        }
+
+        // Sort elements by vertical position
+        const sorted = elements
+          .map((el) => {
+            const rect = el.getBoundingClientRect();
+            return {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2
+            };
+          })
+          .filter((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y))
+          .sort((a, b) => a.y - b.y);
+
+        if (sorted.length === 0) {
+          setPathData(`M ${w * 0.5} 0 C ${w * 0.46} ${h * 0.3}, ${w * 0.54} ${h * 0.7}, ${w * 0.5} ${h}`);
+          return;
+        }
+
+        // Extend to top and bottom of viewport for seamless flow
+        const first = sorted[0];
+        const last = sorted[sorted.length - 1];
+
+        let d = `M ${first.x} 0 C ${first.x} ${first.y * 0.4}, ${first.x} ${first.y * 0.7}, ${first.x} ${first.y}`;
+
+        for (let i = 0; i < sorted.length - 1; i++) {
+          const p0 = sorted[i];
+          const p1 = sorted[i + 1];
+          const midY = (p0.y + p1.y) / 2;
+          d += ` C ${p0.x} ${midY}, ${p1.x} ${midY}, ${p1.x} ${p1.y}`;
+        }
+
+        d += ` C ${last.x} ${(last.y + h) / 2}, ${last.x} ${h * 0.9}, ${last.x} ${h}`;
+        if (!d.includes('NaN') && !d.includes('undefined')) {
+          setPathData(d);
+        }
+      } catch {
+        // Fallback safely if DOM coordinates calculation fails
+        const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+        const h = typeof window !== 'undefined' ? window.innerHeight : 800;
         setPathData(`M ${w * 0.5} 0 C ${w * 0.46} ${h * 0.3}, ${w * 0.54} ${h * 0.7}, ${w * 0.5} ${h}`);
-        return;
       }
-
-      // Sort elements by vertical position
-      const sorted = elements
-        .map((el) => {
-          const rect = el.getBoundingClientRect();
-          return {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2
-          };
-        })
-        .sort((a, b) => a.y - b.y);
-
-      // Extend to top and bottom of viewport for seamless flow
-      const first = sorted[0];
-      const last = sorted[sorted.length - 1];
-
-      let d = `M ${first.x} 0 C ${first.x} ${first.y * 0.4}, ${first.x} ${first.y * 0.7}, ${first.x} ${first.y}`;
-
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const p0 = sorted[i];
-        const p1 = sorted[i + 1];
-        const midY = (p0.y + p1.y) / 2;
-        d += ` C ${p0.x} ${midY}, ${p1.x} ${midY}, ${p1.x} ${p1.y}`;
-      }
-
-      d += ` C ${last.x} ${(last.y + h) / 2}, ${last.x} ${h * 0.9}, ${last.x} ${h}`;
-      setPathData(d);
     };
 
     updatePath();
@@ -117,11 +132,17 @@ export const SutraThread = ({ anchors }) => {
     };
   }, [anchors, location.pathname]);
 
-  // Update total path length for stroke dash animation
+  // Update total path length for stroke dash animation safely
   useEffect(() => {
     if (pathRef.current) {
-      const len = pathRef.current.getTotalLength();
-      setPathLength(len);
+      try {
+        const len = pathRef.current.getTotalLength();
+        if (typeof len === 'number' && Number.isFinite(len) && len > 0) {
+          setPathLength(len);
+        }
+      } catch {
+        setPathLength(1200);
+      }
     }
   }, [pathData]);
 
@@ -215,7 +236,7 @@ export const SutraThread = ({ anchors }) => {
         {pathData && (
           <g
             style={{
-              opacity: isLowHp ? undefined : 'calc(0.35 + 0.22 * var(--breath, 0.5))',
+              opacity: isLowHp ? 0.35 : 0.6,
               animation: isLowHp ? 'sutraFlicker 0.4s infinite alternate' : undefined,
               transition: 'opacity 0.4s ease'
             }}

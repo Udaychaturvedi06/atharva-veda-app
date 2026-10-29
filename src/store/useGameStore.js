@@ -118,13 +118,14 @@ export const useGameStore = create(
       },
 
       unlockRelic: (relic) => set((state) => {
-        const existing = state.relics.find(r => r.id === relic.id);
+        const currentRelics = state.relics || [];
+        const existing = currentRelics.find(r => r.id === relic.id);
         if (existing) {
           return {
-            relics: state.relics.map(r => r.id === relic.id ? { ...r, count: r.count + 1 } : r)
+            relics: currentRelics.map(r => r.id === relic.id ? { ...r, count: (r.count || 1) + 1 } : r)
           };
         }
-        return { relics: [...state.relics, { ...relic, count: 1 }] };
+        return { relics: [...currentRelics, { ...relic, count: 1 }] };
       }),
 
       completeTrial: (trialId, rewardRp = 200) => set((state) => ({

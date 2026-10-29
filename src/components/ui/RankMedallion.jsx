@@ -17,9 +17,10 @@ export const RankMedallion = ({ rank, rp, nextThreshold }) => {
   const [showLadder, setShowLadder] = useState(false);
 
   // Find index of current rank
-  const currentRankIdx = RANKS.findIndex((r) => r.title.startsWith(rank?.title?.split(' ')[0] || 'Jijnasu'));
+  const safeRankTitle = rank?.title || 'Jijnasu';
+  const currentRankIdx = RANKS.findIndex((r) => r.title.startsWith(safeRankTitle.split(' ')[0]));
   const safeIdx = currentRankIdx >= 0 ? currentRankIdx : 0;
-  const currentRankObj = RANKS[safeIdx];
+  const currentRankObj = RANKS[safeIdx] || RANKS[0];
 
   // 7 arcs: each arc is 360 / 7 = ~51.4 degrees minus a 4 degree gap
   const numArcs = 7;

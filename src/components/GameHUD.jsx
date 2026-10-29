@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { useAuth } from '../contexts/AuthContext';
 import { sounds } from '../utils/soundEngine';
@@ -103,11 +103,19 @@ export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
   const [rankUpEvent, setRankUpEvent] = useState(null);
   const [rpGainSpark, setRpGainSpark] = useState(false);
   const lastScrollY = useRef(0);
-  const prevRankRef = useRef(getRank().title);
+  const currentRank = useMemo(() => {
+    return (typeof getRank === 'function' ? getRank() : null) || {
+      threshold: 0,
+      title: 'Jijnasu (The Curious Seeker)',
+      tier: 'Novice',
+      color: '#A0AEC0'
+    };
+  }, [getRank]);
+
+  const nextThreshold = (typeof getNextRankThreshold === 'function' ? getNextRankThreshold() : null) || 250;
+  const prevRankRef = useRef(currentRank.title);
   const prevRpRef = useRef(rp);
 
-  const currentRank = getRank();
-  const nextThreshold = getNextRankThreshold();
   const currentThreshold = currentRank.threshold || 0;
   const progressToNext = nextThreshold > currentThreshold
     ? Math.min(100, Math.max(0, ((rp - currentThreshold) / (nextThreshold - currentThreshold)) * 100))

@@ -128,8 +128,8 @@ export const Auth = () => {
       sounds.playTibetanBowl();
       const res = await loginAsGuest();
       setLoading(false);
-      if (res.success) {
-        triggerGateAndNavigate();
+      if (res && res.success) {
+        navigate('/dashboard', { replace: true });
       }
     } catch {
       setLoading(false);

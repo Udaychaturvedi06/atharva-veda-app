@@ -2,6 +2,7 @@ import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 
 function createSeededRandom(initialSeed = 12345) {
   let s = initialSeed;
@@ -148,8 +149,11 @@ function CameraController() {
   const { camera, pointer } = useThree();
 
   useFrame(() => {
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, pointer.x * 0.8, 0.04);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, pointer.y * 0.6, 0.04);
+    if (!camera || !pointer) return;
+    const px = typeof pointer.x === 'number' && Number.isFinite(pointer.x) ? pointer.x : 0;
+    const py = typeof pointer.y === 'number' && Number.isFinite(pointer.y) ? pointer.y : 0;
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x || 0, px * 0.8, 0.04);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y || 0, py * 0.6, 0.04);
     camera.lookAt(0, 0, 0);
   });
 
@@ -167,22 +171,21 @@ const ROUTE_MOODS = {
   '/settings': { color: new THREE.Color('#4FD1C5'), bg: '#080F12' }
 };
 
+function checkWebGLSupport() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return Boolean(gl && (!navigator.hardwareConcurrency || navigator.hardwareConcurrency >= 2));
+  } catch {
+    return false;
+  }
+}
+
 export const SacredScene = () => {
   const location = useLocation();
   const [currentColor, setCurrentColor] = useState(new THREE.Color('#FFE259'));
-  const [supportsWebGL, setSupportsWebGL] = useState(true);
-
-  useEffect(() => {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl || (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 2)) {
-        setSupportsWebGL(false);
-      }
-    } catch {
-      setSupportsWebGL(false);
-    }
-  }, []);
+  const [supportsWebGL] = useState(checkWebGLSupport);
 
   const targetMood = useMemo(() => {
     for (const [path, mood] of Object.entries(ROUTE_MOODS)) {
@@ -195,21 +198,23 @@ export const SacredScene = () => {
     setCurrentColor(targetMood.color);
   }, [targetMood]);
 
+  const fallbackGradient = (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: -2,
+        pointerEvents: 'none',
+        background: 'radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.08) 0%, rgba(7, 7, 13, 0.95) 70%)'
+      }}
+    />
+  );
+
   if (!supportsWebGL) {
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -2,
-          pointerEvents: 'none',
-          background: 'radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.08) 0%, rgba(7, 7, 13, 0.95) 70%)'
-        }}
-      />
-    );
+    return fallbackGradient;
   }
 
   return (
@@ -225,16 +230,18 @@ export const SacredScene = () => {
         overflow: 'hidden'
       }}
     >
-      <Canvas
-        dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 7], fov: 55 }}
-        gl={{ antialias: false, powerPreference: 'high-performance' }}
-      >
-        <CameraController />
-        <ambientLight intensity={0.4} />
-        <SacredWireframe color={currentColor} />
-        <RisingEmbers count={1200} color={currentColor} />
-      </Canvas>
+      <ErrorBoundary fallback={fallbackGradient}>
+        <Canvas
+          dpr={[1, 1.5]}
+          camera={{ position: [0, 0, 7], fov: 55 }}
+          gl={{ antialias: false, powerPreference: 'high-performance' }}
+        >
+          <CameraController />
+          <ambientLight intensity={0.4} />
+          <SacredWireframe color={currentColor} />
+          <RisingEmbers count={1200} color={currentColor} />
+        </Canvas>
+      </ErrorBoundary>
     </div>
   );
 };

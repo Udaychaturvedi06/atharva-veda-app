@@ -6,6 +6,7 @@ import CommandPalette from './ui/CommandPalette';
 import { sounds } from '../utils/soundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import { useGameStore } from '../store/useGameStore';
+import ErrorBoundary from './ui/ErrorBoundary';
 import Lenis from 'lenis';
 import {
   Compass,
@@ -167,9 +168,11 @@ export const Layout = ({ children, theme, toggleTheme }) => {
       />
 
       {/* Background Layer 2: 3D Sacred Geometry Scene */}
-      <Suspense fallback={null}>
-        <SacredScene />
-      </Suspense>
+      <ErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <SacredScene />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* Top Game HUD */}
       <GameHUD theme={theme} toggleTheme={toggleTheme} />
@@ -251,7 +254,9 @@ export const Layout = ({ children, theme, toggleTheme }) => {
 
         {/* Main Content Viewport */}
         <main id="main-content" className="shell-main-viewport" style={{ flex: 1, paddingBottom: 80 }}>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
 

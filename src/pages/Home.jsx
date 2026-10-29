@@ -61,13 +61,21 @@ export const Home = () => {
     addRp,
     heal,
     restorePrana,
-    streak,
-    graceDays,
-    relics,
+    streak: rawStreak,
+    graceDays: rawGraceDays,
+    relics: rawRelics,
     sankalpa,
     setSankalpa,
     completeDailyYajna
   } = useGameStore();
+
+  const streak = typeof rawStreak === 'number' ? rawStreak : 1;
+  const graceDays = typeof rawGraceDays === 'number' ? rawGraceDays : 2;
+  const relics = Array.isArray(rawRelics) && rawRelics.length > 0 ? rawRelics : [
+    { id: 'rudraksha', name: 'Gauri Shankar Rudraksha', desc: '+15% Tapasya resonance on meditation', rarity: 'Legendary', icon: '📿', count: 1 },
+    { id: 'conch', name: 'Panchajanya Conch Shell', desc: 'Emits a sound wave that dispels doubts', rarity: 'Epic', icon: '🐚', count: 1 },
+    { id: 'palm_leaf', name: 'Ancient Birch Bark Folio', desc: 'Contains fragments of Atharva healing hymns', rarity: 'Rare', icon: '📜', count: 2 }
+  ];
 
   // 5 Lamps Daily Progress
   const [completedLamps, setCompletedLamps] = useState({
@@ -463,31 +471,35 @@ export const Home = () => {
             Sacred Relics Shelf
           </h4>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            {relics.map((relic) => (
-              <div
-                key={relic.id}
-                onClick={() => {
-                  sounds.playTap();
-                  setSelectedRelic(relic);
-                }}
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 12,
-                  background: 'rgba(212, 175, 55, 0.1)',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease'
-                }}
-              >
-                <span style={{ fontSize: '1.8rem', marginBottom: 4 }}>{relic.icon}</span>
-                <span style={{ fontSize: '0.7rem', color: 'var(--gold-bright)', fontWeight: 600 }}>{relic.name.split(' ')[0]}</span>
-              </div>
-            ))}
+            {relics.map((relic) => {
+              if (!relic || !relic.id) return null;
+              const shortName = (relic.name || 'Sacred Relic').split(' ')[0];
+              return (
+                <div
+                  key={relic.id}
+                  onClick={() => {
+                    sounds.playTap();
+                    setSelectedRelic(relic);
+                  }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 12,
+                    background: 'rgba(212, 175, 55, 0.1)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s ease'
+                  }}
+                >
+                  <span style={{ fontSize: '1.8rem', marginBottom: 4 }}>{relic.icon || '📜'}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--gold-bright)', fontWeight: 600 }}>{shortName}</span>
+                </div>
+              );
+            })}
           </div>
         </GlassCard>
       </div>

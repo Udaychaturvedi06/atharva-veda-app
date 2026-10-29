@@ -23,9 +23,10 @@ import PadaSpiral from './pages/PadaSpiral';
 import { useAuth } from './contexts/AuthContext';
 import { useGameStore } from './store/useGameStore';
 import { pageVariants } from './motion/variants';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 
 function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [theme, setTheme] = useState('dark');
 
   // Connect to global Zustand store
@@ -51,9 +52,48 @@ function App() {
     localStorage.setItem('theme', newTheme);
   };
 
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-0, #07070D)',
+          color: 'var(--gold, #D4AF37)'
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            border: '2px solid rgba(212, 175, 55, 0.2)',
+            borderTopColor: 'var(--gold, #D4AF37)',
+            animation: 'spin 1s linear infinite'
+          }}
+        />
+        <p
+          style={{
+            marginTop: 16,
+            fontFamily: 'var(--font-display, Cinzel)',
+            fontSize: '0.85rem',
+            letterSpacing: '0.12em',
+            color: 'var(--gold-bright, #FFE259)'
+          }}
+        >
+          AWAKENING SANCTUM...
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="app-container">
-      <Routes location={location} key={location.pathname === '/' || location.pathname === '/login' ? location.pathname : 'app'}>
+    <ErrorBoundary>
+      <div className="app-container">
+        <Routes location={location} key={location.pathname === '/' || location.pathname === '/login' ? location.pathname : 'app'}>
         <Route path="/" element={!user ? <Landing /> : <Navigate to="/dashboard" replace />} />
         <Route path="/login" element={!user ? <Auth /> : <Navigate to="/dashboard" replace />} />
         <Route path="/about" element={<About />} />
@@ -175,7 +215,8 @@ function App() {
           }
         />
       </Routes>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 
