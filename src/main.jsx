@@ -15,6 +15,7 @@ import './styles/pages/library.css'
 import './styles/pages/versedetail.css'
 import './styles/pages/chat.css'
 import './styles/pages/rankings.css'
+import './styles/pages/settings.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
