@@ -1,0 +1,361 @@
+/* ==========================================================================
+   HOME (SANCTUARY) — BENTO-GRID DASHBOARD STYLES
+   ========================================================================== */
+
+.sanctuary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   SANCTUARY BANNER HERO
+   -------------------------------------------------------------------------- */
+.sanctuary-banner {
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  background: radial-gradient(circle at top left, rgba(212, 175, 55, 0.15) 0%, rgba(10, 10, 18, 0.85) 70%);
+}
+
+.sanctuary-banner-content {
+  max-width: 650px;
+}
+
+.sanctuary-banner-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.7rem);
+  color: #FFFFFF;
+  margin: 8px 0 12px;
+  letter-spacing: 0.02em;
+}
+
+.sanctuary-banner-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   BENTO-GRID LAYOUT
+   -------------------------------------------------------------------------- */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .bento-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .bento-span-8 { grid-column: span 8; }
+  .bento-span-4 { grid-column: span 4; }
+  .bento-span-6 { grid-column: span 6; }
+  .bento-span-12 { grid-column: span 12; }
+}
+
+/* --------------------------------------------------------------------------
+   TILE 1: 3D FLIP DAILY VERSE
+   -------------------------------------------------------------------------- */
+.verse-flip-container {
+  perspective: 1200px;
+  min-height: 320px;
+  height: 100%;
+}
+
+.verse-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.verse-flip-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.verse-card-front,
+.verse-card-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px;
+}
+
+.verse-card-back {
+  transform: rotateY(180deg);
+  background: rgba(19, 17, 28, 0.95);
+}
+
+.verse-sanskrit-hymn {
+  font-family: var(--font-sanskrit);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  line-height: 1.8;
+  color: #FDFBEE;
+  margin: 16px 0 10px;
+  text-shadow: 0 0 18px rgba(212, 175, 55, 0.3);
+}
+
+.verse-esoteric-box {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 3px solid var(--gold);
+  color: var(--gold-bright);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 12px 0;
+}
+
+/* --------------------------------------------------------------------------
+   TILE 2: HOMA FIRE ALTAR
+   -------------------------------------------------------------------------- */
+.homa-fire-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  padding: 28px 20px;
+  position: relative;
+  min-height: 320px;
+}
+
+.homa-altar-stage {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.homa-cooldown-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.homa-flame-core {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFE259 0%, #FF7B00 60%, #FF5E1E 100%);
+  color: #07070D;
+  box-shadow: 0 0 35px rgba(255, 123, 0, 0.7);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.homa-flame-core.charging {
+  transform: scale(1.18);
+  box-shadow: 0 0 55px rgba(255, 226, 89, 0.9);
+}
+
+/* --------------------------------------------------------------------------
+   TILE 3: DAILY BLESSING & STREAK
+   -------------------------------------------------------------------------- */
+.blessing-tile {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.blessing-quote {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: #FFFFFF;
+  line-height: 1.6;
+  margin: 14px 0 8px;
+  min-height: 60px;
+}
+
+.blessing-source {
+  font-family: var(--font-hud);
+  font-size: 0.75rem;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.streak-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.streak-day-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-hud);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.streak-day-item.completed {
+  border-color: rgba(212, 175, 55, 0.4);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--gold-bright);
+}
+
+.streak-day-item.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(255, 123, 0, 0.4);
+  color: #FFF;
+}
+
+/* --------------------------------------------------------------------------
+   TILE 4: RELIC SHELF
+   -------------------------------------------------------------------------- */
+.relics-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.relic-item-card {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.relic-item-card:hover {
+  transform: translateY(-4px);
+  border-left-color: var(--gold);
+}
+
+.relic-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   TILE 5: QUICK ACTIONS LAUNCHER
+   -------------------------------------------------------------------------- */
+.quick-actions-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.quick-action-btn {
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(19, 17, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  color: #FFF;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quick-action-btn:hover {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.quick-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gold-bright);
+}
+
+/* --------------------------------------------------------------------------
+   TILE 6: VEDA BACKGROUND SWITCHER
+   -------------------------------------------------------------------------- */
+.bg-switcher-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.bg-switcher-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(10, 10, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-family: var(--font-hud);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bg-switcher-btn:hover {
+  border-color: var(--gold);
+  color: #FFF;
+}
+
+.bg-switcher-btn.active {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}

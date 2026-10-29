@@ -10,6 +10,7 @@ import './styles/base.css'
 import './styles/components.css'
 import './styles/pages/landing.css'
 import './styles/pages/auth.css'
+import './styles/pages/home.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
