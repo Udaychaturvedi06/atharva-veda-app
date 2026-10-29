@@ -2,7 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext.jsx'
+import { SutraProvider } from './systems/sutraContext.jsx'
+import { initBreathSync } from './systems/breathSync.js'
+import { initLivingLight } from './systems/livingLight.js'
 import App from './App.jsx'
+
+// Initialize continuous cosmic clocks
+initBreathSync();
+initLivingLight();
 
 /* Modular Cyber-Vedic Design System */
 import './styles/tokens.css'
@@ -27,7 +34,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <SutraProvider>
+          <App />
+        </SutraProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,

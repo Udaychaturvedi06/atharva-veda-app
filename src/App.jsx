@@ -18,6 +18,7 @@ import Founders from './pages/Founders';
 import Contact from './pages/Contact';
 import Legal from './pages/Legal';
 import AdminDashboard from './pages/AdminDashboard';
+import DevPlayground from './pages/DevPlayground';
 import { useAuth } from './contexts/AuthContext';
 import { useGameStore } from './store/useGameStore';
 import { pageVariants } from './motion/variants';
@@ -58,6 +59,7 @@ function App() {
         <Route path="/founders" element={<Founders />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/legal" element={<Legal />} />
+        <Route path="/dev/playground" element={<DevPlayground />} />
 
         <Route
           path="/*"
