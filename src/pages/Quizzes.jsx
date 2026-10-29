@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { sounds } from '../utils/soundEngine';
 import { 
   BrainCircuit, 
-  Flame, 
   Sparkles, 
   Trophy, 
   CheckCircle2, 
   XCircle,
-  RefreshCw,
-  Zap,
-  Timer
+  RefreshCw
 } from 'lucide-react';
 
 const PUZZLES = [
@@ -18,37 +15,37 @@ const PUZZLES = [
     rune: 'अथर्व',
     question: 'What is the literal root meaning of the word "Atharva"?',
     options: [
-      'The Unwavering / Stable-Minded Priest of Wisdom',
-      'The Melodic Song of Transcendence',
+      'The Unwavering / Stable-Minded Sage of Wisdom',
+      'The Melodic Chant of Ecstasy',
       'The Charioteer of Destruction',
-      'The Wandering Desert Ascetic'
+      'The Desert Wanderer'
     ],
     correct: 0,
-    hint: 'Composed of "a-" (not) + "tharva" (flickering, wavering).'
+    hint: 'Composed of "a-" (not) + "tharva" (wavering or moving).'
   },
   {
     rune: 'सत्यम्',
     question: 'The sacred proclamation "Ekam Sat Vipra Bahudha Vadanti" belongs to which scripture?',
     options: [
-      'Samaveda (Chhandogya)',
+      'Samaveda',
       'Rigveda (Mandala 1, Sukta 164)',
-      'Atharvaveda (Kanda 12)',
-      'Yajurveda (Adhyaya 40)'
+      'Atharvaveda',
+      'Yajurveda'
     ],
     correct: 1,
-    hint: '"Truth is One; the wise perceive and call it by varied names."'
+    hint: '"Truth is One; the wise perceive and speak of it in varied ways."'
   },
   {
     rune: 'ओषधि',
-    question: 'In the Atharva Veda, which deities are hailed as the living consciousness of medicinal herbs?',
+    question: 'In the Atharva Veda, which deities are hailed as the living consciousness of medicinal plants?',
     options: [
       'Vanaspati and Oshadhi (Plant consciousness / Rudra)',
       'Yama and Chitragupta',
       'Varuna and Mitra',
-      'Kubera and Yakshas'
+      'Kubera'
     ],
     correct: 0,
-    hint: 'This forms the foundational botanical genesis of classical Ayurveda.'
+    hint: 'This forms the foundational genesis of classical Ayurveda.'
   },
   {
     rune: 'गायत्री',
@@ -67,35 +64,11 @@ const PUZZLES = [
 const Quizzes = () => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOpt, setSelectedOpt] = useState(null);
-  const [combo, setCombo] = useState(1);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(25);
 
   const addRp = useGameStore(state => state.addRp);
   const currentPuzzle = PUZZLES[currentIdx];
-
-  // 25s Countdown Timer per question
-  useEffect(() => {
-    if (quizFinished || selectedOpt !== null) return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleTimeExpire();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [currentIdx, selectedOpt, quizFinished]);
-
-  const handleTimeExpire = () => {
-    setSelectedOpt(-1); // Expired
-    sounds.playCombatHit(false);
-    setCombo(1);
-  };
 
   const handleSelect = (idx) => {
     if (selectedOpt !== null) return;
@@ -103,13 +76,10 @@ const Quizzes = () => {
 
     if (idx === currentPuzzle.correct) {
       sounds.playUnlockChime();
-      const points = 75 * combo;
-      setScore(s => s + points);
-      setCombo(c => Math.min(4, c + 1));
-      addRp(points);
+      setScore(s => s + 75);
+      addRp(75);
     } else {
       sounds.playCombatHit(false);
-      setCombo(1);
     }
   };
 
@@ -117,7 +87,6 @@ const Quizzes = () => {
     if (currentIdx + 1 < PUZZLES.length) {
       setCurrentIdx(i => i + 1);
       setSelectedOpt(null);
-      setTimeLeft(25);
     } else {
       setQuizFinished(true);
       sounds.playUnlockChime();
@@ -128,54 +97,40 @@ const Quizzes = () => {
     setCurrentIdx(0);
     setSelectedOpt(null);
     setScore(0);
-    setCombo(1);
-    setTimeLeft(25);
     setQuizFinished(false);
   };
 
   return (
-    <div className="quiz-chamber">
-      <div className="quiz-header">
-        <div className="chamber-pill">
-          <BrainCircuit size={16} className="gold-accent" />
-          <span>THE CIPHER CRYPT • VEDIC DECRYPTION</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      <div>
+        <div className="badge gold" style={{ marginBottom: '8px' }}>
+          <BrainCircuit size={13} />
+          <span>Vedic Decryption</span>
         </div>
-        <h1>The Mandala Crypt</h1>
-        <p className="quiz-sub">
-          Race the sandglass to decipher root syllables, meters, and philosophical allegories.
+        <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', color: '#FFF', margin: '4px 0 8px' }}>
+          The Decryption Chamber
+        </h1>
+        <p style={{ color: '#94A3B8', fontSize: '0.95rem', margin: 0 }}>
+          Test your comprehension of ancient root words, meters, and philosophical allegories.
         </p>
       </div>
 
       {!quizFinished ? (
-        <div className="puzzle-box" style={{ position: 'relative', overflow: 'hidden' }}>
-          {/* Top HUD with Timer & Combo Multiplier */}
+        <div className="glass-panel" style={{ padding: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#00F0FF', fontWeight: 800 }}>
-              <Timer size={18} />
-              <span>{timeLeft}s REMAINING</span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Flame size={18} className="flame-accent" />
-              <span style={{ color: '#FFE259', fontWeight: 800, fontSize: '1rem' }}>
-                COMBO x{combo} ({score} RP)
-              </span>
-            </div>
+            <span style={{ fontSize: '0.8rem', color: '#94A3B8', fontFamily: 'Orbitron, monospace' }}>
+              QUESTION {currentIdx + 1} OF {PUZZLES.length}
+            </span>
+            <span className="badge" style={{ background: 'rgba(212,175,55,0.1)', color: '#FFE259' }}>
+              Score: {score} RP
+            </span>
           </div>
 
-          {/* Central Rune Sigil */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)',
-            borderRadius: '12px', padding: '6px 16px', marginBottom: '16px',
-            fontFamily: 'Noto Sans Devanagari, serif', fontSize: '1.4rem', color: '#FFE259'
-          }}>
-            {currentPuzzle.rune}
-          </div>
+          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.25rem', color: '#FFF', lineHeight: '1.6', margin: '0 0 24px' }}>
+            {currentPuzzle.question}
+          </h2>
 
-          <h2 className="puzzle-question">{currentPuzzle.question}</h2>
-
-          <div className="puzzle-options-list">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {currentPuzzle.options.map((opt, i) => {
               const isSelected = selectedOpt === i;
               const isCorrect = i === currentPuzzle.correct;
@@ -183,45 +138,60 @@ const Quizzes = () => {
                 <button
                   key={i}
                   disabled={selectedOpt !== null}
-                  className={`quiz-opt-btn ${
-                    selectedOpt !== null
-                      ? isCorrect ? 'correct' : isSelected ? 'wrong' : ''
-                      : ''
-                  }`}
+                  className="cyber-btn"
+                  style={{
+                    padding: '16px 20px',
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    background: selectedOpt !== null
+                      ? isCorrect ? 'rgba(16, 185, 129, 0.15)' : isSelected ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.02)'
+                      : 'rgba(255, 255, 255, 0.03)',
+                    borderColor: selectedOpt !== null
+                      ? isCorrect ? '#10B981' : isSelected ? '#EF4444' : 'rgba(255,255,255,0.06)'
+                      : 'rgba(255, 255, 255, 0.08)'
+                  }}
                   onClick={() => handleSelect(i)}
                 >
-                  <span className="opt-letter">{String.fromCharCode(65 + i)}</span>
-                  <span className="opt-val">{opt}</span>
-                  {selectedOpt !== null && isCorrect && <CheckCircle2 size={18} className="stat-icon" />}
-                  {selectedOpt !== null && isSelected && !isCorrect && <XCircle size={18} className="stat-icon" />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ color: '#FFE259', fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
+                    <span style={{ color: '#E2E8F0', fontSize: '0.95rem' }}>{opt}</span>
+                  </div>
+                  {selectedOpt !== null && isCorrect && <CheckCircle2 size={18} style={{ color: '#10B981' }} />}
+                  {selectedOpt !== null && isSelected && !isCorrect && <XCircle size={18} style={{ color: '#EF4444' }} />}
                 </button>
               );
             })}
           </div>
 
           {selectedOpt !== null && (
-            <div className="puzzle-next-row">
-              <span className="puzzle-hint-text">
-                {selectedOpt === -1 ? '⏳ Sandglass ran out!' : `💡 ${currentPuzzle.hint}`}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', flexWrap: 'wrap', gap: '12px' }}>
+              <span style={{ fontSize: '0.85rem', color: '#FFE259' }}>
+                💡 {currentPuzzle.hint}
               </span>
-              <button className="primary-cta-btn next-btn" onClick={nextQuestion}>
-                <span>{currentIdx + 1 === PUZZLES.length ? 'Unlock Cipher Vault' : 'Next Inscription'}</span>
+              <button 
+                className="btn-primary" 
+                style={{ width: 'auto', padding: '10px 24px', fontSize: '0.85rem' }}
+                onClick={nextQuestion}
+              >
+                {currentIdx + 1 === PUZZLES.length ? 'View Results' : 'Next Inscription'}
               </button>
             </div>
           )}
         </div>
       ) : (
-        <div className="quiz-results-card">
-          <Trophy size={60} className="trophy-gold" />
-          <h2>Crypt Deciphered</h2>
-          <p className="results-summary">
-            Your intellect triumphed over obscurity! You accumulated{' '}
-            <strong className="gold-highlight">+{score} Radiance Points</strong>.
+        <div className="glass-panel" style={{ padding: '40px', textAlign: 'center' }}>
+          <Trophy size={56} style={{ color: '#FFE259', margin: '0 auto 16px' }} />
+          <h2 style={{ fontFamily: 'Cinzel, serif', color: '#FFF' }}>Decryption Completed</h2>
+          <p style={{ color: '#CBD5E1', maxWidth: '400px', margin: '8px auto 24px', lineHeight: '1.6' }}>
+            You solved the ancient inscriptions and accumulated <strong style={{ color: '#FFE259' }}>+{score} Radiance Points</strong>.
           </p>
-
-          <button className="primary-cta-btn" onClick={restartQuiz}>
+          <button 
+            className="btn-primary" 
+            style={{ width: 'auto', display: 'inline-flex', padding: '12px 28px' }}
+            onClick={restartQuiz}
+          >
             <RefreshCw size={16} />
-            <span>Reset Crypt Mechanisms</span>
+            <span>Retake Decryption</span>
           </button>
         </div>
       )}

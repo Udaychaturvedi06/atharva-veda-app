@@ -3,39 +3,36 @@ import { useGameStore } from '../store/useGameStore';
 import { sounds } from '../utils/soundEngine';
 import { 
   Swords, 
-  ShieldAlert, 
-  Zap, 
-  Flame, 
   Trophy, 
   Skull, 
   CheckCircle2, 
   Sparkles,
+  Flame,
   ArrowRight
 } from 'lucide-react';
 
 const TRIALS = [
   {
     id: 'trial-1',
-    name: 'Trial of Kāma (Untamed Desire)',
-    demon: 'The Phantom of Craving',
+    name: 'Trial of Kāma (Untamed Craving)',
+    demon: 'The Asura of Attachment',
     glyph: 'काम',
-    realm: 'Chitta Vana (The Forest of Longing)',
     bossHp: 100,
-    lore: 'Kāma chains the senses to external shadows. Counter with the Atharva truth of self-containment.',
+    lore: 'Kāma chains the senses to external mirages. Counter with the Atharva truth of inner fullness (Purnata).',
     riddles: [
       {
-        prompt: 'The illusion strikes: "Without possessing the world, you remain empty." What Vedic truth breaks this spell?',
+        prompt: 'The illusion strikes: "Without possessing the world, you remain incomplete." What Vedic truth dispels this?',
         options: [
           'The Self (Atman) is already complete, full, and infinite (Purnamadah Purnamidam).',
-          'Amass more gold and land to silence the inner voice.',
-          'Surrender willpower to physical impulses.',
-          'Escape the world into total sleep.'
+          'Amass more material possessions to quiet the yearning mind.',
+          'Surrender willpower to temporary sensory impulses.',
+          'Fall into spiritual numbness.'
         ],
         correct: 0,
-        mantraDamage: 50
+        damage: 50
       },
       {
-        prompt: 'Which sacred flame is invoked in the Atharvaveda to purify unaligned desire?',
+        prompt: 'Which sacred element is invoked in the Atharvaveda to purify burning unaligned desire?',
         options: [
           'Vayu (The untamed wind)',
           'Pavitram Agni (The discriminating sacred flame of clarity)',
@@ -43,7 +40,7 @@ const TRIALS = [
           'Maya (The web of deceit)'
         ],
         correct: 1,
-        mantraDamage: 50
+        damage: 50
       }
     ]
   },
@@ -52,9 +49,8 @@ const TRIALS = [
     name: 'Trial of Krodha (Blinding Wrath)',
     demon: 'The Asura of Fury',
     glyph: 'क्रोध',
-    realm: 'Jwala Sthana (The Valley of Scorching Anger)',
     bossHp: 120,
-    lore: 'Anger burns the vessel that holds it. Counter the storm with Soma coolness and unwavering discernment.',
+    lore: 'Anger burns the vessel that holds it. Counter with the cooling soma of Shanti (equanimity).',
     riddles: [
       {
         prompt: 'When wrath surges like wild fire, what does the Rigveda invoke for divine equilibrium?',
@@ -65,7 +61,7 @@ const TRIALS = [
           'Unchecked shouting of battle cries'
         ],
         correct: 1,
-        mantraDamage: 60
+        damage: 60
       },
       {
         prompt: 'What happens to the seeker’s intellect (Buddhi) when Wrath takes command?',
@@ -76,7 +72,7 @@ const TRIALS = [
           'It connects directly to Indra'
         ],
         correct: 1,
-        mantraDamage: 60
+        damage: 60
       }
     ]
   },
@@ -85,9 +81,8 @@ const TRIALS = [
     name: 'Trial of Moha (Deep Delusion)',
     demon: 'The Weaver of Shadows',
     glyph: 'मोह',
-    realm: 'Maya Sagara (The Ocean of Mirage)',
     bossHp: 140,
-    lore: 'Mistaking the transient for the permanent is the root of sorrow. Pierce the veil with Vedic Vidya.',
+    lore: 'Mistaking the transient for the eternal is the root of sorrow. Pierce the veil with Vedic Vidya.',
     riddles: [
       {
         prompt: 'What is the light that disperses the mist of delusion according to the Gayatri mantra?',
@@ -98,7 +93,7 @@ const TRIALS = [
           'Strict physical discipline alone'
         ],
         correct: 0,
-        mantraDamage: 70
+        damage: 70
       },
       {
         prompt: 'The Atharva Veda says Earth is our Mother. In contrast, what delusion does Moha sow?',
@@ -109,7 +104,7 @@ const TRIALS = [
           'That cycles of seasons are holy'
         ],
         correct: 1,
-        mantraDamage: 70
+        damage: 70
       }
     ]
   }
@@ -122,8 +117,6 @@ const Campaign = ({ addRp }) => {
   const [currentBossHp, setCurrentBossHp] = useState(100);
   const [combatLog, setCombatLog] = useState('');
   const [isVictory, setIsVictory] = useState(false);
-  const [empoweredRune, setEmpoweredRune] = useState('Agni');
-  const [screenShaking, setScreenShaking] = useState(false);
 
   const takeDamage = useGameStore(state => state.takeDamage);
   const completeTrial = useGameStore(state => state.completeTrial);
@@ -139,19 +132,12 @@ const Campaign = ({ addRp }) => {
     sounds.playCombatHit(true);
   };
 
-  const triggerScreenShake = () => {
-    setScreenShaking(true);
-    setTimeout(() => setScreenShaking(false), 500);
-  };
-
-  const handleMantraStrike = (optionIdx) => {
+  const handleMantraStrike = (optIdx) => {
     const currentRiddle = selectedTrial.riddles[currentRiddleIdx];
     
-    if (optionIdx === currentRiddle.correct) {
+    if (optIdx === currentRiddle.correct) {
       sounds.playUnlockChime();
-      triggerScreenShake();
-      const damageBonus = empoweredRune === 'Agni' ? 10 : 0;
-      const newBossHp = Math.max(0, currentBossHp - (currentRiddle.mantraDamage + damageBonus));
+      const newBossHp = Math.max(0, currentBossHp - currentRiddle.damage);
       setCurrentBossHp(newBossHp);
 
       if (newBossHp === 0) {
@@ -160,69 +146,88 @@ const Campaign = ({ addRp }) => {
         sounds.playUnlockChime();
         setCombatLog(`✨ VICTORY! The ${selectedTrial.demon} was dissolved by pure Truth! +300 RP.`);
       } else {
-        setCombatLog(`💥 CRITICAL STRIKE! ${empoweredRune} infused your mantra for ${currentRiddle.mantraDamage + damageBonus} damage!`);
+        setCombatLog(`💥 CRITICAL STRIKE! Truth shattered the illusion for ${currentRiddle.damage} damage!`);
         setCurrentRiddleIdx(prev => Math.min(selectedTrial.riddles.length - 1, prev + 1));
       }
     } else {
       sounds.playCombatHit(false);
-      triggerScreenShake();
-      takeDamage(25);
-      setCombatLog('⚠️ False premise! The demon countered your thought. 25 Fortitude lost.');
+      takeDamage(20);
+      setCombatLog('⚠️ False premise! The demon countered your thought. You took 20 Fortitude damage.');
     }
   };
 
   return (
-    <div className={`battle-arena-full ${screenShaking ? 'shake-anim' : ''}`}>
-      <div className="campaign-header">
-        <div className="campaign-badge">
-          <Swords size={16} className="gold-accent" />
-          <span>INNER CONFLICT: THE ARISHADVARGAS</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      {/* Header */}
+      <div>
+        <div className="badge gold" style={{ marginBottom: '8px' }}>
+          <Swords size={13} />
+          <span>Arishadvarga Warfare</span>
         </div>
-        <h1>The Cosmic Campaign</h1>
-        <p className="campaign-desc">
-          Defeat the 6 internal adversaries lurking in the mind through Vedic philosophical combat.
+        <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', color: '#FFF', margin: '4px 0 8px' }}>
+          The Inner Trials
+        </h1>
+        <p style={{ color: '#94A3B8', fontSize: '0.95rem', margin: 0 }}>
+          Confront and purify the 6 internal adversaries of consciousness through philosophical combat.
         </p>
       </div>
 
       {!battleActive ? (
-        <div className="trials-roster-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
           {TRIALS.map((trial, index) => {
             const isCompleted = completedTrials.includes(trial.id);
             return (
-              <div key={trial.id} className={`trial-card ${isCompleted ? 'trial-cleared' : ''}`}>
-                <div className="trial-top">
-                  <span className="trial-num">GATE 0{index + 1}</span>
-                  {isCompleted ? (
-                    <span className="cleared-tag"><CheckCircle2 size={14} /> Cleared</span>
-                  ) : (
-                    <span className="pending-tag">Adversary Guarding</span>
-                  )}
+              <div 
+                key={trial.id}
+                className="glass-panel"
+                style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderColor: isCompleted ? 'rgba(16, 185, 129, 0.4)' : 'var(--glass-border)' }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontFamily: 'Orbitron, monospace' }}>
+                      GATE 0{index + 1}
+                    </span>
+                    {isCompleted ? (
+                      <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10B981' }}>
+                        <CheckCircle2 size={12} /> Cleared
+                      </span>
+                    ) : (
+                      <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#F59E0B' }}>
+                        Trial Awaits
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '14px 0' }}>
+                    <div style={{
+                      width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255, 94, 30, 0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF7B00',
+                      fontSize: '1.4rem', fontFamily: 'Noto Sans Devanagari, serif', fontWeight: 700
+                    }}>
+                      {trial.glyph}
+                    </div>
+                    <div>
+                      <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.15rem', color: '#FFF', margin: 0 }}>
+                        {trial.name}
+                      </h3>
+                      <span style={{ fontSize: '0.8rem', color: '#FF7B00' }}>{trial.demon}</span>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: '0.85rem', color: '#CBD5E1', lineHeight: '1.5', margin: '0 0 16px' }}>
+                    {trial.lore}
+                  </p>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
-                  <div style={{
-                    width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255, 46, 0, 0.2)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF5E1E',
-                    fontSize: '1.4rem', fontFamily: 'Noto Sans Devanagari, serif', fontWeight: 700
-                  }}>
-                    {trial.glyph}
-                  </div>
-                  <div>
-                    <h3 className="trial-title">{trial.name}</h3>
-                    <span style={{ fontSize: '0.8rem', color: '#FF7B00' }}>{trial.demon}</span>
-                  </div>
-                </div>
-
-                <p className="trial-lore">{trial.lore}</p>
-
-                <div className="trial-footer">
-                  <div className="reward-tag">
-                    <Trophy size={14} />
-                    <span>+300 RP & Astral Relic</span>
-                  </div>
-                  <button className="commence-battle-btn" onClick={() => startBattle(trial)}>
-                    <span>{isCompleted ? 'Re-enter Duel' : 'Commence Duel'}</span>
-                    <Swords size={16} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#FFE259', fontWeight: 700 }}>+300 RP Reward</span>
+                  <button 
+                    className="cyber-btn cyber-btn-gold"
+                    style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+                    onClick={() => startBattle(trial)}
+                  >
+                    <span>{isCompleted ? 'Re-challenge' : 'Begin Trial'}</span>
+                    <Swords size={14} />
                   </button>
                 </div>
               </div>
@@ -230,97 +235,80 @@ const Campaign = ({ addRp }) => {
           })}
         </div>
       ) : (
-        /* Dynamic Combat Stage */
-        <div className="combat-stage">
-          {/* Boss Astral Aura Stage */}
-          <div className="boss-avatar-stage">
-            <div className="boss-astral-aura">
-              <span className="boss-inner-glyph">{selectedTrial.glyph}</span>
-            </div>
-            <h2 className="boss-name" style={{ marginTop: '12px' }}>{selectedTrial.demon}</h2>
-            <span className="boss-realm">{selectedTrial.realm}</span>
-          </div>
-
-          {/* Boss HP Bar */}
-          <div className="boss-hud-slate">
-            <div className="boss-meta-row">
-              <span style={{ color: '#FF7B00', fontWeight: 700, fontSize: '0.85rem' }}>
-                DEMON LIFE MATRIX {currentBossHp <= selectedTrial.bossHp * 0.5 ? '⚠️ ENRAGED' : ''}
+        /* Combat View */
+        <div className="glass-panel" style={{ padding: '32px', borderColor: 'rgba(255, 94, 30, 0.4)' }}>
+          {/* Boss Header */}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Skull size={20} style={{ color: '#FF4500' }} />
+                <h2 style={{ fontFamily: 'Cinzel, serif', color: '#FFF', fontSize: '1.4rem', margin: 0 }}>
+                  {selectedTrial.demon}
+                </h2>
+              </div>
+              <span style={{ fontFamily: 'Orbitron, monospace', color: '#FF7B00', fontWeight: 700 }}>
+                {currentBossHp} / {selectedTrial.bossHp} HP
               </span>
-              <span className="boss-hp-numeric">{currentBossHp} / {selectedTrial.bossHp} HP</span>
             </div>
-            <div className="boss-hp-track">
+
+            <div className="meter-track" style={{ width: '100%', height: '10px' }}>
               <div 
-                className="boss-hp-fill" 
-                style={{ width: `${(currentBossHp / selectedTrial.bossHp) * 100}%` }} 
+                className="hp-fill" 
+                style={{ 
+                  width: `${(currentBossHp / selectedTrial.bossHp) * 100}%`,
+                  background: 'linear-gradient(90deg, #FF4500, #FF8C00)' 
+                }} 
               />
             </div>
           </div>
 
+          {/* Combat Log */}
           {combatLog && (
-            <div className="combat-log-banner">
-              <span>{combatLog}</span>
+            <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderLeft: '3px solid #FFE259', padding: '12px 16px', borderRadius: '8px', color: '#E2E8F0', fontSize: '0.9rem', marginBottom: '20px' }}>
+              {combatLog}
             </div>
           )}
 
           {!isVictory ? (
-            <div className="combat-action-box">
-              {/* Elemental Strike Runes Bar */}
-              <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: '#FFE259', fontWeight: 800, letterSpacing: '1px' }}>
-                  ATTUNE CHAKRA ELEMENT BEFORE STRIKE:
-                </span>
-                <div className="combat-runes-dock">
-                  {[
-                    { id: 'Agni', label: '🔥 Agni (+10 DMG)', class: 'agni' },
-                    { id: 'Soma', label: '🌊 Soma (Shield)', class: 'soma' },
-                    { id: 'Vayu', label: '💨 Vayu (Speed)', class: 'vayu' },
-                    { id: 'Akasha', label: '✨ Akasha (Truth)', class: 'akasha' }
-                  ].map(rune => (
-                    <button
-                      key={rune.id}
-                      className={`elemental-strike-orb ${rune.class} ${empoweredRune === rune.id ? 'active' : ''}`}
-                      onClick={() => {
-                        sounds.playUnlockChime();
-                        setEmpoweredRune(rune.id);
-                      }}
-                      style={{
-                        transform: empoweredRune === rune.id ? 'scale(1.15) translateY(-5px)' : 'none',
-                        boxShadow: empoweredRune === rune.id ? '0 0 25px rgba(255, 226, 89, 0.7)' : 'none'
-                      }}
-                    >
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800 }}>{rune.label}</span>
-                    </button>
-                  ))}
-                </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFE259', fontSize: '0.75rem', fontWeight: 700 }}>
+                <Sparkles size={14} />
+                <span>EXCHANGE {currentRiddleIdx + 1} OF {selectedTrial.riddles.length}</span>
               </div>
 
-              <div className="prompt-header">
-                <Sparkles size={16} className="gold-accent" />
-                <span className="step-count">EXCHANGE {currentRiddleIdx + 1} OF {selectedTrial.riddles.length}</span>
-              </div>
-
-              <p className="riddle-prompt">
+              <p style={{ color: '#FFF', fontSize: '1.1rem', lineHeight: '1.6', margin: 0 }}>
                 {selectedTrial.riddles[currentRiddleIdx].prompt}
               </p>
 
-              <div className="mantra-options-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: '8px' }}>
                 {selectedTrial.riddles[currentRiddleIdx].options.map((opt, i) => (
-                  <button key={i} className="mantra-strike-btn" onClick={() => handleMantraStrike(i)}>
-                    <span className="opt-key">{String.fromCharCode(65 + i)}</span>
-                    <span className="opt-text">{opt}</span>
+                  <button
+                    key={i}
+                    className="cyber-btn"
+                    style={{ padding: '14px 18px', justifyContent: 'flex-start', textAlign: 'left', fontSize: '0.92rem', lineHeight: '1.4' }}
+                    onClick={() => handleMantraStrike(i)}
+                  >
+                    <span style={{ color: '#FFE259', fontWeight: 800, marginRight: '8px' }}>
+                      {String.fromCharCode(65 + i)}.
+                    </span>
+                    <span>{opt}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="victory-ceremony">
-              <Trophy size={56} className="victory-trophy" />
-              <h2>The Illusion Has Crumbled</h2>
-              <p>You maintained steady fortitude and dispelled {selectedTrial.demon}. +300 Radiance Points bestowed!</p>
-              <button className="primary-cta-btn" onClick={() => setBattleActive(false)}>
-                <CheckCircle2 size={18} />
-                <span>Return to Astral Map</span>
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <Trophy size={50} style={{ color: '#FFE259', margin: '0 auto 12px' }} />
+              <h2 style={{ fontFamily: 'Cinzel, serif', color: '#FFF' }}>The Adversary is Dissolved</h2>
+              <p style={{ color: '#CBD5E1', maxWidth: '400px', margin: '8px auto 20px' }}>
+                Your clarity prevailed over doubt. +300 Radiance Points awarded to your soul profile.
+              </p>
+              <button 
+                className="btn-primary" 
+                style={{ width: 'auto', display: 'inline-flex', padding: '12px 28px' }}
+                onClick={() => setBattleActive(false)}
+              >
+                Return to Gates
               </button>
             </div>
           )}

@@ -3,24 +3,12 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { sounds } from '../utils/soundEngine';
 import { useGameStore } from '../store/useGameStore';
 import { 
-  Sparkles, 
   Volume2, 
   ArrowLeft, 
   BrainCircuit, 
   CheckCircle2,
-  AlertCircle,
-  Music,
-  Eye,
-  Award
+  AlertCircle
 } from 'lucide-react';
-
-const WORD_BREAKDOWN_SAMPLE = [
-  { deva: 'माता', translit: 'mātā', root: 'Mā (To measure, shape, nurture)', meaning: 'Mother / The nurturing ground' },
-  { deva: 'भूमिः', translit: 'bhūmiḥ', root: 'Bhū (To exist, be, flourish)', meaning: 'Earth / The fertile soil of being' },
-  { deva: 'पुत्रो', translit: 'putraḥ', root: 'Pu + Tra (Purifying lineage)', meaning: 'Child / Offspring of the cosmos' },
-  { deva: 'अहं', translit: 'aham', root: 'Ah (Ego / Individual soul)', meaning: 'I am / The conscious self' },
-  { deva: 'पृथिव्याः', translit: 'pṛthivyāḥ', root: 'Prath (To expand, broaden)', meaning: 'Of the Vast Mother Earth' }
-];
 
 const VerseDetail = () => {
   const { book = 12, hymn = 1, verse = 1 } = useParams();
@@ -31,8 +19,6 @@ const VerseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [verseData, setVerseData] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [activeWord, setActiveWord] = useState(null);
-  const [meterTaps, setMeterTaps] = useState(0);
   const [challengeAnswered, setChallengeAnswered] = useState(null);
   
   const addRp = useGameStore(state => state.addRp);
@@ -72,16 +58,16 @@ const VerseDetail = () => {
             transliteration: 'mātā bhūmiḥ putro ahaṁ pṛthivyāḥ | parjanyaḥ pitā sa u naḥ pipartu',
             english: 'The Earth is my mother and I am the child of the soil. The rain-cloud is my father; may he sustain us.',
             hindi: 'पृथ्वी मेरी माता है और मैं इस भूमि का पुत्र हूँ। पर्जन्य (मेघ) हमारे पिता हैं, वे हमारा पोषण करें।',
-            practicalMeaning: 'This iconic Prithvi Sukta from the Atharvaveda establishes that humans are ecological stewards rather than masters of nature.',
+            practicalMeaning: 'This iconic Prithvi Sukta from the Atharvaveda emphasizes humanity’s ecological kinship with nature. We do not own the earth; we are its children.',
             topics: ['Sacred Ecology', 'Atharvaveda', 'Universal Kinship'],
             chanda: 'Anustubh Meter (32 Syllables)',
             challenge: {
-              question: 'In this hymn, what is the eternal bond articulated between the seeker and Mother Earth?',
+              question: 'In this hymn, what is the core bond defined between the seeker and Mother Earth?',
               options: [
-                'Exploitative domination over all resources',
+                'Exploitative dominion over resources',
                 'Devoted child to a nurturing mother',
-                'Aloof detachment from nature',
-                'Superstitious terror of earthquakes'
+                'Indifference to nature',
+                'Fear of elemental wrath'
               ],
               correctIndex: 1
             }
@@ -96,15 +82,6 @@ const VerseDetail = () => {
     return () => { isMounted = false; };
   }, [veda, book, hymn, verse]);
 
-  const handleMeterTap = () => {
-    sounds.playTibetanBowl();
-    setMeterTaps(prev => prev + 1);
-    if ((meterTaps + 1) % 8 === 0) {
-      sounds.playUnlockChime();
-      addRp(20);
-    }
-  };
-
   const handleChallenge = (idx) => {
     if (challengeAnswered !== null) return;
     setChallengeAnswered(idx);
@@ -117,148 +94,111 @@ const VerseDetail = () => {
   };
 
   return (
-    <div className="verse-detail-chamber">
-      <button className="back-nav-btn" onClick={() => navigate(`/library?veda=${veda}`)}>
-        <ArrowLeft size={16} /> <span>Return to Library</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <button 
+        className="cyber-btn"
+        style={{ width: 'fit-content', padding: '8px 16px', fontSize: '0.85rem' }}
+        onClick={() => navigate(`/library?veda=${veda}`)}
+      >
+        <ArrowLeft size={16} /> <span>Back to Vedas</span>
       </button>
 
-      <div className="verse-chamber-header">
-        <span className="chamber-coordinate">
+      <div>
+        <span style={{ fontSize: '0.8rem', color: '#FFE259', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>
           {veda.toUpperCase()} VEDA • MANDALA/KANDA {book} • SUKTA {hymn} • SHLOKA {verse}
         </span>
-        <h1>The Shloka Dissection Lab</h1>
+        <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', color: '#FFF', margin: '4px 0 0' }}>
+          Verse Exegesis & Breakdown
+        </h1>
       </div>
 
       {loading ? (
-        <div className="loading-vortex">
-          <div className="vortex-spinner" />
-          <span>Attuning to Vedic Acoustic Resonance...</span>
+        <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
+          <span style={{ color: '#FFE259' }}>Attuning to Vedic Acoustic Frequencies...</span>
         </div>
       ) : (
-        <div className="verse-breakdown-layout">
-          {/* Main Sanskrit Slate */}
-          <div className="sanskrit-main-slate">
-            <div className="slate-top-controls">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+          {/* Left: Main Sanskrit & Exegesis */}
+          <div className="glass-panel" style={{ padding: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <button 
-                className={`audio-recitation-btn ${audioPlaying ? 'active' : ''}`}
+                className="cyber-btn cyber-btn-gold"
+                style={{ padding: '8px 16px', fontSize: '0.82rem' }}
                 onClick={() => {
                   sounds.playTibetanBowl();
                   setAudioPlaying(!audioPlaying);
                 }}
               >
-                <Volume2 size={18} />
-                <span>{audioPlaying ? 'Acoustic Waves Resonating...' : 'Listen to Sonic Vibrations'}</span>
+                <Volume2 size={16} />
+                <span>{audioPlaying ? 'Chanting Resonating' : 'Play Sonic Vibrations'}</span>
               </button>
 
-              <div className="verse-tag-row">
-                <span className="verse-topic-pill" style={{ borderColor: '#FFE259', color: '#FFE259' }}>
-                  {verseData?.chanda || 'Anustubh Meter'}
-                </span>
+              <div style={{ display: 'flex', gap: '6px' }}>
                 {verseData?.topics?.map((t, i) => (
-                  <span key={i} className="verse-topic-pill">{t}</span>
+                  <span key={i} className="badge" style={{ background: 'rgba(255,255,255,0.05)', color: '#CBD5E1' }}>
+                    {t}
+                  </span>
                 ))}
               </div>
             </div>
 
-            {audioPlaying && (
-              <div className="audio-wave-anim">
-                <span className="wave-bar bar-1" />
-                <span className="wave-bar bar-2" />
-                <span className="wave-bar bar-3" />
-                <span className="wave-bar bar-4" />
-                <span className="wave-bar bar-5" />
-              </div>
-            )}
-
-            <div className="sanskrit-primary" style={{ margin: '20px 0' }}>
-              <p className="devanagari-large">{verseData?.sanskrit}</p>
-              <p className="roman-transliteration">{verseData?.transliteration}</p>
+            {/* Devanagari */}
+            <div style={{ borderLeft: '3px solid #FFE259', paddingLeft: '20px', margin: '20px 0' }}>
+              <p style={{ fontFamily: 'Noto Sans Devanagari, serif', fontSize: '1.6rem', color: '#FFF', lineHeight: '1.8' }}>
+                {verseData?.sanskrit}
+              </p>
+              <p style={{ fontStyle: 'italic', color: '#CBD5E1', fontSize: '1rem', marginTop: '8px' }}>
+                {verseData?.transliteration}
+              </p>
             </div>
 
-            {/* INTERACTIVE SANSKRIT WORD DISSECTION PRISM */}
-            <div style={{ marginTop: '24px' }}>
-              <span style={{ fontSize: '0.78rem', color: '#FFE259', fontWeight: 800, letterSpacing: '1px' }}>
-                TAP INDIVIDUAL WORD TILES FOR SANSKRIT ROOT (DHATU) ANALYSIS:
-              </span>
-              <div className="dissection-prism">
-                {WORD_BREAKDOWN_SAMPLE.map((w, idx) => (
-                  <button
-                    key={idx}
-                    className={`sanskrit-word-pill ${activeWord === idx ? 'active' : ''}`}
-                    onClick={() => {
-                      sounds.playUnlockChime();
-                      setActiveWord(activeWord === idx ? null : idx);
-                    }}
-                  >
-                    <span className="pill-deva">{w.deva}</span>
-                    <span className="pill-root">{w.translit}</span>
-                  </button>
-                ))}
-              </div>
-
-              {activeWord !== null && (
-                <div className="word-dhatu-breakdown">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ color: '#FFE259', fontSize: '1.1rem', fontFamily: 'Noto Sans Devanagari' }}>
-                      {WORD_BREAKDOWN_SAMPLE[activeWord].deva} ({WORD_BREAKDOWN_SAMPLE[activeWord].translit})
-                    </strong>
-                    <span style={{ fontSize: '0.75rem', color: '#00F0FF', fontWeight: 700 }}>
-                      ROOT: {WORD_BREAKDOWN_SAMPLE[activeWord].root}
-                    </span>
-                  </div>
-                  <p style={{ color: '#E2E8F0', marginTop: '6px', fontSize: '0.9rem' }}>
-                    Meaning: {WORD_BREAKDOWN_SAMPLE[activeWord].meaning}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* CHANDA RHYTHM METRIC BEAT-KEEPER PAD */}
-            <div className="chanda-meter-pad">
+            {/* Translations */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '28px' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#FFE259', fontWeight: 800 }}>
-                  CHANDA RHYTHM BEAT-KEEPER (TAP TO METRONOME)
-                </span>
-                <p style={{ fontSize: '0.85rem', color: '#CBD5E1', marginTop: '4px' }}>
-                  Tap the golden orb in cadence with the 8-syllable quarter foot. Every 8 beats rewards +20 RP!
+                <h3 style={{ fontSize: '0.85rem', color: '#FFE259', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+                  English Translation
+                </h3>
+                <p style={{ color: '#E2E8F0', fontSize: '1.05rem', lineHeight: '1.6', margin: 0 }}>
+                  "{verseData?.english}"
                 </p>
-              </div>
-              <button className="meter-tap-circle" onClick={handleMeterTap}>
-                <span>{meterTaps % 8} / 8</span>
-              </button>
-            </div>
-
-            {/* Translation Blocks */}
-            <div className="translations-container" style={{ marginTop: '28px' }}>
-              <div className="translation-block english-block">
-                <h3>English Exegesis</h3>
-                <p>{verseData?.english}</p>
               </div>
 
               {verseData?.hindi && (
-                <div className="translation-block hindi-block">
-                  <h3>हिन्दी भावार्थ</h3>
-                  <p>{verseData?.hindi}</p>
+                <div>
+                  <h3 style={{ fontSize: '0.85rem', color: '#FFE259', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+                    हिन्दी भावार्थ
+                  </h3>
+                  <p style={{ color: '#E2E8F0', fontSize: '1rem', lineHeight: '1.6', margin: 0 }}>
+                    {verseData?.hindi}
+                  </p>
                 </div>
               )}
 
-              <div className="translation-block philosophical-block">
-                <h3>Living Wisdom (Practical Application)</h3>
-                <p>{verseData?.practicalMeaning}</p>
+              <div>
+                <h3 style={{ fontSize: '0.85rem', color: '#00F0FF', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+                  Living Wisdom & Application
+                </h3>
+                <p style={{ color: '#CBD5E1', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>
+                  {verseData?.practicalMeaning}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Comprehension Trial Sidebar */}
+          {/* Right: Comprehension Challenge */}
           {verseData?.challenge && (
-            <div className="comprehension-chamber">
-              <div className="chamber-top">
-                <BrainCircuit size={18} className="gold-accent" />
-                <h3>Decryption Trial</h3>
+            <div className="glass-panel" style={{ padding: '32px', height: 'fit-content' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <BrainCircuit size={18} style={{ color: '#FFE259' }} />
+                <h3 style={{ fontFamily: 'Cinzel, serif', color: '#FFF', fontSize: '1.2rem', margin: 0 }}>
+                  Comprehension Trial
+                </h3>
               </div>
-              <p className="challenge-q">{verseData.challenge.question}</p>
+              <p style={{ color: '#CBD5E1', fontSize: '0.95rem', lineHeight: '1.5', margin: '0 0 20px' }}>
+                {verseData.challenge.question}
+              </p>
 
-              <div className="challenge-options">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {verseData.challenge.options.map((opt, i) => {
                   const isChosen = challengeAnswered === i;
                   const isCorrect = i === verseData.challenge.correctIndex;
@@ -266,26 +206,34 @@ const VerseDetail = () => {
                     <button
                       key={i}
                       disabled={challengeAnswered !== null}
-                      className={`challenge-opt-btn ${
-                        challengeAnswered !== null 
-                          ? isCorrect ? 'correct' : isChosen ? 'wrong' : '' 
-                          : ''
-                      }`}
+                      className="cyber-btn"
+                      style={{
+                        padding: '12px 16px',
+                        justifyContent: 'space-between',
+                        textAlign: 'left',
+                        fontSize: '0.9rem',
+                        background: challengeAnswered !== null
+                          ? isCorrect ? 'rgba(16, 185, 129, 0.15)' : isChosen ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.02)'
+                          : 'rgba(255, 255, 255, 0.03)',
+                        borderColor: challengeAnswered !== null
+                          ? isCorrect ? '#10B981' : isChosen ? '#EF4444' : 'rgba(255,255,255,0.06)'
+                          : 'rgba(255, 255, 255, 0.08)'
+                      }}
                       onClick={() => handleChallenge(i)}
                     >
                       <span>{opt}</span>
-                      {challengeAnswered !== null && isCorrect && <CheckCircle2 size={16} />}
-                      {challengeAnswered !== null && isChosen && !isCorrect && <AlertCircle size={16} />}
+                      {challengeAnswered !== null && isCorrect && <CheckCircle2 size={16} style={{ color: '#10B981' }} />}
+                      {challengeAnswered !== null && isChosen && !isCorrect && <AlertCircle size={16} style={{ color: '#EF4444' }} />}
                     </button>
                   );
                 })}
               </div>
 
               {challengeAnswered !== null && (
-                <div className="challenge-result-msg">
+                <div style={{ marginTop: '20px', padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', fontSize: '0.85rem', color: '#FFE259' }}>
                   {challengeAnswered === verseData.challenge.correctIndex
                     ? '✨ Deep insight attained! +75 Radiance Points granted.'
-                    : 'Contemplate further upon the verse. Vedic reflection is an endless spring.'}
+                    : 'Reflect further upon the verse. Contemplation is an endless spring.'}
                 </div>
               )}
             </div>

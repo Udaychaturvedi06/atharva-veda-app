@@ -3,6 +3,12 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import App from './App.jsx'
+
+/* Modular Cyber-Vedic Design System */
+import './styles/tokens.css'
+import './styles/base.css'
+import './styles/components.css'
+import './styles/pages/landing.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(

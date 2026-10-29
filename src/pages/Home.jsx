@@ -10,20 +10,11 @@ import {
   ScrollText, 
   ArrowRight,
   Award,
-  Compass,
   Eye,
-  X,
-  Zap
+  CheckCircle2
 } from 'lucide-react';
 
-const BLESSINGS = [
-  "Agni bestows divine perception upon your intellect today.",
-  "May the waters of Saraswati clear all doubt from your breath.",
-  "Earth sustains your posture; Indra empowers your resolute will.",
-  "Vayu brings fresh prana to dispel mental fatigue and stagnation."
-];
-
-const DAILY_CARDS = [
+const DAILY_VERSES = [
   {
     veda: 'atharva',
     book: 12,
@@ -33,18 +24,7 @@ const DAILY_CARDS = [
     transliteration: 'mātā bhūmiḥ putro ahaṁ pṛthivyāḥ | parjanyaḥ pitā sa u naḥ pipartu',
     english: 'The Earth is my mother and I am the child of the soil. The rain-cloud is my father, let him nourish us.',
     theme: 'Prithvi Sukta (Ode to Mother Earth)',
-    esotericInsight: 'Ancient ecological consciousness: Humanity is not an overlord of nature, but its sacred offspring.'
-  },
-  {
-    veda: 'rig',
-    book: 1,
-    hymn: 1,
-    verse: 1,
-    sanskrit: 'अग्निमीळे पुरोहितं यज्ञस्य देवमृत्विजम् | होतारं रत्नधातमम् ||',
-    transliteration: 'agnim īḷe purohitaṁ yajñasya devam ṛtvijam | hotāraṁ ratnadhātamam',
-    english: 'I magnify Agni, the cosmic priest, divine minister of the sacred sacrifice, the bestower of radiant wealth.',
-    theme: 'Agni Invocation',
-    esotericInsight: 'Agni is the inner conscious flame of aspiration within every human heart that transmutes base thoughts into gold.'
+    insight: 'Ancient ecological unity: Humanity and soil are bound in an eternal filial covenant.'
   }
 ];
 
@@ -52,251 +32,194 @@ const Home = ({ addRp, setVedaBg, heal }) => {
   const navigate = useNavigate();
   const relics = useGameStore(state => state.relics);
   const streak = useGameStore(state => state.streak);
-  const restorePrana = useGameStore(state => state.restorePrana);
-  
-  const [homaSparks, setHomaSparks] = useState(0);
-  const [activeBlessing, setActiveBlessing] = useState(null);
-  const [revealedInsight, setRevealedInsight] = useState(false);
-  const [selectedRelic, setSelectedRelic] = useState(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [tapasyaOffered, setTapasyaOffered] = useState(false);
+  const [showInsight, setShowInsight] = useState(false);
 
-  const daily = DAILY_CARDS[0];
+  const daily = DAILY_VERSES[0];
 
-  // Interactive 3D tilt tracking for Daily Shloka Tarot
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 14;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -14;
-    setTilt({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 });
-  };
-
-  // Offering to the Agni Homa Pit
-  const handleIgniteHoma = () => {
-    sounds.playCombatHit(true);
-    setHomaSparks(prev => prev + 1);
-    addRp(100);
+  const handleTapasya = () => {
+    if (tapasyaOffered) return;
+    sounds.playUnlockChime();
+    addRp(150);
     heal(20);
-    restorePrana(25);
-    const randomBlessing = BLESSINGS[Math.floor(Math.random() * BLESSINGS.length)];
-    setActiveBlessing(randomBlessing);
+    setTapasyaOffered(true);
   };
 
   const vedaPortals = [
-    { id: 'rig', title: 'Rigveda', subtitle: 'Cosmic Chants & Dawn Visions', bg: '/bg-rig.png', count: '1,028 Suktas', element: '🔥 Agni' },
-    { id: 'atharva', title: 'Atharvaveda', subtitle: 'Healing, Society & Mysticism', bg: '/bg-atharva.png', count: '730 Suktas', element: '🌿 Prithvi' },
-    { id: 'sama', title: 'Samaveda', subtitle: 'Transcendental Harmonic Vibrations', bg: '/bg-sama.png', count: '1,875 Mantras', element: '🌊 Soma' },
-    { id: 'yajur', title: 'Yajurveda', subtitle: 'Alchemical Rites of Inner Fire', bg: '/bg-yajur.png', count: '1,975 Shlokas', element: '💨 Vayu' }
+    { id: 'rig', title: 'Rigveda', desc: 'Cosmic Mantras & Solar Radiance', count: '1,028 Suktas', color: '#F59E0B' },
+    { id: 'atharva', title: 'Atharvaveda', desc: 'Healing, Society & Daily Mysticism', count: '730 Suktas', color: '#10B981' },
+    { id: 'sama', title: 'Samaveda', desc: 'Melodies of Transcendence & Sonic Joy', count: '1,875 Mantras', color: '#3B82F6' },
+    { id: 'yajur', title: 'Yajurveda', desc: 'Inner Sacrificial Alchemy & Discipline', count: '1,975 Shlokas', color: '#EC4899' }
   ];
 
   return (
-    <div className="astral-observatory">
-      {/* 1. AGNI HOMA SACRED FIRE PIT (Offering Game Mechanic) */}
-      <section className="homa-altar-container">
-        <div className="homa-fire-ring" />
-        <div className="altar-content-split">
-          <div>
-            <div className="hero-tag">
-              <Flame size={15} className="flame-accent" />
-              <span>THE ETERNAL AGNI KUND • ALTAR OF TAPASYA</span>
-            </div>
-            <h1 className="hero-title">The Inner Sanctum</h1>
-            <p className="hero-subtitle">
-              Kindle the sacred fire with your daily breath. Tap the Agni Kund to transmute worldly tension into pure spiritual Radiance.
-            </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      {/* 1. Sanctuary Hero Banner */}
+      <section className="glass-panel" style={{ padding: '36px', background: 'radial-gradient(ellipse at top left, rgba(212, 175, 55, 0.12) 0%, rgba(19, 17, 28, 0.8) 70%)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFE259', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+          <Sparkles size={14} />
+          <span>Sanctuary of Consciousness • Day {streak} Tapasya</span>
+        </div>
+        <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', color: '#FFF', margin: '10px 0' }}>
+          The Inner Sanctuary
+        </h1>
+        <p style={{ color: '#CBD5E1', maxWidth: '650px', lineHeight: '1.6', fontSize: '1rem', margin: '0 0 24px' }}>
+          Welcome, Seeker. Contemplate primordial Sanskrit revelation, decipher cosmic truth, and conquer the six inner adversaries of the mind.
+        </p>
 
-            {activeBlessing && (
-              <div className="combat-log-banner" style={{ marginTop: '12px', borderLeftColor: '#FF5E1E' }}>
-                <span>✨ <strong>Agni's Blessing:</strong> {activeBlessing}</span>
-              </div>
-            )}
-          </div>
+        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+          <button 
+            className="btn-primary" 
+            style={{ width: 'auto', padding: '12px 24px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={handleTapasya}
+          >
+            <Flame size={16} />
+            <span>{tapasyaOffered ? 'Tapasya Offered (+150 RP)' : 'Perform Daily Tapasya (+150 RP)'}</span>
+          </button>
 
           <button 
-            className="homa-ignite-btn"
-            onClick={handleIgniteHoma}
-            title="Perform Ahuti (Sacred Offering) to receive +100 RP & Healing"
+            className="cyber-btn cyber-btn-gold" 
+            style={{ padding: '12px 20px', fontSize: '0.9rem' }}
+            onClick={() => {
+              sounds.playTibetanBowl();
+              navigate('/campaign');
+            }}
           >
-            <Flame size={44} className="flame-icon" />
-            <span className="ignite-label">Ignite Fire</span>
-            <span className="ignite-sub">+100 RP ({homaSparks} offered)</span>
+            <Swords size={16} />
+            <span>Enter Arishadvarga Trials</span>
           </button>
         </div>
       </section>
 
-      {/* 2. 3D HOLOGRAPHIC SHLOKA TAROT SLATE */}
-      <section className="tarot-stage-wrap">
-        <div className="section-header">
-          <ScrollText size={18} className="gold-accent" />
-          <h2>Cosmic Shloka of the Day</h2>
+      {/* 2. Shloka of the Day Card */}
+      <section className="glass-panel" style={{ padding: '32px', borderColor: 'rgba(212, 175, 55, 0.25)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="badge gold">
+            <ScrollText size={13} />
+            <span>Daily Sacred Hymn</span>
+          </div>
+          <span style={{ fontSize: '0.8rem', color: '#94A3B8', fontFamily: 'Orbitron, monospace' }}>
+            {daily.veda.toUpperCase()} {daily.book}.{daily.hymn}.{daily.verse}
+          </span>
         </div>
 
-        <div 
-          className="tarot-card-3d"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{
-            transform: `rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`
-          }}
-        >
-          <div className="slate-top-meta">
-            <span className="veda-source-badge">{daily.theme}</span>
-            <span className="verse-coordinate">{daily.veda.toUpperCase()} {daily.book}.{daily.hymn}.{daily.verse}</span>
-          </div>
+        <div style={{ borderLeft: '3px solid #FFE259', paddingLeft: '20px', margin: '16px 0' }}>
+          <p style={{ fontFamily: 'Noto Sans Devanagari, serif', fontSize: '1.5rem', color: '#FFF', lineHeight: '1.8' }}>
+            {daily.sanskrit}
+          </p>
+          <p style={{ fontStyle: 'italic', color: '#CBD5E1', fontSize: '0.95rem', marginTop: '6px' }}>
+            {daily.transliteration}
+          </p>
+        </div>
 
-          <div className="sanskrit-chant-box">
-            <p className="sanskrit-text">{daily.sanskrit}</p>
-            <p className="transliteration-text">{daily.transliteration}</p>
-          </div>
+        <p style={{ color: '#E2E8F0', fontSize: '1.05rem', lineHeight: '1.6', margin: '16px 0' }}>
+          "{daily.english}"
+        </p>
 
-          <div className="translation-box">
-            <p className="english-text">"{daily.english}"</p>
+        {showInsight && (
+          <div style={{ background: 'rgba(255, 226, 89, 0.08)', border: '1px solid rgba(255, 226, 89, 0.2)', borderRadius: '12px', padding: '14px 18px', margin: '16px 0', color: '#FFE259', fontSize: '0.9rem' }}>
+            💡 <strong>Esoteric Insight:</strong> {daily.insight}
           </div>
+        )}
 
-          {revealedInsight ? (
-            <div className="combat-log-banner" style={{ marginBottom: '20px' }}>
-              <span>🔮 <strong>Esoteric Secret:</strong> {daily.esotericInsight}</span>
-            </div>
-          ) : (
-            <button 
-              className="rune-btn" 
-              style={{ marginBottom: '20px' }}
-              onClick={() => {
-                sounds.playUnlockChime();
-                setRevealedInsight(true);
-                addRp(50);
-              }}
-            >
-              <Eye size={16} />
-              <span>Decrypt Esoteric Meaning (+50 RP)</span>
-            </button>
-          )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap', gap: '12px' }}>
+          <button 
+            className="cyber-btn"
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            onClick={() => {
+              sounds.playUnlockChime();
+              setShowInsight(!showInsight);
+            }}
+          >
+            <Eye size={15} />
+            <span>{showInsight ? 'Hide Insight' : 'Reveal Esoteric Meaning'}</span>
+          </button>
 
-          <div className="slate-footer">
-            <button 
-              className="primary-cta-btn"
-              onClick={() => {
-                sounds.playTibetanBowl();
-                navigate(`/verse/${daily.book}/${daily.hymn}/${daily.verse}?veda=${daily.veda}`);
-              }}
-            >
-              <span>Examine Deep Breakdown</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
+          <button 
+            className="cyber-btn cyber-btn-gold"
+            style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+            onClick={() => {
+              sounds.playTibetanBowl();
+              navigate(`/verse/${daily.book}/${daily.hymn}/${daily.verse}?veda=${daily.veda}`);
+            }}
+          >
+            <span>Detailed Verse Breakdown</span>
+            <ArrowRight size={15} />
+          </button>
         </div>
       </section>
 
-      {/* 3. FOUR VEDA PORTALS (ELEMENTAL REALMS) */}
-      <section className="realms-section">
-        <div className="section-header">
-          <BookOpen size={18} className="gold-accent" />
-          <h2>The Four Elemental Veda Portals</h2>
+      {/* 3. The Four Vedas Realmgate */}
+      <section>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+          <BookOpen size={18} style={{ color: '#FFE259' }} />
+          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.4rem', color: '#FFF', margin: 0 }}>
+            The Four Vedic Portals
+          </h2>
         </div>
 
-        <div className="realms-grid">
-          {vedaPortals.map((portal) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '18px' }}>
+          {vedaPortals.map(portal => (
             <div 
-              key={portal.id} 
-              className="realm-card"
+              key={portal.id}
+              className="glass-panel"
+              style={{ padding: '24px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
               onClick={() => {
                 sounds.playTibetanBowl();
-                setVedaBg(portal.bg);
                 navigate(`/library?veda=${portal.id}`);
               }}
             >
-              <div className="realm-card-bg" style={{ backgroundImage: `url(${portal.bg})` }} />
-              <div className="realm-card-overlay" />
-              <div className="realm-content">
-                <span className="realm-metric">{portal.element} • {portal.count}</span>
-                <h3 className="realm-title">{portal.title}</h3>
-                <p className="realm-sub">{portal.subtitle}</p>
-                <div className="realm-enter-link">
-                  <span>Enter Realm</span>
-                  <ArrowRight size={14} />
-                </div>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: portal.color, letterSpacing: '1px' }}>
+                  {portal.count}
+                </span>
+                <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.3rem', color: '#FFF', margin: '8px 0 6px' }}>
+                  {portal.title}
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#94A3B8', lineHeight: '1.5' }}>
+                  {portal.desc}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFE259', fontSize: '0.8rem', fontWeight: 700, marginTop: '16px' }}>
+                <span>Enter Archive</span>
+                <ArrowRight size={14} />
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 4. SANCTIFIED RELIC INVENTORY (Interactive Inspection Modal) */}
-      <section className="relics-section">
-        <div className="section-header">
-          <Award size={18} className="gold-accent" />
-          <h2>Soul Artifacts & Relics</h2>
+      {/* 4. Sanctified Relics Inventory */}
+      <section>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+          <Award size={18} style={{ color: '#FFE259' }} />
+          <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.4rem', color: '#FFF', margin: 0 }}>
+            Soul Artifacts
+          </h2>
         </div>
 
-        <div className="relics-grid">
-          {relics.map((relic) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          {relics.map(relic => (
             <div 
-              key={relic.id} 
-              className="relic-item-card"
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sounds.playUnlockChime();
-                setSelectedRelic(relic);
-              }}
-              title="Click to Inspect Ancient Artifact"
+              key={relic.id}
+              className="glass-panel"
+              style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '16px' }}
             >
-              <div className="relic-icon-aura">{relic.icon}</div>
-              <div className="relic-info">
-                <div className="relic-name-row">
-                  <span className="relic-name">{relic.name}</span>
-                  <span className={`relic-rarity ${relic.rarity.toLowerCase()}`}>{relic.rarity}</span>
+              <div style={{ fontSize: '2rem', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                {relic.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong style={{ color: '#FFF', fontSize: '0.95rem' }}>{relic.name}</strong>
+                  <span style={{ fontSize: '0.7rem', color: '#FFE259', fontWeight: 700 }}>{relic.rarity}</span>
                 </div>
-                <p className="relic-desc">{relic.desc}</p>
+                <p style={{ fontSize: '0.8rem', color: '#94A3B8', margin: '4px 0 0' }}>{relic.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
-
-      {/* Relic Inspect Modal */}
-      {selectedRelic && (
-        <div className="victory-ceremony" style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)',
-          zIndex: 200, justifyContent: 'center'
-        }}>
-          <div style={{
-            background: 'rgba(20, 18, 32, 0.95)', border: '2px solid #FFE259', borderRadius: '24px',
-            padding: '40px', maxWidth: '450px', position: 'relative', boxShadow: '0 0 50px rgba(255, 226, 89, 0.4)'
-          }}>
-            <button 
-              onClick={() => setSelectedRelic(null)}
-              style={{ position: 'absolute', top: 16, right: 16, color: '#FFF' }}
-            >
-              <X size={20} />
-            </button>
-
-            <div style={{ fontSize: '4.5rem', textAlign: 'center', marginBottom: '16px' }}>
-              {selectedRelic.icon}
-            </div>
-            <h2 style={{ fontFamily: 'Cinzel, serif', color: '#FFF', textAlign: 'center' }}>
-              {selectedRelic.name}
-            </h2>
-            <div style={{ textAlign: 'center', margin: '8px 0 16px' }}>
-              <span className={`relic-rarity ${selectedRelic.rarity.toLowerCase()}`}>
-                {selectedRelic.rarity} Relic
-              </span>
-            </div>
-            <p style={{ color: '#CBD5E1', textAlign: 'center', lineHeight: '1.6', marginBottom: '24px' }}>
-              {selectedRelic.desc}
-            </p>
-            <button 
-              className="primary-cta-btn" 
-              style={{ width: '100%', justifyContent: 'center' }}
-              onClick={() => setSelectedRelic(null)}
-            >
-              Channel Artifact Power
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
