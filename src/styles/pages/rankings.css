@@ -1,0 +1,250 @@
+/* ==========================================================================
+   RANKINGS / LEAGUES — HALL OF SAGES STYLES
+   ========================================================================== */
+
+.rankings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.rankings-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rankings-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  color: #FFFFFF;
+  margin: 4px 0;
+  letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   LEAGUE DIVISION TABS
+   -------------------------------------------------------------------------- */
+.league-tabs-wrap {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+  overflow-x: auto;
+}
+
+.league-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.league-tab-btn.active {
+  color: var(--gold-bright);
+}
+
+.league-tab-line {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--saffron));
+  box-shadow: 0 0 10px var(--gold);
+}
+
+/* --------------------------------------------------------------------------
+   3D STEPPED PODIUM FOR TOP 3 SEEKERS
+   -------------------------------------------------------------------------- */
+.podium-stage-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 18px;
+  padding: 30px 16px 10px;
+  min-height: 320px;
+}
+
+.podium-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 200px;
+  text-align: center;
+}
+
+.podium-seeker-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.podium-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.podium-avatar.gold {
+  border: 2px solid var(--gold-bright);
+  background: radial-gradient(circle, rgba(255, 226, 89, 0.25) 0%, rgba(19, 17, 28, 0.9) 70%);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+  width: 68px;
+  height: 68px;
+}
+
+.podium-avatar.silver {
+  border: 2px solid #E2E8F0;
+  background: radial-gradient(circle, rgba(226, 232, 240, 0.2) 0%, rgba(19, 17, 28, 0.9) 70%);
+  box-shadow: 0 0 20px rgba(226, 232, 240, 0.4);
+}
+
+.podium-avatar.bronze {
+  border: 2px solid #ED8936;
+  background: radial-gradient(circle, rgba(237, 137, 54, 0.2) 0%, rgba(19, 17, 28, 0.9) 70%);
+  box-shadow: 0 0 20px rgba(237, 137, 54, 0.4);
+}
+
+.podium-crown-icon {
+  position: absolute;
+  top: -14px;
+  color: var(--gold-bright);
+  filter: drop-shadow(0 0 8px rgba(255, 226, 89, 0.8));
+}
+
+.podium-seeker-name {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-size: 0.92rem;
+  margin-bottom: 2px;
+}
+
+.podium-seeker-rp {
+  font-family: var(--font-hud);
+  font-size: 0.82rem;
+  color: var(--gold);
+}
+
+.podium-step-pedestal {
+  width: 100%;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-hud);
+  font-size: 1.5rem;
+  font-weight: 800;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.4);
+}
+
+.podium-step-pedestal.gold {
+  height: 160px;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.35) 0%, rgba(10, 10, 18, 0.95) 100%);
+  border-top: 3px solid var(--gold-bright);
+  color: var(--gold-bright);
+}
+
+.podium-step-pedestal.silver {
+  height: 120px;
+  background: linear-gradient(180deg, rgba(160, 174, 192, 0.3) 0%, rgba(10, 10, 18, 0.95) 100%);
+  border-top: 3px solid #E2E8F0;
+  color: #E2E8F0;
+}
+
+.podium-step-pedestal.bronze {
+  height: 90px;
+  background: linear-gradient(180deg, rgba(237, 137, 54, 0.3) 0%, rgba(10, 10, 18, 0.95) 100%);
+  border-top: 3px solid #ED8936;
+  color: #ED8936;
+}
+
+/* --------------------------------------------------------------------------
+   PINNED USER ROW
+   -------------------------------------------------------------------------- */
+.pinned-player-card {
+  padding: 22px 28px;
+  border: 1px solid var(--gold);
+  background: radial-gradient(circle at left, rgba(212, 175, 55, 0.15) 0%, rgba(10, 10, 18, 0.9) 75%);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.18);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pinned-player-gap-wrap {
+  flex: 1;
+  min-width: 240px;
+  max-width: 380px;
+}
+
+/* --------------------------------------------------------------------------
+   RECHARTS AREA CHART CARD
+   -------------------------------------------------------------------------- */
+.rankings-chart-card {
+  padding: 26px;
+}
+
+.rankings-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   LEADERBOARD TABLE
+   -------------------------------------------------------------------------- */
+.leaderboard-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.leaderboard-th {
+  padding: 14px 18px;
+  font-family: var(--font-hud);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.leaderboard-td {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.92rem;
+}
+
+.leaderboard-row-player {
+  background: rgba(212, 175, 55, 0.08);
+}
