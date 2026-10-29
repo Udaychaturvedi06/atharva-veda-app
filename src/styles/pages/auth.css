@@ -1,0 +1,338 @@
+/* ==========================================================================
+   AUTH PAGE — SPLIT-SCREEN CYBER-VEDIC SANCTUM ENTRANCE
+   ========================================================================== */
+
+.auth-page-root {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+/* --------------------------------------------------------------------------
+   SPLIT-SCREEN PANELS (Desktop)
+   -------------------------------------------------------------------------- */
+.auth-split-left {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .auth-split-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 48%;
+    padding: 60px 48px;
+    position: relative;
+    border-right: 1px solid rgba(212, 175, 55, 0.2);
+    overflow: hidden;
+    background: radial-gradient(circle at 30% 40%, rgba(212, 175, 55, 0.08) 0%, rgba(7, 7, 13, 0.95) 70%);
+  }
+}
+
+.auth-split-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 24px;
+  position: relative;
+  z-index: 5;
+}
+
+/* --------------------------------------------------------------------------
+   LEFT PANE: BRANDING & ROTATING SACRED VERSE
+   -------------------------------------------------------------------------- */
+.auth-left-brand {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-left-logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-left-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-bright);
+}
+
+.auth-verse-carousel {
+  position: relative;
+  z-index: 2;
+  max-width: 520px;
+}
+
+.auth-verse-quote-box {
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: rgba(19, 17, 28, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.auth-verse-sanskrit {
+  font-family: var(--font-sanskrit);
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: var(--gold-bright);
+  margin-bottom: 12px;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.auth-verse-meaning {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.auth-verse-source {
+  font-family: var(--font-hud);
+  font-size: 0.76rem;
+  color: var(--saffron);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-left-footer {
+  position: relative;
+  z-index: 2;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   RIGHT PANE: GLASS AUTH CARD & FORM
+   -------------------------------------------------------------------------- */
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 40px 32px;
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 28px 20px;
+  }
+}
+
+.auth-tabs-wrap {
+  display: flex;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 28px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.auth-tab-btn.active {
+  color: var(--gold-bright);
+}
+
+.auth-tab-active-line {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--saffron));
+  box-shadow: 0 0 12px var(--gold);
+}
+
+/* Floating-label Inputs */
+.auth-input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  background: rgba(10, 10, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: all 0.25s ease;
+}
+
+.auth-input-wrapper:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.25);
+  background: rgba(19, 17, 28, 0.85);
+}
+
+.auth-input-wrapper.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 14px rgba(255, 77, 109, 0.25);
+}
+
+.auth-input-icon {
+  margin-left: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-field {
+  flex: 1;
+  padding: 22px 14px 8px 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+}
+
+.auth-floating-label {
+  position: absolute;
+  left: 42px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-input-wrapper:focus-within .auth-floating-label,
+.auth-input-wrapper.has-value .auth-floating-label {
+  top: 10px;
+  font-size: 0.7rem;
+  color: var(--gold);
+  font-family: var(--font-hud);
+  letter-spacing: 0.08em;
+}
+
+.auth-eye-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.auth-eye-btn:hover {
+  color: var(--gold-bright);
+}
+
+.auth-validation-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--danger);
+  margin-top: 6px;
+  padding-left: 4px;
+}
+
+/* Submit & Guest Actions */
+.auth-submit-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider-text {
+  font-family: var(--font-hud);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+.auth-guest-btn {
+  width: 100%;
+  padding: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   GATE OPENING TRANSITION (600ms on success)
+   -------------------------------------------------------------------------- */
+.gate-opening-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gate-door-left,
+.gate-door-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.5%;
+  background: linear-gradient(135deg, #0A0A12 0%, #13111C 100%);
+  border-color: rgba(212, 175, 55, 0.4);
+  z-index: 2;
+}
+
+.gate-door-left {
+  left: 0;
+  border-right: 2px solid var(--gold);
+  box-shadow: 10px 0 35px rgba(212, 175, 55, 0.4);
+}
+
+.gate-door-right {
+  right: 0;
+  border-left: 2px solid var(--gold);
+  box-shadow: -10px 0 35px rgba(212, 175, 55, 0.4);
+}
+
+.gate-light-flood {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 226, 89, 0.9) 0%, rgba(255, 123, 0, 0.5) 40%, transparent 80%);
+  z-index: 1;
+}

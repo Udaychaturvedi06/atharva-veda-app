@@ -9,6 +9,7 @@ import './styles/tokens.css'
 import './styles/base.css'
 import './styles/components.css'
 import './styles/pages/landing.css'
+import './styles/pages/auth.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
