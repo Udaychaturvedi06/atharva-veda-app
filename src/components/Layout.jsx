@@ -192,22 +192,10 @@ export const Layout = ({ children, theme, toggleTheme }) => {
                 setIsCommandOpen(true);
               }}
               className="rail-item search-trigger-btn"
-              title="Search (Ctrl+K)"
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 16px',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-2)',
-                cursor: 'pointer',
-                borderRadius: 'var(--radius-md)'
-              }}
+              title="Seek (Ctrl+K)"
             >
-              <Search size={20} color="var(--gold)" />
-              <span className="rail-label" style={{ fontSize: '0.85rem' }}>Seek (Ctrl+K)</span>
+              <Search size={22} className="rail-icon" color="var(--amber-glow, #FFB020)" />
+              <span className="rail-label">Seek (Ctrl+K)</span>
             </button>
 
             {ALL_NAV.map((item) => {
@@ -228,7 +216,7 @@ export const Layout = ({ children, theme, toggleTheme }) => {
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <Icon size={20} className="rail-icon" />
+                  <Icon size={22} className="rail-icon" />
                   <span className="rail-label">{item.label}</span>
                 </NavLink>
               );
@@ -246,8 +234,8 @@ export const Layout = ({ children, theme, toggleTheme }) => {
               className="rail-item rail-item-logout"
               title="Exit Sanctuary"
             >
-              <LogOut size={20} />
-              <span className="rail-label">Exit</span>
+              <LogOut size={22} className="rail-icon" />
+              <span className="rail-label">Exit Sanctuary</span>
             </button>
           </div>
         </aside>

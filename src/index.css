@@ -228,95 +228,117 @@
     display: flex;
     flex-direction: column;
     position: sticky;
-    top: 60px;
-    height: calc(100vh - 60px);
-    width: var(--rail-width-collapsed);
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--blur-md));
-    -webkit-backdrop-filter: blur(var(--blur-md));
-    border-right: 1px solid var(--glass-border);
-    transition: width var(--duration-normal) var(--ease-out-expo);
+    top: 64px;
+    height: calc(100vh - 64px);
+    width: var(--rail-width-collapsed, 72px);
+    background: rgba(11, 12, 14, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(226, 232, 240, 0.12);
+    transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s ease;
     z-index: 90;
     overflow: hidden;
+    flex-shrink: 0;
   }
 
-  .desktop-left-rail:hover {
-    width: var(--rail-width-expanded);
-    box-shadow: var(--glass-shadow-heavy);
+  .desktop-left-rail:hover,
+  .desktop-left-rail:focus-within {
+    width: var(--rail-width-expanded, 240px);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.65);
   }
 
-  .rail-inner {
+  .desktop-rail-nav {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-4) 10px;
-    height: 100%;
+    gap: 6px;
+    padding: 16px 12px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
-  .rail-nav-item {
+  .rail-item {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: 12px 14px;
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
+    gap: 14px;
+    padding: 11px 13px;
+    border-radius: var(--radius-md, 12px);
+    color: var(--silver-muted, #94A3B8);
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all var(--duration-fast) var(--ease-out-expo);
     white-space: nowrap;
+    text-decoration: none;
     position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+    transition: color 0.2s ease, background 0.2s ease;
   }
 
-  .rail-nav-item:hover {
-    color: #FFF;
-    background: rgba(255, 255, 255, 0.06);
+  .rail-item:hover {
+    color: #FFFFFF;
+    background: rgba(226, 232, 240, 0.08);
   }
 
-  .rail-nav-item.active {
-    color: var(--gold-bright);
-    background: rgba(212, 175, 55, 0.12);
+  .rail-item--active {
+    color: var(--amber-glow, #FFB020) !important;
+    background: rgba(255, 176, 32, 0.12) !important;
   }
 
-  .rail-icon-box {
-    position: relative;
+  .rail-icon {
+    min-width: 22px;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-  }
-
-  .rail-active-indicator {
-    position: absolute;
-    left: -14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 20px;
-    border-radius: var(--radius-full);
-    background: var(--gold-bright);
-    box-shadow: 0 0 12px var(--gold-bright);
+    color: inherit;
   }
 
   .rail-label {
     opacity: 0;
-    transform: translateX(-6px);
-    transition: opacity var(--duration-normal) var(--ease-out-expo),
-                transform var(--duration-normal) var(--ease-out-expo);
+    transform: translateX(-8px);
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.01em;
   }
 
-  .desktop-left-rail:hover .rail-label {
+  .desktop-left-rail:hover .rail-label,
+  .desktop-left-rail:focus-within .rail-label {
     opacity: 1;
     transform: translateX(0);
+    pointer-events: auto;
   }
 
-  .rail-logout {
+  .rail-active-glow {
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3.5px;
+    border-radius: 4px;
+    background: var(--amber-glow, #FFB020);
+    box-shadow: 0 0 10px #FFB020;
+  }
+
+  .desktop-rail-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(226, 232, 240, 0.08);
     margin-top: auto;
-    color: var(--danger);
   }
 
-  .rail-logout:hover {
-    background: rgba(255, 77, 109, 0.12);
-    color: #FFA5B4;
+  .rail-item-logout {
+    color: var(--signal-red, #EF4444);
+  }
+
+  .rail-item-logout:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #FF6B6B;
   }
 }
 
