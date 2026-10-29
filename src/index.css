@@ -50,6 +50,34 @@
   padding: 6px 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--glass-border);
+  transition: all 0.3s ease;
+}
+
+.hud-meter-wrap.meter-damage-flash {
+  animation: meterDamageFlash 0.55s ease;
+}
+
+.hud-meter-wrap.meter-heal-pulse {
+  animation: meterHealPulse 0.55s ease;
+}
+
+.hud-meter-wrap.meter-surge-pulse {
+  animation: meterSurgePulse 0.55s ease;
+}
+
+@keyframes meterDamageFlash {
+  0% { border-color: var(--danger); box-shadow: 0 0 16px rgba(255, 77, 109, 0.8); background: rgba(255, 77, 109, 0.25); }
+  100% { border-color: var(--glass-border); box-shadow: none; background: rgba(20, 20, 32, 0.7); }
+}
+
+@keyframes meterHealPulse {
+  0% { border-color: var(--success); box-shadow: 0 0 16px rgba(79, 209, 197, 0.8); background: rgba(79, 209, 197, 0.25); }
+  100% { border-color: var(--glass-border); box-shadow: none; background: rgba(20, 20, 32, 0.7); }
+}
+
+@keyframes meterSurgePulse {
+  0% { border-color: var(--cyan); box-shadow: 0 0 16px rgba(0, 240, 255, 0.8); background: rgba(0, 240, 255, 0.25); }
+  100% { border-color: var(--glass-border); box-shadow: none; background: rgba(20, 20, 32, 0.7); }
 }
 
 .meter-track {

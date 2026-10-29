@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import GameHUD from './GameHUD';
+import { Tooltip } from './ui/Tooltip';
 import { sounds } from '../utils/soundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import { useGameStore } from '../store/useGameStore';
@@ -78,7 +79,7 @@ export const Layout = ({ children, theme, toggleTheme }) => {
           backgroundImage: `url(${vedaBg || '/bg-rig.png'})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.18,
+          opacity: 0.16,
           zIndex: -3,
           pointerEvents: 'none',
           transition: 'background-image 0.8s ease-in-out'
@@ -102,42 +103,44 @@ export const Layout = ({ children, theme, toggleTheme }) => {
               const Icon = item.icon;
               const isActive = location.pathname.startsWith(item.to);
               return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={handleNavClick}
-                  className={`rail-nav-item ${isActive ? 'active' : ''}`}
-                  title={item.label}
-                >
-                  <div className="rail-icon-box">
-                    <Icon size={20} />
-                    {isActive && (
-                      <motion.div
-                        layoutId="active-rail-indicator"
-                        className="rail-active-indicator"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                      />
-                    )}
-                  </div>
-                  <span className="rail-label">{item.label}</span>
-                </NavLink>
+                <Tooltip key={item.to} content={item.label} side="right">
+                  <NavLink
+                    to={item.to}
+                    onClick={handleNavClick}
+                    className={`rail-nav-item ${isActive ? 'active' : ''}`}
+                  >
+                    <div className="rail-icon-box">
+                      <Icon size={20} />
+                      {isActive && (
+                        <motion.div
+                          layoutId="active-rail-indicator"
+                          className="rail-active-indicator"
+                          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                        />
+                      )}
+                    </div>
+                    <span className="rail-label">{item.label}</span>
+                  </NavLink>
+                </Tooltip>
               );
             })}
 
-            <button
-              className="rail-nav-item rail-logout"
-              onClick={() => {
-                sounds.playCombatHit(false);
-                logout();
-                navigate('/login');
-              }}
-              title="Log Out Seeker"
-            >
-              <div className="rail-icon-box">
-                <LogOut size={18} />
-              </div>
-              <span className="rail-label">Exit</span>
-            </button>
+            <Tooltip content="Exit Sanctum" side="right">
+              <button
+                type="button"
+                className="rail-nav-item rail-logout"
+                onClick={() => {
+                  sounds.playCombatHit(false);
+                  logout();
+                  navigate('/login');
+                }}
+              >
+                <div className="rail-icon-box">
+                  <LogOut size={18} />
+                </div>
+                <span className="rail-label">Exit</span>
+              </button>
+            </Tooltip>
           </div>
         </aside>
 
@@ -175,6 +178,22 @@ export const Layout = ({ children, theme, toggleTheme }) => {
               </NavLink>
             );
           })}
+
+          <button
+            type="button"
+            className="dock-item"
+            onClick={() => {
+              sounds.playCombatHit(false);
+              logout();
+              navigate('/login');
+            }}
+            aria-label="Exit"
+          >
+            <div className="dock-icon-wrapper">
+              <LogOut size={18} />
+            </div>
+            <span className="dock-label">Exit</span>
+          </button>
         </div>
       </nav>
     </div>
