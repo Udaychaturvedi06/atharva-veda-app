@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { sounds } from '../utils/soundEngine';
 import { recitationEngine } from '../utils/recitationEngine';
+import { useVerseRecitation } from '../services/recitation/useVerseRecitation.js';
 import { useGameStore } from '../store/useGameStore';
 import { CANONICAL_VERSES, findCanonicalVerse } from '../data/canonicalVerses';
 import { useSutraAnchor } from '../systems/sutraContext';
@@ -21,7 +22,8 @@ import {
   Info,
   Radio,
   Sliders,
-  Wind
+  Wind,
+  RotateCcw
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
@@ -39,20 +41,34 @@ export const VerseDetail = () => {
   // Verse Data Resolution
   const targetRef = `${book}.${hymn}.${verse}`;
   const canonicalVerse = findCanonicalVerse(targetRef);
+  const recitation = useVerseRecitation(canonicalVerse);
 
   const recordMantraRecited = useGameStore((state) => state.recordMantraRecited);
 
+  // Hook up completion of mantra recitation to user progression
+  useEffect(() => {
+    if (recitation.state === 'ended') {
+      recordMantraRecited();
+    }
+  }, [recitation.state, recordMantraRecited]);
+
+  const formatTime = (ms = 0) => {
+    if (!ms || isNaN(ms)) return '0:00';
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+  };
+
   // Reading & Display States
-  const [activeTab, setActiveTab] = useState('meaning'); // 'meaning', 'anatomy', 'context', 'notes'
+  const activeTabState = useState('meaning');
+  const activeTab = activeTabState[0];
+  const setActiveTab = activeTabState[1]; // 'meaning', 'anatomy', 'context', 'notes'
   const [selectedWord, setSelectedWord] = useState(null);
   const [colorSwara, setColorSwara] = useState(true);
   const [showLivingMargins, setShowLivingMargins] = useState(true);
 
-  // Recitation Engine States
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [activeCharIndex, setActiveCharIndex] = useState(null);
-  const [playbackSpeed, setPlaybackSpeed] = useState(0.85); // 0.85x Vedic slow chanting default
+  // Tanpura Acoustic Drone Accompaniment State
   const [tanpuraActive, setTanpuraActive] = useState(false);
 
   // Chanting Practice & Acoustic Resonance States
@@ -67,26 +83,9 @@ export const VerseDetail = () => {
   });
   const [noteSavedFeedback, setNoteSavedFeedback] = useState(false);
 
-  // Compute character ranges for live word-boundary tracking during recitation
-  const wordRanges = useMemo(() => {
-    if (!canonicalVerse?.words || !canonicalVerse?.devanagari) return [];
-    let currentPos = 0;
-    const cleanFull = canonicalVerse.devanagari.replace(/[॥।_|]/g, ' ').replace(/\u0951/g, '').replace(/\u0952/g, '');
-    return canonicalVerse.words.map((w) => {
-      const cleanW = w.text.replace(/[॥।_|]/g, '').replace(/\u0951/g, '').replace(/\u0952/g, '');
-      const idx = cleanFull.indexOf(cleanW, currentPos);
-      if (idx !== -1) {
-        currentPos = idx + cleanW.length;
-        return { start: idx, end: idx + cleanW.length };
-      }
-      return { start: -1, end: -1 };
-    });
-  }, [canonicalVerse]);
-
-  // Sync / Stop Recitation on Unmount or Route Change
+  // Sync / Stop Drone & Mic on Unmount or Route Change
   useEffect(() => {
     return () => {
-      recitationEngine.stop();
       recitationEngine.stopDrone();
       recitationEngine.stopMicAnalysis();
     };
@@ -99,77 +98,6 @@ export const VerseDetail = () => {
     localStorage.setItem(`sutra_notes_${book}_${hymn}_${verse}`, val);
     setNoteSavedFeedback(true);
     setTimeout(() => setNoteSavedFeedback(false), 2000);
-  };
-
-  // Recitation Handlers
-  const handleToggleRecitation = useCallback(() => {
-    sounds.playTap();
-
-    if (isPlaying) {
-      if (isPaused) {
-        recitationEngine.resume();
-        setIsPaused(false);
-      } else {
-        recitationEngine.pause();
-        setIsPaused(true);
-      }
-      return;
-    }
-
-    if (!canonicalVerse) return;
-
-    // Start recitation with phonetic IAST fallback for universal browser speech support
-    recitationEngine.recite(canonicalVerse.devanagari, {
-      phoneticFallback: canonicalVerse.iast,
-      rate: playbackSpeed,
-      pitch: 0.95,
-      onStart: () => {
-        setIsPlaying(true);
-        setIsPaused(false);
-      },
-      onEnd: () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-        setActiveCharIndex(null);
-        recordMantraRecited();
-      },
-      onError: (err) => {
-        console.warn('Recitation Error:', err);
-        setIsPlaying(false);
-        setIsPaused(false);
-        setActiveCharIndex(null);
-      },
-      onBoundary: ({ charIndex }) => {
-        setActiveCharIndex(charIndex);
-      }
-    });
-  }, [isPlaying, isPaused, canonicalVerse, playbackSpeed, recordMantraRecited]);
-
-  const handleStopRecitation = () => {
-    sounds.playTap();
-    recitationEngine.stop();
-    setIsPlaying(false);
-    setIsPaused(false);
-    setActiveCharIndex(null);
-  };
-
-  const handleSpeedChange = (e) => {
-    const newSpeed = parseFloat(e.target.value);
-    setPlaybackSpeed(newSpeed);
-    if (isPlaying && !isPaused && canonicalVerse) {
-      recitationEngine.stop();
-      recitationEngine.recite(canonicalVerse.devanagari, {
-        phoneticFallback: canonicalVerse.iast,
-        rate: newSpeed,
-        pitch: 0.95,
-        onStart: () => setIsPlaying(true),
-        onEnd: () => {
-          setIsPlaying(false);
-          setActiveCharIndex(null);
-        },
-        onBoundary: ({ charIndex }) => setActiveCharIndex(charIndex)
-      });
-    }
   };
 
   // Tanpura Drone Toggle
@@ -336,8 +264,7 @@ export const VerseDetail = () => {
             }}>
               {canonicalVerse.words.map((w, idx) => {
                 const isSelected = selectedWord?.text === w.text;
-                const range = wordRanges[idx];
-                const isRecitingThisWord = isPlaying && !isPaused && activeCharIndex !== null && range && range.start !== -1 && activeCharIndex >= range.start && activeCharIndex <= range.end;
+                const isRecitingThisWord = (recitation.isPlaying || recitation.isPaused) && recitation.activeWordIndex === idx;
                 const swaraPrimary = w.swara?.[0] || 'udatta';
 
                 let tokenColor = 'var(--silver-moon, #D5D3CB)';
@@ -752,7 +679,7 @@ export const VerseDetail = () => {
         )}
       </div>
 
-      {/* 4. DEDICATED RECITATION CONTROL DOCK */}
+      {/* 4. DEDICATED JIT RECITATION CONTROL DOCK */}
       <div style={{
         position: 'fixed',
         bottom: 0,
@@ -761,7 +688,7 @@ export const VerseDetail = () => {
         background: 'rgba(16, 17, 15, 0.94)',
         backdropFilter: 'blur(20px)',
         borderTop: '1px solid var(--border-subtle, rgba(213, 211, 203, 0.16))',
-        padding: '14px 24px',
+        padding: '12px 24px',
         zIndex: 900,
         display: 'flex',
         alignItems: 'center',
@@ -769,30 +696,103 @@ export const VerseDetail = () => {
         flexWrap: 'wrap',
         gap: 12
       }}>
-        {/* Playback & Speed Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        {/* Playback & Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: '1 1 auto' }}>
           <Button
             size="sm"
             variant="primary"
-            icon={isPlaying && !isPaused ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            onClick={handleToggleRecitation}
+            icon={recitation.isPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            onClick={() => {
+              sounds.playTap();
+              if (recitation.isPlaying) {
+                recitation.pause();
+              } else if (recitation.isPaused) {
+                recitation.resume();
+              } else {
+                recitation.play();
+              }
+            }}
           >
-            {isPlaying && !isPaused ? 'Pause Chanting' : isPaused ? 'Resume Recitation' : 'Listen Recitation'}
+            {recitation.isPlaying
+              ? 'Pause Recitation'
+              : recitation.isPaused
+              ? 'Resume Recitation'
+              : recitation.isPreparing
+              ? 'Preparing Voice...'
+              : 'Recite Verse'}
           </Button>
 
-          {isPlaying && (
-            <Button size="sm" variant="ghost" onClick={handleStopRecitation}>
-              Stop
+          {(recitation.isPlaying || recitation.isPaused || recitation.state === 'ended') && (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={<RotateCcw size={14} />}
+              onClick={() => {
+                sounds.playTap();
+                recitation.replay();
+              }}
+              title="Replay recitation from start"
+            >
+              Replay
             </Button>
           )}
+
+          {/* Time Scrubber */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 160, maxWidth: 260, flex: '1 1 180px' }}>
+            <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--silver-muted, #94A3B8)' }}>
+              {formatTime(recitation.currentMs)}
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={recitation.totalMs > 0 ? (recitation.totalMs / 1000) : 10}
+              step={0.05}
+              value={recitation.currentMs / 1000 || 0}
+              onChange={(e) => recitation.seek(parseFloat(e.target.value))}
+              style={{
+                flex: 1,
+                accentColor: 'var(--amber-warm, #C59A56)',
+                cursor: 'pointer',
+                height: 4
+              }}
+              aria-label="Recitation audio progress"
+            />
+            <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--silver-muted, #94A3B8)' }}>
+              {formatTime(recitation.totalMs)}
+            </span>
+          </div>
+
+          {/* Status Indicator Pill */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: '0.75rem',
+            padding: '3px 8px',
+            borderRadius: 6,
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(213, 211, 203, 0.1)'
+          }}>
+            <span style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              backgroundColor: recitation.isReady ? 'var(--sage-soft, #87947A)' : recitation.isPreparing ? 'var(--amber-warm, #C59A56)' : 'rgba(255,255,255,0.3)',
+              boxShadow: recitation.isPreparing ? '0 0 6px var(--amber-warm, #C59A56)' : 'none',
+              display: 'inline-block'
+            }} />
+            <span style={{ color: 'var(--silver-muted, #94A3B8)', textTransform: 'capitalize' }}>
+              {recitation.state === 'ready' ? 'Voice Ready' : recitation.state === 'playing' ? 'Reciting' : recitation.state === 'preparing' ? 'Preparing Voice' : recitation.state}
+            </span>
+          </div>
 
           {/* Speed Selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--silver-muted, #94A3B8)' }}>
             <Sliders size={14} color="var(--amber-warm, #C59A56)" />
             <span>Speed:</span>
             <select
-              value={playbackSpeed}
-              onChange={handleSpeedChange}
+              value={recitation.playbackSpeed}
+              onChange={(e) => recitation.setSpeed(parseFloat(e.target.value))}
               style={{
                 background: 'rgba(255, 255, 255, 0.06)',
                 color: 'var(--amber-warm, #C59A56)',
@@ -804,10 +804,9 @@ export const VerseDetail = () => {
                 fontWeight: 600
               }}
             >
-              <option value="0.7">0.70x (Vedic Slow)</option>
-              <option value="0.85">0.85x (Chanting Cadence)</option>
+              <option value="0.75">0.75x (Vedic Slow)</option>
               <option value="1.0">1.00x (Standard)</option>
-              <option value="1.2">1.20x (Fluent Pāṭha)</option>
+              <option value="1.25">1.25x (Fluent Pāṭha)</option>
             </select>
           </div>
 
@@ -829,7 +828,7 @@ export const VerseDetail = () => {
             }}
             title="Toggle Continuous Tanpura Drone (Sa = 146.83 Hz)"
           >
-            <Radio size={14} /> Tanpura Drone: {tanpuraActive ? 'ON' : 'OFF'}
+            <Radio size={14} /> Drone: {tanpuraActive ? 'ON' : 'OFF'}
           </button>
         </div>
 

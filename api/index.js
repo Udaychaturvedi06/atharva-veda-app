@@ -9,6 +9,8 @@ import { GoogleGenAI } from '@google/genai';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { audioGenerationService } from './services/tts/audioGenerationService.js';
+import { audioCacheStorage } from './services/tts/audioCacheStorage.js';
 
 dotenv.config();
 
@@ -86,6 +88,21 @@ const authRequestSchema = z.object({
     .max(30, { message: "Username cannot exceed 30 characters." })
     .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain alphanumeric characters and underscores (no spaces or email signs)." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters long." })
+});
+
+const recitationRequestSchema = z.object({
+  verseId: z.string().min(1),
+  devanagari: z.string().min(1),
+  iast: z.string().optional(),
+  words: z.array(z.object({
+    text: z.string(),
+    root: z.string().optional(),
+    gloss: z.string().optional(),
+    swara: z.array(z.string()).optional()
+  })).optional(),
+  meter: z.string().optional(),
+  textVersion: z.string().optional(),
+  priority: z.enum(['high', 'background']).optional()
 });
 
 const validate = (schema) => (req, res, next) => {
@@ -688,6 +705,82 @@ app.post('/api/contact', async (req, res) => {
     }
     console.error('Contact form error:', error);
     res.status(500).json({ error: 'Failed to send message. Please try again.' });
+  }
+});
+
+// --- JIT Sanskrit Recitation Endpoints ---
+
+// 1. Prepare Recitation (Asynchronous Background or High-Priority)
+app.post('/api/recitation/prepare', validate(recitationRequestSchema), async (req, res, next) => {
+  try {
+    const result = await audioGenerationService.prepareVerse(req.body, { priority: req.body.priority || 'background' });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 2. Direct On-Demand Recitation Synthesis
+app.post('/api/recitation/synthesize', validate(recitationRequestSchema), async (req, res, next) => {
+  try {
+    const result = await audioGenerationService.synthesizeVerse(req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 3. Recitation Status Lookup
+app.get('/api/recitation/status/:cacheKey', (req, res) => {
+  const status = audioGenerationService.getStatus(req.params.cacheKey);
+  res.json(status);
+});
+
+// 4. Recitation Metrics & Performance Instrumentation
+app.get('/api/recitation/metrics', (req, res) => {
+  res.json(audioGenerationService.getMetrics());
+});
+
+// 5. Audio Streaming & Cache Serving (With HTTP 206 Range Request support for iOS Safari & seeking)
+app.get('/api/audio/:filename', async (req, res) => {
+  try {
+    const filename = path.basename(req.params.filename);
+    const audioBuffer = await audioCacheStorage.getAudioStreamOrBuffer(filename);
+    if (!audioBuffer) {
+      return res.status(404).json({ error: 'Audio asset not found in sanctum cache.' });
+    }
+
+    const totalSize = audioBuffer.length;
+    const contentType = filename.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav';
+
+    // Support HTTP Range requests (crucial for mobile Safari and scrubbing)
+    const range = req.headers.range;
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+      const chunkSize = (end - start) + 1;
+
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${totalSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable'
+      });
+      return res.end(audioBuffer.slice(start, end + 1));
+    }
+
+    res.writeHead(200, {
+      'Content-Length': totalSize,
+      'Content-Type': contentType,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    });
+    res.end(audioBuffer);
+  } catch (err) {
+    console.error('Audio streaming error:', err);
+    res.status(500).json({ error: 'Failed to stream audio asset.' });
   }
 });
 

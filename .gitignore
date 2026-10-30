@@ -37,4 +37,6 @@ dist-ssr
 users.json
 contact-messages.json
 translation_cache.json
+public/audio_cache/*
+!public/audio_cache/.gitkeep
 *.tmp
