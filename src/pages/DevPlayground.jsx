@@ -1,157 +1,147 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
-import { useSutraAnchor } from '../systems/sutraContext';
-import { sounds } from '../utils/soundEngine';
-import { useGameStore } from '../store/useGameStore';
-import { Flame, Heart, Zap, Sparkles, Volume2, Sun, Moon, Wind } from 'lucide-react';
+import { Sparkles, BookOpen, CheckCircle2, AlertTriangle, ShieldCheck, Type, Palette } from 'lucide-react';
 
 export const DevPlayground = () => {
-  const anchor1Ref = useRef(null);
-  const anchor2Ref = useRef(null);
-  const anchor3Ref = useRef(null);
-
-  useSutraAnchor('playground-1', anchor1Ref);
-  useSutraAnchor('playground-2', anchor2Ref);
-  useSutraAnchor('playground-3', anchor3Ref);
-
-  const { hp, prana, streak, takeDamage, heal, restorePrana, consumePrana } = useGameStore();
-  const [rootFreq, setRootFreq] = useState(146.83);
-
-  const handleTuneSa = (freq) => {
-    setRootFreq(freq);
-    sounds.setRootSa(freq);
-    sounds.playTap();
-  };
+  const TOKENS = [
+    { name: 'Charcoal Void', hex: '#161715', role: 'Primary structural canvas', sampleRole: 'canvas' },
+    { name: 'Moonlit Silver', hex: '#D5D3CB', role: 'Primary text & fine rules', sampleRole: 'text' },
+    { name: 'Amber', hex: '#C59A56', role: 'Deliberate discovery & focus', sampleRole: 'accent' },
+    { name: 'Sage Green', hex: '#87947A', role: 'Verified status & harmony', sampleRole: 'verified' },
+    { name: 'Walnut Wood', hex: '#654B3C', role: 'Archival backing surfaces', sampleRole: 'archive' },
+    { name: 'Signal Red', hex: '#A83A32', role: 'Rare alert & error mark', sampleRole: 'alert' }
+  ];
 
   return (
-    <div style={{ maxWidth: 1000, margin: '40px auto', padding: '0 20px', position: 'relative', zIndex: 10 }}>
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <Chip label="Developer Laboratory" variant="gold" icon={<Sparkles size={14} />} />
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', color: 'var(--gold-bright)', margin: '12px 0 6px' }}>
-          V2 Creative North Star Playground
+    <div style={{ maxWidth: 1040, margin: '40px auto', padding: '0 24px', position: 'relative', zIndex: 10 }}>
+      {/* Editorial Header */}
+      <div style={{ textAlign: 'center', marginBottom: 44 }}>
+        <Chip label="Living Archive · Design System" variant="gold" icon={<Sparkles size={14} />} />
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.6rem', color: 'var(--text-heading)', margin: '14px 0 8px' }}>
+          Visual Identity & Token Atlas
         </h1>
-        <p style={{ color: 'var(--text-1)', maxWidth: 600, margin: '0 auto' }}>
-          Interactive verification suite for the 5 signature Vedic systems: The Sutra Thread, Breath Sync, Living Light, State-Reactive UI, and Tuned Sound Synthesis.
+        <p style={{ color: 'var(--text-secondary)', maxWidth: 640, margin: '0 auto', fontSize: '1.02rem', lineHeight: 1.6 }}>
+          Evidence-based reference for the 6 mineral roles, typography hierarchy, Devanagari Vedic accent rendering, and WCAG AA contrast compliance.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-        {/* System 1: Sutra Thread */}
-        <div ref={anchor1Ref}>
-          <GlassCard elevation={2} style={{ padding: 24 }}>
-            <h3 style={{ color: 'var(--gold-bright)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Sparkles size={18} /> 1. Sutra Thread
-            </h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-1)' }}>
-              This card is registered as an anchor. Notice the luminous golden thread threading directly through it.
-            </p>
-            <div style={{ marginTop: 16 }}>
-              <Chip label="Anchor #1 (playground-1)" variant="gold" />
-            </div>
-          </GlassCard>
-        </div>
-
-        {/* System 2: Breath Sync */}
-        <div ref={anchor2Ref}>
-          <GlassCard elevation={2} style={{ padding: 24 }}>
-            <h3 style={{ color: 'var(--soma)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Wind size={18} /> 2. Breath Sync (Pranayama)
-            </h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-1)' }}>
-              Driven by an 8s continuous rAF clock setting CSS var <code>--breath</code>. Watch this diaphragm scale in sync with cosmic breath.
-            </p>
-            <div
-              style={{
-                width: 60,
-                height: 60,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, var(--soma) 0%, transparent 70%)',
-                border: '2px solid var(--soma)',
-                margin: '20px auto 10px',
-                transform: 'scale(calc(0.85 + 0.3 * var(--breath, 0.5)))',
-                transition: 'transform 0.1s linear',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.75rem',
-                color: '#fff'
-              }}
-            >
-              Breath
-            </div>
-          </GlassCard>
-        </div>
-
-        {/* System 3: State-Reactive UI */}
-        <div ref={anchor3Ref}>
-          <GlassCard elevation={2} style={{ padding: 24 }}>
-            <h3 style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Heart size={18} /> 3. State-Reactive UI
-            </h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-1)' }}>
-              Test how low HP (&lt;25) causes red vignette & thread flicker, while high Prana (&gt;80) hums bright cyan.
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-              <Button size="sm" variant="danger" onClick={() => takeDamage(30)}>Damage (-30 HP)</Button>
-              <Button size="sm" variant="primary" onClick={() => heal(30)}>Heal (+30 HP)</Button>
-              <Button size="sm" variant="ghost" onClick={() => consumePrana(20)}>Use Prana (-20)</Button>
-              <Button size="sm" variant="ghost" onClick={() => restorePrana(25)}>Restore Prana (+25)</Button>
-            </div>
-            <div style={{ marginTop: 16, fontSize: '0.85rem', color: 'var(--text-2)' }}>
-              Current: HP={hp} | Prana={prana} | Streak={streak}
-            </div>
-          </GlassCard>
-        </div>
-
-        {/* System 4: Tuned Sound Synthesizer */}
-        <GlassCard elevation={2} style={{ padding: 24 }}>
-          <h3 style={{ color: 'var(--gold-bright)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Volume2 size={18} /> 4. Tuned WebAudio Synth
-          </h3>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-1)' }}>
-            All interaction sounds tuned to root frequency Sa: <strong>{rootFreq} Hz</strong>.
-          </p>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '12px 0' }}>
-            <Button size="sm" variant={rootFreq === 130.81 ? 'primary' : 'ghost'} onClick={() => handleTuneSa(130.81)}>C3 (130Hz)</Button>
-            <Button size="sm" variant={rootFreq === 146.83 ? 'primary' : 'ghost'} onClick={() => handleTuneSa(146.83)}>D3 (146Hz)</Button>
-            <Button size="sm" variant={rootFreq === 164.81 ? 'primary' : 'ghost'} onClick={() => handleTuneSa(164.81)}>E3 (164Hz)</Button>
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-            <Button size="sm" variant="ghost" onClick={() => sounds.playHover()}>Hover Bell</Button>
-            <Button size="sm" variant="ghost" onClick={() => sounds.playTap()}>Woodblock Tap</Button>
-            <Button size="sm" variant="primary" onClick={() => sounds.playSuccess()}>Sa-Ga-Pa Chord</Button>
-            <Button size="sm" variant="danger" onClick={() => sounds.playError()}>Muted Gong</Button>
-            <Button size="sm" variant="primary" onClick={() => sounds.playLevelUp()}>Tanpura Swell</Button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        {/* Section 1: The 6 Mineral Roles */}
+        <GlassCard style={{ padding: 28 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--text-heading)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Palette size={20} color="var(--color-amber-bright)" />
+            The 6 Organic Mineral & Sacred Elements
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+            {TOKENS.map((t) => (
+              <div
+                key={t.name}
+                style={{
+                  padding: 16,
+                  borderRadius: 'var(--radius-md)',
+                  background: 'rgba(22, 23, 21, 0.75)',
+                  border: '1px solid var(--border-hairline)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14
+                }}
+              >
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 'var(--radius-sm)',
+                    background: t.hex,
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    flexShrink: 0
+                  }}
+                />
+                <div>
+                  <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem' }}>{t.name}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--color-amber-bright)', fontFamily: 'monospace' }}>{t.hex}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>{t.role}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </GlassCard>
 
-        {/* System 5: Living Light Diurnal Cycle */}
-        <GlassCard elevation={2} style={{ padding: 24 }}>
-          <h3 style={{ color: 'var(--saffron)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Sun size={18} /> 5. Living Light
-          </h3>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-1)' }}>
-            Cycles through 5 Vedic diurnal Praharas based on local time. Preview color moods:
-          </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-            <Button size="sm" variant="ghost" onClick={() => {
-              document.documentElement.style.setProperty('--light-glow', '#805AD5');
-              document.documentElement.style.setProperty('--light-ambient', '#09081E');
-            }}>Brahma-Muhurta</Button>
-            <Button size="sm" variant="ghost" onClick={() => {
-              document.documentElement.style.setProperty('--light-glow', '#FF7B00');
-              document.documentElement.style.setProperty('--light-ambient', '#180B07');
-            }}>Sunrise (Ushas)</Button>
-            <Button size="sm" variant="ghost" onClick={() => {
-              document.documentElement.style.setProperty('--light-glow', '#D4AF37');
-              document.documentElement.style.setProperty('--light-ambient', '#0C0C14');
-            }}>Zenith (Madhyahna)</Button>
-            <Button size="sm" variant="ghost" onClick={() => {
-              document.documentElement.style.setProperty('--light-glow', '#FF4D6D');
-              document.documentElement.style.setProperty('--light-ambient', '#1A070F');
-            }}>Sandhya (Dusk)</Button>
+        {/* Section 2: Devanagari Sacred Scripture & Accent Shaping */}
+        <GlassCard style={{ padding: 28 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--text-heading)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Type size={20} color="var(--color-amber-bright)" />
+            Sacred Typography: Devanagari Svaras & IAST Diacritics
+          </h2>
+          <div
+            style={{
+              padding: 24,
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--color-charcoal-0)',
+              border: '1px solid var(--border-subtle)',
+              marginBottom: 16
+            }}
+          >
+            <div style={{ fontSize: '0.8rem', letterSpacing: '0.06em', color: 'var(--color-amber-base)', textTransform: 'uppercase', marginBottom: 8 }}>
+              Atharvaveda Saunaka · 12.1.1 (Prithvi Sukta) · Metric: Triṣṭubh
+            </div>
+            <p
+              style={{
+                fontFamily: 'var(--font-sanskrit)',
+                fontSize: '1.6rem',
+                lineHeight: 1.9,
+                color: 'var(--color-silver-1)',
+                margin: '0 0 12px 0'
+              }}
+            >
+              स॒त्यं बृ॒हद् ऋ॒तमु॒ग्रं दी॒क्षा तपो॒ ब्रह्म॑ य॒ज्ञः पृ॑थि॒वीं धा॑रयन्ति ।<br />
+              सा नो॑ भू॒तस्य॒ भव्य॑स्य॒ पत्न्यु॒रुं लो॒कं पृ॑थि॒वी नः॑ कृणोतु ॥
+            </p>
+            <p
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '1.05rem',
+                lineHeight: 1.6,
+                color: 'var(--color-silver-3)',
+                fontStyle: 'italic',
+                margin: '0 0 14px 0'
+              }}
+            >
+              satyaṃ bṛhad ṛtamugraṃ dīkṣā tapo brahma yajñaḥ pṛthivīṃ dhārayanti |<br />
+              sā no bhūtasya bhavyasya patnyuruṃ lokaṃ pṛthivī naḥ kṛṇotu ||
+            </p>
+            <p
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.98rem',
+                lineHeight: 1.7,
+                color: 'var(--color-silver-2)',
+                margin: 0
+              }}
+            >
+              "Truth, Vast Cosmic Order (Rta), fierce consecration, spiritual ardour, holy prayer, and self-giving sacrifice sustain Mother Earth. Queen of what was and what shall be, may Earth make ample space for our awakening."
+            </p>
+          </div>
+        </GlassCard>
+
+        {/* Section 3: Semantic Status & Restrained Badges */}
+        <GlassCard style={{ padding: 28 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--text-heading)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ShieldCheck size={20} color="var(--color-amber-bright)" />
+            Editorial Status & Restrained Governance
+          </h2>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 20 }}>
+            <Chip label="Verified Canonical" variant="sage" icon={<CheckCircle2 size={13} />} />
+            <Chip label="Scholarly Review Pending" variant="gold" icon={<Sparkles size={13} />} />
+            <Chip label="AI-Generated Note" variant="cyan" icon={<BookOpen size={13} />} />
+            <Chip label="Source Text Unavailable" variant="red" icon={<AlertTriangle size={13} />} />
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Button variant="primary">Primary Action</Button>
+            <Button variant="ghost">Secondary Exploration</Button>
+            <Button variant="outline">Fine Rule Border</Button>
           </div>
         </GlassCard>
       </div>

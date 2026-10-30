@@ -1,51 +1,106 @@
 :root {
-  /* Organic Mineral & Sacred Elements Palette */
-  --bg-space: #0B0C0E; /* Deep Charcoal Void */
-  --bg-card: rgba(22, 24, 29, 0.78); /* Charcoal Ash Glass */
-  --bg-card-hover: rgba(30, 33, 40, 0.88);
-  --wood-walnut: #2E2118; /* Ancient Birch Bark / Walnut Wood */
-  --wood-border: rgba(139, 90, 43, 0.3);
-  --silver-moon: #E2E8F0; /* Moonlit Churned Silver */
-  --silver-muted: #8E9BAE;
-  --sage-healing: #769E84; /* Oshadhi Herbal Green */
-  --sage-glow: rgba(118, 158, 132, 0.35);
-  --signal-red: #EF4444; /* Kalakuta Poison / Agni Strike */
-  --signal-red-glow: rgba(239, 68, 68, 0.4);
-  --amber-glow: #FFB020; /* Ghee Lamp Flame / Pure Amrita */
-  --amber-radiance: #FFE082;
+  /* ========================================================
+     1. THE LIVING ARCHIVE: 6 MINERAL & SACRED ELEMENT ROLES
+     ======================================================== */
+  --color-charcoal-0: #121312;      /* Deepest void */
+  --color-charcoal-1: #161715;      /* Structural canvas */
+  --color-charcoal-2: #20211F;      /* Structural panel base */
+  --color-charcoal-3: #2A2B28;      /* Elevated surface / card */
+  --color-charcoal-hover: #333430;  /* Surface hover */
 
-  /* Cyber-Vedic Baseline Aliases */
-  --bg-0: var(--bg-space);
-  --bg-1: #121316;
-  --bg-2: #1A1C22;
-  --bg-3: #22242A;
+  --color-silver-0: #FFFFFF;        /* Pure white (key highlights) */
+  --color-silver-1: #EFEFE9;        /* High-emphasis text */
+  --color-silver-2: #D5D3CB;        /* Moonlit silver body text (primary, 10.8:1 AAA) */
+  --color-silver-3: #96958E;        /* Secondary & metadata text */
+  --color-silver-muted: #6E6D67;    /* Tertiary / disabled text */
 
-  /* Accent Radiance */
-  --gold: var(--amber-glow);
-  --gold-bright: var(--amber-radiance);
-  --gold-muted: rgba(255, 176, 32, 0.35);
-  --saffron: #FF7B00;
-  --agni: var(--signal-red);
-  --cyan: #00F0FF;
-  --soma: var(--silver-moon);
-  --success: var(--sage-healing);
-  --danger: var(--signal-red);
+  --color-amber-base: #C59A56;      /* Primary accent & deliberate discovery (6.3:1 AA) */
+  --color-amber-bright: #D8AE6A;    /* Primary button & active indicator */
+  --color-amber-subtle: rgba(197, 154, 86, 0.15); /* Focus wash */
 
-  /* Text Hierarchies */
-  --text-primary: var(--silver-moon);
-  --text-secondary: var(--silver-muted);
-  --text-muted: #6B7280;
-  --text-inverse: #0B0C0E;
+  --color-sage-base: #87947A;       /* Verified status, success */
+  --color-sage-text: #9EAD91;       /* Accessible text green (6.8:1 AAA) */
+  --color-sage-subtle: rgba(135, 148, 122, 0.16);
 
-  /* Glassmorphism & Borders */
+  --color-walnut-base: #654B3C;     /* Archival warmth */
+  --color-walnut-dark: #362820;     /* Deep bark panel background */
+  --color-walnut-border: rgba(101, 75, 60, 0.35);
+
+  --color-red-base: #A83A32;        /* Alert & error marker */
+  --color-red-text: #E26D64;        /* Accessible text red (5.1:1 AA) */
+  --color-red-subtle: rgba(168, 58, 50, 0.16);
+
+  /* ========================================================
+     2. SEMANTIC ROLES
+     ======================================================== */
+  --surface-canvas: var(--color-charcoal-1);
+  --surface-panel: var(--color-charcoal-2);
+  --surface-card: var(--color-charcoal-3);
+  --surface-card-hover: var(--color-charcoal-hover);
+  --surface-archive: var(--color-walnut-dark);
+
+  --text-primary: var(--color-silver-2);
+  --text-secondary: var(--color-silver-3);
+  --text-muted: var(--color-silver-muted);
+  --text-heading: var(--color-silver-1);
+  --text-accent: var(--color-amber-bright);
+  --text-on-accent: var(--color-charcoal-0);
+
+  --border-hairline: rgba(213, 211, 203, 0.12);
+  --border-subtle: rgba(213, 211, 203, 0.18);
+  --border-medium: rgba(213, 211, 203, 0.28);
+  --border-accent: rgba(197, 154, 86, 0.45);
+  --border-focus: var(--color-amber-bright);
+
+  --action-primary: var(--color-amber-bright);
+  --action-primary-hover: #E4BC7A;
+  --action-primary-text: #161715;
+
+  --status-verified: var(--color-sage-text);
+  --status-review: var(--color-amber-base);
+  --status-error: var(--color-red-text);
+
+  /* ========================================================
+     3. COMPONENT ALIASES & BACKWARD COMPATIBILITY
+     ======================================================== */
+  --bg-space: var(--surface-canvas);
+  --bg-card: rgba(32, 33, 31, 0.88);
+  --bg-card-hover: rgba(42, 43, 40, 0.95);
+  --bg-0: var(--surface-canvas);
+  --bg-1: var(--surface-panel);
+  --bg-2: var(--surface-card);
+  --bg-3: var(--color-charcoal-hover);
+
+  --silver-moon: var(--color-silver-2);
+  --silver-muted: var(--color-silver-3);
+  --amber-glow: var(--color-amber-base);
+  --amber-radiance: var(--color-amber-bright);
+  --sage-healing: var(--color-sage-base);
+  --sage-glow: var(--color-sage-subtle);
+  --signal-red: var(--color-red-base);
+  --signal-red-glow: var(--color-red-subtle);
+  --wood-walnut: var(--color-walnut-dark);
+  --wood-border: var(--color-walnut-border);
+
+  --gold: var(--color-amber-base);
+  --gold-bright: var(--color-amber-bright);
+  --gold-muted: var(--color-amber-subtle);
+  --saffron: #D8AE6A;
+  --agni: var(--color-red-text);
+  --cyan: var(--color-silver-1);
+  --soma: var(--color-silver-2);
+  --success: var(--color-sage-base);
+  --danger: var(--color-red-text);
+
+  /* Restrained Card Surfaces & Borders */
   --glass-bg: var(--bg-card);
   --glass-bg-hover: var(--bg-card-hover);
-  --glass-border: rgba(226, 232, 240, 0.12);
-  --glass-border-hover: rgba(226, 232, 240, 0.25);
-  --glass-border-gold: rgba(255, 176, 32, 0.4);
-  --glass-border-gold-bright: rgba(255, 224, 130, 0.7);
-  --glass-shadow: 0 12px 32px rgba(20, 14, 10, 0.6);
-  --glass-shadow-heavy: 0 20px 48px rgba(10, 8, 6, 0.85);
+  --glass-border: var(--border-hairline);
+  --glass-border-hover: var(--border-subtle);
+  --glass-border-gold: var(--border-accent);
+  --glass-border-gold-bright: rgba(216, 174, 106, 0.75);
+  --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --glass-shadow-heavy: 0 16px 40px rgba(0, 0, 0, 0.75);
 
   /* Spacing Scale */
   --space-1: 4px;
