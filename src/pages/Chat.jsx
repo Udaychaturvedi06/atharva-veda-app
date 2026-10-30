@@ -66,19 +66,28 @@ export const Chat = () => {
 
     try {
       const token = localStorage.getItem('sutra_token');
+      // Construct canonical messages array formatted as [{ role, content }]
+      const conversationHistory = newMessages.slice(-6).map((m) => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content
+      }));
+
+      // Prepend persona context to the latest user message
+      const formattedMessages = [
+        ...conversationHistory.slice(0, -1),
+        {
+          role: 'user',
+          content: `[Persona: ${selectedPersona.name}] ${query}`
+        }
+      ];
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({
-          message: `[Persona: ${selectedPersona.name}] ${query}`,
-          history: newMessages.slice(-6).map((m) => ({
-            role: m.role,
-            text: m.content
-          }))
-        })
+        body: JSON.stringify({ messages: formattedMessages })
       });
 
       if (res.ok) {

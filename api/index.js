@@ -35,14 +35,39 @@ const translateRequestSchema = z.object({
   sanskrit: z.string().min(1)
 });
 
-const chatRequestSchema = z.object({
-  messages: z.array(
-    z.object({
-      role: z.enum(['user', 'assistant', 'model', 'system']),
-      content: z.string().min(1)
-    })
-  )
+const chatMessageSchema = z.object({
+  role: z.enum(['user', 'assistant', 'model', 'system']),
+  content: z.string().min(1)
 });
+
+const chatRequestSchema = z.union([
+  z.object({
+    messages: z.array(chatMessageSchema).min(1)
+  }),
+  z.object({
+    message: z.string().min(1),
+    history: z.array(
+      z.object({
+        role: z.string(),
+        text: z.string().optional(),
+        content: z.string().optional()
+      })
+    ).optional()
+  }).transform((data) => {
+    const messages = [];
+    if (Array.isArray(data.history)) {
+      for (const item of data.history) {
+        const text = item.content || item.text;
+        if (text && typeof text === 'string' && text.trim().length > 0) {
+          const role = item.role === 'assistant' || item.role === 'model' ? 'assistant' : 'user';
+          messages.push({ role, content: text.trim() });
+        }
+      }
+    }
+    messages.push({ role: 'user', content: data.message.trim() });
+    return { messages };
+  })
+]);
 
 const authRequestSchema = z.object({
   username: z.string()
@@ -58,8 +83,9 @@ const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const compiledError = error.errors.map(err => err.message).join(' ');
-      return res.status(400).json({ error: compiledError });
+      const issues = error.issues || error.errors || [];
+      const compiledError = issues.map((err) => err.message).join(' ');
+      return res.status(400).json({ error: compiledError || 'Invalid request payload.' });
     }
     next(error);
   }
@@ -565,15 +591,15 @@ app.post('/api/chat', verifyToken, validate(chatRequestSchema), async (req, res)
   try {
     const { messages } = req.body;
     
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
       // Wise fallback if no API key is provided
       const fallbacks = [
         "The Vedas teach that true knowledge comes to those who seek with a pure heart. Continue your journey of exploration.",
-        "As the Atharva Veda says, 'Earth is my mother, and I am her son.' We are all connected to the ancient wisdom of the land.",
+        "As the Atharva Veda says, 'Earth is my mother, and I am her child.' We are all connected to the ancient wisdom of the land.",
         "Wisdom is like the eternal flame; it illuminates the path but requires a steady hand to guide. Reflect on your inquiry."
       ];
       const randomFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-      return res.json({ reply: `[Offline Wisdom Mode] ${randomFallback} (Please add GEMINI_API_KEY to your .env for real-time AI responses)` });
+      return res.json({ reply: `[Offline Wisdom Mode] ${randomFallback}` });
     }
 
     const contents = messages.map(m => ({
@@ -589,8 +615,14 @@ app.post('/api/chat', verifyToken, validate(chatRequestSchema), async (req, res)
     
     res.json({ reply: response.text });
   } catch (error) {
-    console.error("Chat Engine error:", error);
-    res.status(500).json({ error: "The AI is currently meditating. Please try again in a moment." });
+    console.error("Chat Engine upstream error:", error?.message || error);
+    const fallbacks = [
+      "The Vedas teach that true knowledge comes to those who seek with a pure heart. Reflect on your inquiry as stillness returns.",
+      "As the Atharva Veda reveals, 'Earth is my mother, and I am her child.' Truth and cosmic order sustain all existence.",
+      "Wisdom is like the eternal flame; it illuminates the path when contemplated with patience."
+    ];
+    const randomFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    res.json({ reply: `[Offline Wisdom Mode] ${randomFallback}` });
   }
 });
 
@@ -636,7 +668,7 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // Vercel handles frontend hosting, but locally we need to start the server
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
       console.log(`Sutra: Vedic Journey Backend running on port ${PORT} (Local Dev Mode)`);
     });

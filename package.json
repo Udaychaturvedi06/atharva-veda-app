@@ -9,6 +9,7 @@
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "NODE_ENV=test node --test tests/**/*.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
     "workbox-precaching": "^7.4.1",
     "workbox-routing": "^7.4.1",
     "workbox-strategies": "^7.4.1",
+    "ws": "^8.18.0",
     "zod": "^4.4.3",
     "zod-validation-error": "^5.0.0",
     "zustand": "^5.0.16"

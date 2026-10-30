@@ -1,6 +1,7 @@
 {
   "name": "divine-books",
   "version": "0.5.0",
+  "type": "module",
   "description": "A comprehensive JavaScript/TypeScript library providing access to sacred Hindu texts including the Bhagavad Gita with Sanskrit, Hindi, and English translations and Mahabharata, Ramcharitmanas, and Vedas",
   "keywords": [
     "bhagavad-gita",
