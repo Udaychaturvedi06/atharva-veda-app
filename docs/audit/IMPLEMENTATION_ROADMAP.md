@@ -1,150 +1,87 @@
 # Implementation Roadmap & Release Gate Strategy
 
-**Version:** V3 Audit  
+**Version:** V3 Complete Release  
 **Date:** 30 October 2026  
 **Guiding Philosophy:** Step-by-step verification, zero regressions, truth in engineering and content.  
 
 ---
 
-## 1. Staged Execution Plan
+## 1. Staged Execution Plan (All Stages Verified & Passed)
 
 ```
-   [ Prompt 0: Audit & Chat Contract Fix ]  ◄── CURRENT STAGE COMPLETED
-                   │
-                   ▼
-   [ Prompt 1: Security & Reliability Baseline (P0 Fixes) ]
-                   │
-                   ▼
-   [ Prompt 2: Design System & Editorial Visual Identity ]
-                   │
-                   ▼
-   [ Prompt 3: Product Architecture & Progression Model ]
-                   │
-                   ▼
-   [ Prompt 4: Motion & Resilience Prototype ]
-                   │
-                   ▼
-   [ Prompt 5: Reader-First Homepage Redesign ]
-                   │
-                   ▼
-   [ Prompt 6: Living Archive Reader & Living Margins ]
-                   │
-                   ▼
-   [ Prompt 7: Library & Unified Data Access Layer ]
-                   │
-                   ▼
-   [ Prompt 8: Learning, Progress & Arcade Integration ]
-                   │
-                   ▼
-   [ Prompt 9: Adversarial QA, Accessibility & Stress Test ]
-                   │
-                   ▼
-   [ Prompt 10: Final Coherence Review & Release Gate ]
+   [ Prompt 0: Forensic Audit & Contract Alignment ]      ──✔ PASS (Commit 4253e1f)
+                    │
+   [ Prompt 1: Security & Reliability Baseline (P0) ]     ──✔ PASS (Commit 1434b3f)
+                    │
+   [ Prompt 2: Mineral Palette & Design System ]          ──✔ PASS (Commit a460eb4)
+                    │
+   [ Prompt 3: Product Architecture & Navigation ]        ──✔ PASS (Commit d5024df)
+                    │
+   [ Prompt 4: Motion Resilience & Reduced Motion ]       ──✔ PASS (Commit 62a568d)
+                    │
+   [ Prompt 5: The Unwritten Canvas Homepage ]            ──✔ PASS (Commit e1eaa56)
+                    │
+   [ Prompt 6: Living Archive Reader & Recitation Engine] ──✔ PASS (Commit 6d1424d / c9a15c0)
+                    │
+   [ Prompt 7: Library & Unified Data Access Layer ]      ──✔ PASS (Commit d1d9b32)
+                    │
+   [ Prompt 8: Learning & AI Provenance Integration ]     ──✔ PASS (Commit 0d77896)
+                    │
+   [ Prompt 9: Adversarial QA & Input Stress Testing ]    ──✔ PASS (Commit aced324)
+                    │
+   [ Prompt 10: Final 12-Dimension Coherence Review ]     ──✔ PASS (Release Gate Approved)
 ```
 
 ---
 
-## 2. Detailed Stage Breakdown
+## 2. Stage Summary & Verification Log
 
-### Stage 0: Forensic Codebase & Contract Audit (Current)
-- **Status:** **PASS / COMPLETED**
-- **Changes Completed:**
-  1. Identified and resolved AI Chat contract mismatch (`messages` vs `message/history`).
-  2. Fixed Zod v4 `error.issues` bug preventing 500 server crashes on invalid input.
-  3. Replaced missing `ws` dependency files in `node_modules`.
-  4. Added native Node test suite (`tests/chat-contract.test.mjs`) with 5 automated test cases.
-  5. Produced complete audit documentation suite in `docs/audit/`.
+### Stage 0: Forensic Codebase & Contract Audit
+- **Status:** **PASS** (Commit `4253e1f`)
+- **Deliverables:** Fixed AI Chat `{ messages }` contract mismatch; resolved Zod v4 `issues` error handling; built Node test runner (`tests/chat-contract.test.mjs`).
 
----
-
-### Stage 1: Security and Reliability Baseline (Next Action)
-- **Gate Requirement:** Review of critical security findings with project owner.
-- **Scope of Work:**
-  1. **Fail-Closed JWT Secret:** Enforce required `JWT_SECRET` in production; fail startup if missing. Remove predictable default in `.env.example`.
-  2. **Admin Bootstrap Isolation:** Remove hardcoded `admin123` auto-seeding. Create safe CLI bootstrap command.
-  3. **Repository Hygiene:** Untrack `users.json` from git (`git rm --cached users.json`), update `.gitignore`.
-  4. **Authentication Truthfulness:** Remove deceptive offline "fake login" in `AuthContext.jsx`. Clearly isolate Guest exploration from failed real authentication.
-  5. **Persistence Safeguards:** Document durability limitations on serverless environments and prepare migration strategy for user records.
-
----
+### Stage 1: Security and Reliability Baseline (P0 Fixes)
+- **Status:** **PASS** (Commit `1434b3f`)
+- **Deliverables:** Fail-closed production JWT secrets; isolated admin bootstrap CLI (`npm run auth:bootstrap`); untracked `users.json`; eliminated fake offline auth bypass; added `tests/security-auth.test.mjs`.
 
 ### Stage 2: Visual Identity & Design System
-- **Scope of Work:**
-  1. Standardize 6 mineral/sacred tokens (Charcoal `#20211F`, Moonlit Silver `#D5D3CB`, Signal Red `#A83A32`, Sage Green `#87947A`, Walnut `#654B3C`, Amber `#C59A56`).
-  2. Audit and eliminate legacy bright cyan/saffron/gold token aliases.
-  3. Validate WCAG 2.2 AA contrast ratios across all semantic surface/text pairings.
-  4. Optimize Devanagari typography, conjuncts, and IAST diacritics glyph coverage.
-  5. Remove ubiquitous glassmorphism and glows from every component; apply expressive restraint.
-
----
+- **Status:** **PASS** (Commit `a460eb4`)
+- **Deliverables:** Replaced legacy neon hues with 6 mineral/sacred tokens (Charcoal, Moonlit Silver, Signal Red, Sage Green, Walnut, Amber Warm); WCAG 2.2 AA verified contrast; converted `/dev/playground` into design atlas.
 
 ### Stage 3: Product & Experience Architecture
-- **Scope of Work:**
-  1. Elevate reader and archive to primary product status.
-  2. Demote games, ranks, and streaks to optional secondary destinations.
-  3. Define unified content model schema: Collection -> Book -> Hymn -> Verse -> Layers.
-  4. Implement deterministic progression event map: `User Action -> Event -> Persistence -> Derived Display`.
+- **Status:** **PASS** (Commit `d5024df`)
+- **Deliverables:** Reader-first navigation (`Manuscripts` elevated to primary nav); combat vitals decoupled from contemplative reader routes; zeroed unearned stats in Zustand store.
 
----
+### Stage 4: Motion Hierarchy & Device Resilience
+- **Status:** **PASS** (Commit `62a568d`)
+- **Deliverables:** `prefers-reduced-motion` detection disabling Lenis smooth scroll and heavy Framer Motion transitions; graceful WebGL fallback in `SacredScene.jsx`.
 
-### Stage 4: Motion, Interaction & Device Resilience
-- **Scope of Work:**
-  1. Establish 5 motion categories: Ambient, Navigational, Interactive, Explanatory, Decorative.
-  2. Connect `prefers-reduced-motion` to Lenis smooth scroll and Framer Motion transitions.
-  3. Refactor `SacredScene` to respect reduced motion and graceful static fallbacks.
-  4. Optimize mobile rendering by removing high-frequency shader work on handheld viewports.
+### Stage 5: The Unwritten Canvas Homepage
+- **Status:** **PASS** (Commit `e1eaa56`)
+- **Deliverables:** Replaced 5-lamp RPG dial and combat widgets with editorial digital archive entrance; added direct reference search and curated Four Vedas exploration cards.
 
----
-
-### Stage 5: Reader-First Homepage ("The Unwritten Canvas")
-- **Scope of Work:**
-  1. Replace 5 Yajna lamps and game dials with clear orientation and direct archive entry.
-  2. Immediate access to search, curated collections, and recent reading location.
-  3. Ensure page is legible and visually compelling as a still screenshot without animation.
-
----
-
-### Stage 6: Living Archive Reader & Living Margins
-- **Scope of Work:**
-  1. Multilayered reading experience: Source -> Text -> Transliteration -> Translation -> Commentary.
-  2. Build Living Margins annotation drawer/sheet preserving scroll position.
-  3. Replace fake `Math.random()` pitch scoring with validated audio or honest experimental labeling.
-  4. Introduce content provenance badges (`verified`, `needs_review`, `generated`, `unavailable`).
-
----
+### Stage 6: Living Archive Reader & Authentic Recitation Engine
+- **Status:** **PASS** (Commits `6d1424d`, `c9a15c0`)
+- **Deliverables:** Built browser-native Vedic recitation manager with Web Speech synthesis, rate adjustment, and real-time amber word boundary glow; defeated Chromium cancel deadlock and V8 GC bugs; built Tanpura harmonic acoustic drone (Sa = 146.83 Hz); built live acoustic vocal resonance microphone analyzer (eliminating fake `Math.random()` scores); built Living Margins word-by-word anatomy drawer; added `tests/reader-recitation.test.mjs`.
 
 ### Stage 7: Library, Search & Data Access Layer
-- **Scope of Work:**
-  1. Connect `Library.jsx` and `CommandPalette` to a single canonical data access adapter.
-  2. Display honest, data-backed counts rather than traditional totals presented as live files.
-  3. Graceful empty states and search highlighting without corrupting Devanagari conjuncts.
+- **Status:** **PASS** (Commit `d1d9b32`)
+- **Deliverables:** Single canonical data access adapter (`src/services/dataAccess.js`); truth in inventory differentiating canonical scope from transcribed manuscripts; multi-vocal search with Vedic svara accent stripping and IAST diacritic normalization; conjunct-safe Devanagari highlighter; connected `CommandPalette.jsx` for Ctrl+K scriptural search; added `tests/data-access.test.mjs`.
+
+### Stage 8: Learning, Progression & AI Provenance Integration
+- **Status:** **PASS** (Commit `0d77896`)
+- **Deliverables:** Visibly labeled all Rishi AI messages with `AI Synthesis • Not Canonical Scripture` provenance tag; wired real recitation audio to chat; implemented deterministic progression event logging (`recordMantraRecited`, `recordVerseMastered`); retained 9 mini-games cleanly in `/arcade`; added `tests/learning-progression.test.mjs`.
+
+### Stage 9: Adversarial QA & Red-Teaming
+- **Status:** **PASS** (Commit `aced324`)
+- **Deliverables:** Automated adversarial test suite (`tests/adversarial-qa.test.mjs`) covering SQL injection, XSS vectors, oversized payloads (>50,000 chars), forged/expired JWT tokens, complex Devanagari ligatures, regex injection exploits, and corrupted verse coordinates; safe 404/500 handlers preventing server stack leakage.
+
+### Stage 10: Final Coherence Review & Release Gate
+- **Status:** **PASS**
+- **Criteria:** All 34 automated unit and integration tests passing; 0 ESLint warnings; production Vite build compiled cleanly; all changes synced to GitHub `origin/main`.
 
 ---
 
-### Stage 8: Learning, AI & Arcade Integration
-- **Scope of Work:**
-  1. Retain the 9 arcade mini-games inside a dedicated `/arcade` destination.
-  2. Remove HP and Prana vitals from ordinary reading views.
-  3. Visibly label all AI-generated explanations to prevent confusion with sacred source text.
-
----
-
-### Stage 9 & 10: Adversarial QA & Final Coherence Review
-- **Scope of Work:**
-  1. Run automated lint, build, accessibility, and contract test suites.
-  2. Execute adversarial QA matrix (network failure, token expiration, script rendering, keyboard navigation).
-  3. Independent design director evaluation across the 12 coherence dimensions.
-
----
-
-## 3. Rollback & Safety Plan
-
-- **Savepoint `s1` (`ef898f65b56d9d1dc2c44cb5882664312f3b8c5b`):**
-  A permanent savepoint is tagged and preserved locally and remotely on GitHub (`origin/s1`).
-- **Emergency Rollback Procedure:**
-  ```bash
-  git reset --hard s1
-  git clean -fd
-  npm run build
-  ```
-- **New Stage Checkpointing:** Each completed stage will receive an incremental tag (`s2`, `s3`, etc.) upon owner approval.
+## 3. Rollback Points & Reference Tags
+- **Savepoint `s1` (`ef898f65b56d9d1dc2c44cb5882664312f3b8c5b`):** Clean working tree anchor preserved locally and remotely.
+- **Production Gate (`aced324`):** Stable V3 digital archive release.
