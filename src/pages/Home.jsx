@@ -1,586 +1,453 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '../store/useGameStore';
 import { sounds } from '../utils/soundEngine';
-import { useSutraAnchor } from '../systems/sutraContext';
 import {
-  Sparkles,
-  Flame,
-  Swords,
   BookOpen,
+  Search,
   ArrowRight,
-  RotateCcw,
-  Check,
-  Award,
-  Zap,
-  Volume2,
-  Share2,
-  Shield,
-  Hourglass,
-  Heart
+  Compass,
+  Sparkles,
+  Gamepad2,
+  ArrowUpRight,
+  CheckCircle2,
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
-import { Modal } from '../components/ui/Modal';
-import { AnimatedNumber } from '../components/ui/AnimatedNumber';
-import LessonPlayer from '../learning/LessonPlayer';
-import { buildSession } from '../learning/sessionBuilder';
-import { VasukiRing, VasukiPoisonWard } from '../components/ui/VasukiRing';
 
-// Canonical Daily Hymn (Prithvi Sukta)
-const DAILY_HYMN = {
-  veda: 'Atharvaveda',
-  book: 12,
-  hymn: 1,
-  verse: 12,
-  sanskrit: 'मा॒ता भूमिः॑ पु॒त्रो अ॒हं पृ॑थि॒व्याः । पर्ज॑न्यः पि॒ता स उ॑ नः पिपर्तु ॥', // VERIFY
-  transliteration: 'mātā bhūmiḥ putro ahaṃ pṛthivyāḥ | parjanyaḥ pitā sa u naḥ pipartu ||', // VERIFY
-  english: 'The Earth is my Mother; I am the child of this sacred soil. Parjanya (the rain-cloud) is the nourishing Father—may he sustain our breath.', // VERIFY
-  insight: 'The primordial ecological covenant of the Atharvaveda: humanity and nature are mutually consecrated living kin.' // VERIFY
-};
-
-const SANKALPAS = [
-  { id: 'focus', title: 'Ekagrata (Focus)', desc: '+15% Radiance gain from study', buff: 'Focus +15%', icon: '🎯' },
-  { id: 'calm', title: 'Shanti (Calm)', desc: '-20% Prana cost on all invocations', buff: 'Prana Shield', icon: '🕊️' },
-  { id: 'courage', title: 'Abhaya (Courage)', desc: '+25% Damage in inner enemy trials', buff: 'Abhaya Might', icon: '⚡' },
-  { id: 'gratitude', title: 'Kritajnata (Gratitude)', desc: '+20% Tapasya resonance bonus', buff: 'Grace Resonator', icon: '🙏' }
+// Curated Available Traditions and Collections
+const CURATED_COLLECTIONS = [
+  {
+    id: 'atharva',
+    title: 'Atharvaveda Saunaka',
+    devanagari: 'अथर्ववेद शौनक संहिता',
+    leadHymn: 'Kanda 12 · Prithvi Sukta',
+    desc: 'The primordial ecological hymn: Mother Earth sustained by truth, cosmic order, and consecrated vigilance.',
+    route: '/verse/12/1/1',
+    ref: 'AVŚ 12.1.1',
+    accent: 'var(--color-amber-bright)',
+    tag: 'Ecological Covenant'
+  },
+  {
+    id: 'rig',
+    title: 'Rigveda Samhita',
+    devanagari: 'ऋग्वेद संहिता',
+    leadHymn: 'Mandala 1 · Agni Sukta',
+    desc: 'The primordial revelation of cosmic aspiration, divine illumination, and the sacrificial flame.',
+    route: '/library?veda=rig',
+    ref: 'RV 1.1.1',
+    accent: 'var(--color-silver-1)',
+    tag: 'Cosmic Chants'
+  },
+  {
+    id: 'sama',
+    title: 'Samaveda Archika',
+    devanagari: 'सामवेद आर्चिक',
+    leadHymn: 'Purvarchika · Melodies of Agni',
+    desc: 'Metrical chants and sonic frequencies designed for contemplative dissolution of the ego.',
+    route: '/library?veda=sama',
+    ref: 'SV 1.1.1',
+    accent: 'var(--color-sage-text)',
+    tag: 'Sacred Frequencies'
+  },
+  {
+    id: 'yajur',
+    title: 'Yajurveda (Vajasaneyi)',
+    devanagari: 'शुक्ल यजुर्वेद वाजसनेयि',
+    leadHymn: 'Isha Adhyaya · Non-Duality',
+    desc: 'Sacred action, inner renunciation, and the celebrated revelation of divine all-pervasiveness.',
+    route: '/library?veda=yajur',
+    ref: 'YV 40.1.1',
+    accent: 'var(--color-silver-2)',
+    tag: 'Inner Alchemy'
+  }
 ];
 
 export const Home = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Anchors for Sutra Thread
-  const anchorYajnaRef = useRef(null);
-  const anchorHomaRef = useRef(null);
-  useSutraAnchor('home-yajna', anchorYajnaRef);
-  useSutraAnchor('home-homa', anchorHomaRef);
-
-  // Store state
-  const {
-    addRp,
-    heal,
-    restorePrana,
-    hp: rawHp,
-    streak: rawStreak,
-    graceDays: rawGraceDays,
-    relics: rawRelics,
-    sankalpa,
-    setSankalpa,
-    completeDailyYajna
-  } = useGameStore();
-
-  const hp = typeof rawHp === 'number' ? rawHp : 100;
-  const streak = typeof rawStreak === 'number' ? rawStreak : 1;
-  const graceDays = typeof rawGraceDays === 'number' ? rawGraceDays : 2;
-  const relics = Array.isArray(rawRelics) && rawRelics.length > 0 ? rawRelics : [
-    { id: 'rudraksha', name: 'Gauri Shankar Rudraksha', desc: '+15% Tapasya resonance on meditation', rarity: 'Legendary', icon: '📿', count: 1 },
-    { id: 'conch', name: 'Panchajanya Conch Shell', desc: 'Emits a sound wave that dispels doubts', rarity: 'Epic', icon: '🐚', count: 1 },
-    { id: 'palm_leaf', name: 'Ancient Birch Bark Folio', desc: 'Contains fragments of Atharva healing hymns', rarity: 'Rare', icon: '📜', count: 2 }
-  ];
-
-  // 5 Lamps Daily Progress
-  const [completedLamps, setCompletedLamps] = useState({
-    sankalpa: Boolean(sankalpa),
-    shloka: false,
-    homa: false,
-    trial: false,
-    review: false
-  });
-
-  // Shloka Card 3D Flip
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [selectedRelic, setSelectedRelic] = useState(null);
-  const [activeLesson, setActiveLesson] = useState(null);
-
-  // Homa Fire interaction
-  const [isFeedingGhee, setIsFeedingGhee] = useState(false);
-  const [homaSeconds, setHomaSeconds] = useState(60);
-  const [homaActive, setHomaActive] = useState(false);
-  const [yajnaCompleteModal, setYajnaCompleteModal] = useState(false);
-
-  // Time-aware greeting
+  // Time-aware greeting grounded in Vedic diurnal phases
   const [greeting, setGreeting] = useState('');
   useEffect(() => {
     const hour = new Date().getHours();
-    if (hour >= 3.5 && hour < 6) setGreeting('Brahma Muhurta, Sacred Seeker');
-    else if (hour >= 6 && hour < 12) setGreeting('Shubha Prabhat (Auspicious Morning), Seeker');
-    else if (hour >= 12 && hour < 17) setGreeting('Madhyahna Radiance, Seeker');
-    else if (hour >= 17 && hour < 20) setGreeting('Sandhya Twilight, Seeker');
-    else setGreeting('Shubha Ratri (Cosmic Night), Seeker');
+    if (hour >= 3.5 && hour < 6) setGreeting('Brahma Muhurta (Pre-Dawn Stillness)');
+    else if (hour >= 6 && hour < 12) setGreeting('Shubha Prabhat (Morning Radiance)');
+    else if (hour >= 12 && hour < 17) setGreeting('Madhyahna (Solar Zenith)');
+    else if (hour >= 17 && hour < 20) setGreeting('Sandhya (Twilight Contemplation)');
+    else setGreeting('Shubha Ratri (Cosmic Night)');
   }, []);
 
-  // Check 5 lamps completion
-  useEffect(() => {
-    const allDone = Object.values(completedLamps).every(Boolean);
-    if (allDone && !yajnaCompleteModal) {
-      const awarded = completeDailyYajna();
-      if (awarded) {
-        sounds.playLevelUp();
-        setYajnaCompleteModal(true);
-      }
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    sounds.playTap();
+
+    // Check for direct reference patterns like "12.1.1" or "1.1"
+    const refMatch = searchQuery.trim().match(/^(\d+)[.\s]+(\d+)(?:[.\s]+(\d+))?$/);
+    if (refMatch) {
+      const book = refMatch[1];
+      const hymn = refMatch[2];
+      const verse = refMatch[3] || '1';
+      navigate(`/verse/${book}/${hymn}/${verse}`);
+    } else {
+      navigate(`/library?q=${encodeURIComponent(searchQuery.trim())}`);
     }
-  }, [completedLamps, completeDailyYajna, yajnaCompleteModal]);
-
-  // Homa Timer
-  useEffect(() => {
-    if (!homaActive || homaSeconds <= 0) return;
-    const interval = setInterval(() => {
-      setHomaSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setHomaActive(false);
-          sounds.playSuccess();
-          restorePrana(25);
-          heal(25);
-          addRp(100);
-          setCompletedLamps((l) => ({ ...l, homa: true }));
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [homaActive, homaSeconds, restorePrana, heal, addRp]);
-
-  const handleSelectSankalpa = (s) => {
-    sounds.playTap();
-    setSankalpa(s.id);
-    setCompletedLamps((l) => ({ ...l, sankalpa: true }));
   };
-
-  const handleChantShloka = () => {
-    sounds.playSuccess();
-    setCompletedLamps((l) => ({ ...l, shloka: true }));
-    const session = buildSession({ minutes: 3 });
-    setActiveLesson(session);
-  };
-
-  const handleStartReview = () => {
-    sounds.playSuccess();
-    setCompletedLamps((l) => ({ ...l, review: true }));
-    const session = buildSession({ minutes: 3 });
-    setActiveLesson(session);
-  };
-
-  const handleFeedGhee = () => {
-    sounds.playTap();
-    setIsFeedingGhee(true);
-    setHomaActive(true);
-    setTimeout(() => setIsFeedingGhee(false), 800);
-  };
-
-  const completedCount = Object.values(completedLamps).filter(Boolean).length;
 
   return (
-    <div className="home-dashboard" style={{ padding: '24px 20px 100px', maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 10 }}>
-      {/* Critical Fortitude (HP < 25%) Emergency Red Vignette */}
-      {hp < 25 && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 9999,
-            boxShadow: 'inset 0 0 95px rgba(239, 68, 68, 0.45)',
-            animation: 'pulse 1.6s infinite ease-in-out'
-          }}
-        />
-      )}
-
-      {/* 0. GREETING BAND */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <Chip label="Daily Sadhana" variant="gold" icon={<Sparkles size={14} />} />
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-2)' }}>Tithi: Shukla Paksha Trayodashi &bull; Nakshatra: Rohini</span>
+    <div style={{ maxWidth: 1140, margin: '0 auto', padding: '36px 20px 80px', position: 'relative', zIndex: 10 }}>
+      {/* 1. IMMEDIATE ORIENTATION & EDITORIAL HEADER */}
+      <section style={{ marginBottom: 40 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <Chip label="Digital Archive" variant="gold" icon={<Compass size={14} />} />
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
+            {greeting} &bull; Open Academic Edition
+          </span>
         </div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', color: 'var(--amber-radiance, #FFE082)', margin: 0 }}>
-          {greeting}
-        </h1>
-        <p style={{ color: 'var(--silver-muted, #94A3B8)', fontSize: '0.95rem', margin: '6px 0 0' }}>
-          Step forth into the 5-fold Yajna of the day to maintain cosmic order (Rta).
-        </p>
-      </div>
 
-      {/* VASUKI OUROBOROS 5 LAMPS SAMUDRA MANTHANA DIAL */}
-      <div ref={anchorYajnaRef} style={{ marginBottom: 38 }}>
-        <VasukiRing
-          completedCount={completedCount}
-          isChurning={homaActive || isFeedingGhee}
-          hp={hp}
-          onChurn={() => sounds.playTibetanBowl()}
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)',
+            color: 'var(--text-heading)',
+            lineHeight: 1.15,
+            letterSpacing: '0.01em',
+            margin: '0 0 16px 0'
+          }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
-            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--silver-moon, #E2E8F0)', fontWeight: 600, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Flame size={18} color="var(--amber-glow, #FFB020)" /> The 5 Sacred Yajna Lamps
-            </span>
-            <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.85rem', color: 'var(--amber-glow, #FFB020)' }}>
-              {completedCount} / 5 LAMPS ILLUMINATED &bull; {completedCount >= 5 ? 'SAPTA-PHANA AWAKENED' : 'CHURNING IN PROGRESS'}
-            </span>
-          </div>
+          The Living Archive of Vedic Wisdom
+        </h1>
 
-          {/* 5 Lamps Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
-            {['1. Sankalpa', '2. Shloka', '3. Homa', '4. Duel', '5. Rekindle'].map((stepName, i) => {
-              const keys = ['sankalpa', 'shloka', 'homa', 'trial', 'review'];
-              const isDone = completedLamps[keys[i]];
-              return (
-                <div
-                  key={stepName}
-                  style={{
-                    padding: '12px 10px',
-                    textAlign: 'center',
-                    borderRadius: 10,
-                    background: isDone ? 'rgba(255, 176, 32, 0.16)' : 'rgba(226, 232, 240, 0.04)',
-                    border: isDone ? '1px solid #FFB020' : '1px solid rgba(226, 232, 240, 0.1)',
-                    color: isDone ? '#FFB020' : 'var(--silver-muted, #94A3B8)',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    boxShadow: isDone ? '0 0 14px rgba(255, 176, 32, 0.25)' : 'none',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  {isDone ? '✓ ' : ''}{stepName}
-                </div>
-              );
-            })}
-          </div>
-        </VasukiRing>
-      </div>
+        <p
+          style={{
+            fontFamily: 'var(--font-ui)',
+            fontSize: '1.1rem',
+            lineHeight: 1.65,
+            color: 'var(--text-primary)',
+            maxWidth: 720,
+            margin: 0
+          }}
+        >
+          An authored, scholarly digital environment for exploring the four Vedas with authentic Devanagari 
+          accent notation, word-level etymological breakdown, verified translations, and structured learning.
+        </p>
+      </section>
 
-      {/* BENTO GRID OF 5 SACRED RITUALS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 40 }}>
-        {/* STEP 1: SANKALPA (INTENTION) */}
-        <GlassCard variant="naga" elevation={2} style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <Chip label="Step 1" variant={completedLamps.sankalpa ? 'gold' : 'neutral'} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--amber-glow, #FFB020)' }}>Daily Sankalpa</span>
-          </div>
-          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--silver-moon, #E2E8F0)', margin: '0 0 12px' }}>
-            Choose Your Sacred Intention
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {SANKALPAS.map((s) => {
-              const isChosen = sankalpa === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => handleSelectSankalpa(s)}
-                  style={{
-                    padding: '12px 10px',
-                    background: isChosen ? 'rgba(255, 176, 32, 0.22)' : 'rgba(226, 232, 240, 0.03)',
-                    border: isChosen ? '1.5px solid var(--amber-glow, #FFB020)' : '1px solid rgba(226, 232, 240, 0.08)',
-                    borderRadius: 8,
-                    color: '#fff',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <div style={{ fontSize: '1.2rem', marginBottom: 4 }}>{s.icon}</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isChosen ? 'var(--amber-radiance, #FFE082)' : 'var(--silver-moon, #E2E8F0)' }}>
-                    {s.title}
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--silver-muted, #94A3B8)', marginTop: 2 }}>
-                    {s.buff}
-                  </div>
-                </button>
-              );
-            })}
+      {/* 2. SIGNATURE INTERACTION: DIRECT ARCHIVE SEARCH & VERSE JUMP */}
+      <section style={{ marginBottom: 48 }}>
+        <GlassCard style={{ padding: '24px 28px', border: '1px solid var(--border-subtle)', background: 'rgba(26, 27, 24, 0.85)' }}>
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 260, background: 'var(--color-charcoal-0)', padding: '12px 18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-hairline)' }}>
+              <Search size={20} color="var(--color-amber-bright)" style={{ flexShrink: 0 }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by keyword (e.g. 'Truth', 'Earth') or jump by reference (e.g. '12.1.1')..."
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem',
+                  fontFamily: 'var(--font-ui)',
+                  width: '100%'
+                }}
+              />
+            </div>
+            <Button type="submit" variant="primary" icon={<ArrowRight size={18} />}>
+              Open in Archive
+            </Button>
+          </form>
+
+          {/* Quick jump suggestions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Quick Jump:</span>
+            {['12.1.1 (Prithvi Sukta)', '1.1.1 (Invocation to Speech)', '19.9.1 (Shanti Sukta)'].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  sounds.playTap();
+                  const ref = s.split(' ')[0];
+                  const parts = ref.split('.');
+                  navigate(`/verse/${parts[0]}/${parts[1]}/${parts[2]}`);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border-hairline)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '4px 10px',
+                  color: 'var(--color-silver-3)',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s, border-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--color-amber-bright)';
+                  e.currentTarget.style.borderColor = 'var(--border-accent)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--color-silver-3)';
+                  e.currentTarget.style.borderColor = 'var(--border-hairline)';
+                }}
+              >
+                {s}
+              </button>
+            ))}
           </div>
         </GlassCard>
+      </section>
 
-        {/* STEP 2: DAILY SHLOKA (3D FLIP & BHURJAPATRA PARCHMENT) */}
-        <GlassCard variant="bhurjapatra" elevation={2} style={{ padding: 24, perspective: 1000 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Chip label="Step 2" variant={completedLamps.shloka ? 'gold' : 'neutral'} />
-            <Button size="sm" variant="ghost" icon={<RotateCcw size={14} />} onClick={() => setIsFlipped(!isFlipped)}>
-              {isFlipped ? 'Show Hymn' : 'Esoteric Insight'}
-            </Button>
-          </div>
-
-          <div style={{ minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {!isFlipped ? (
-              <div>
-                <div className="bhurjapatra-text" style={{ fontFamily: 'var(--font-sanskrit)', fontSize: '1.4rem', color: 'var(--silver-moon, #E2E8F0)', lineHeight: 1.6, marginBottom: 8 }}>
-                  {DAILY_HYMN.sanskrit}
-                </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--silver-muted, #C5D0D6)', fontStyle: 'italic', marginBottom: 12 }}>
-                  &ldquo;{DAILY_HYMN.english}&rdquo;
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ fontWeight: 600, color: 'var(--amber-glow, #FFB020)', marginBottom: 6 }}>Esoteric Realization</div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--silver-moon, #E2E8F0)', lineHeight: 1.5 }}>
-                  {DAILY_HYMN.insight}
-                </p>
-                <div style={{ fontSize: '0.75rem', color: 'var(--silver-muted, #8E9BAE)' }}>
-                  Atharvaveda Kandam 12 &bull; Suktam 1 &bull; Shloka 12
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <Button size="sm" variant="primary" icon={<Zap size={14} />} onClick={handleChantShloka}>
-              Chant on Pitch
-            </Button>
-            <Button size="sm" variant="ghost" icon={<Share2 size={14} />} onClick={() => sounds.playSuccess()}>
-              Share Canvas
-            </Button>
-          </div>
-        </GlassCard>
-
-        {/* STEP 3: HOMA FOCUS FIRE */}
-        <div ref={anchorHomaRef}>
-          <GlassCard variant="naga" elevation={2} style={{ padding: 24, textAlign: 'center' }}>
+      {/* 3. RESUME READING & DAILY CONTEMPLATION (TWO-COLUMN ANCHOR) */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 48 }}>
+        {/* Left Column: Opening Cornerstone Passages */}
+        <GlassCard style={{ padding: 28, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <Chip label="Step 3" variant={completedLamps.homa ? 'gold' : 'neutral'} />
-              <span style={{ fontSize: '0.85rem', color: 'var(--saffron)' }}>Homa Flame</span>
+              <Chip label="Archival Cornerstone" variant="gold" />
+              <span style={{ fontSize: '0.85rem', color: 'var(--color-amber-bright)', fontFamily: 'monospace' }}>AVŚ 12.1.1</span>
             </div>
 
-            {/* Pulsing Sacred Flame */}
-            <div
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--text-heading)', margin: '0 0 10px 0' }}>
+              The Earth Hymn (Bhūmi Sūkta)
+            </h3>
+
+            <p
               style={{
-                width: 70,
-                height: 70,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255, 123, 0, 0.5) 0%, transparent 70%)',
-                border: '2px solid var(--saffron)',
-                margin: '12px auto',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 24px rgba(255, 123, 0, 0.6)',
-                transform: isFeedingGhee
-                  ? 'scale(1.3)'
-                  : 'scale(calc(0.9 + 0.2 * var(--breath, 0.5)))',
-                transition: 'transform 0.2s ease'
+                fontFamily: 'var(--font-sanskrit)',
+                fontSize: '1.25rem',
+                lineHeight: 1.8,
+                color: 'var(--color-silver-1)',
+                marginBottom: 12
               }}
             >
-              <Flame size={36} color="var(--gold-bright)" />
-            </div>
-
-            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 6px' }}>
-              {homaActive ? `Focusing: ${homaSeconds}s Remaining` : 'Offer Ghee to the Sacred Fire'}
-            </h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-1)', marginBottom: 16 }}>
-              Restores 25 Prana and reinforces Fortitude through guided breath.
+              स॒त्यं बृ॒हद् ऋ॒तमु॒ग्रं दी॒क्षा तपो॒ ब्रह्म॑ य॒ज्ञः पृ॑थि॒वीं धा॑रयन्ति ।
             </p>
 
-            <Button
-              variant="primary"
-              disabled={homaActive}
-              icon={<Flame size={16} />}
-              onClick={handleFeedGhee}
-            >
-              {homaActive ? 'Chanting in Stillness...' : 'Feed Ghee (1 Min Ritual)'}
-            </Button>
-          </GlassCard>
-        </div>
-
-        {/* STEP 4: TRIAL OF THE DAY & VASUKI POISON WARD */}
-        <GlassCard elevation={2} style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Chip label="Step 4" variant={completedLamps.trial ? 'cyan' : 'danger'} />
-            <span style={{ fontSize: '0.85rem', color: completedLamps.trial ? '#769E84' : '#EF4444', fontWeight: 600 }}>
-              {completedLamps.trial ? 'Kalakuta Transmuted' : 'Inner Enemy Duel'}
-            </span>
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: '0.92rem', lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>
+              "Truth, Vast Cosmic Order, consecration, spiritual ardour, holy prayer, and self-giving sacrifice sustain Mother Earth."
+            </p>
           </div>
 
-          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--silver-moon, #E2E8F0)', margin: '0 0 8px' }}>
-            Duel of Kāma (Untamed Craving)
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-1)', marginBottom: 16 }}>
-            The Asura of fleeting cravings challenges your discernment. Vasuki holds the poison boundary.
-          </p>
+          <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+            <Button
+              variant="primary"
+              icon={<BookOpen size={16} />}
+              onClick={() => {
+                sounds.playTap();
+                navigate('/verse/12/1/1');
+              }}
+            >
+              Study with Living Margins
+            </Button>
+          </div>
+        </GlassCard>
 
-          <div style={{ marginBottom: 20 }}>
-            <VasukiPoisonWard
-              isDefeated={completedLamps.trial}
-              asuraGlyph="काम"
-              asuraName="Kāma &bull; Primordial Urge"
-            />
+        {/* Right Column: Daily Contemplation & Audio Recitation */}
+        <GlassCard style={{ padding: 28, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <Chip label="Daily Contemplation" variant="sage" icon={<CheckCircle2 size={13} />} />
+              <span style={{ fontSize: '0.85rem', color: 'var(--color-sage-text)' }}>AVŚ 12.1.12</span>
+            </div>
+
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--text-heading)', margin: '0 0 10px 0' }}>
+              Mātā Bhūmiḥ (The Sacred Mother)
+            </h3>
+
+            <p
+              style={{
+                fontFamily: 'var(--font-sanskrit)',
+                fontSize: '1.25rem',
+                lineHeight: 1.8,
+                color: 'var(--color-silver-1)',
+                marginBottom: 12
+              }}
+            >
+              मा॒ता भूमिः॑ पु॒त्रो अ॒हं पृ॑थि॒व्याः । पर्ज॑न्यः पि॒ता स उ॑ नः पिपर्तु ॥
+            </p>
+
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: '0.92rem', lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>
+              "The Earth is my Mother; I am the child of this sacred soil. Parjanya (the rain-cloud) is the nourishing Father—may he sustain our breath."
+            </p>
+          </div>
+
+          <div style={{ marginTop: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
+            <Button
+              variant="outline"
+              icon={<ArrowRight size={16} />}
+              onClick={() => {
+                sounds.playTap();
+                navigate('/verse/12/1/12');
+              }}
+            >
+              Read in Context
+            </Button>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Meter: Anuṣṭubh &bull; Śaunaka Recension
+            </span>
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* 4. CURATED COLLECTIONS INDEX (THE FOUR VEDAS) */}
+      <section style={{ marginBottom: 52 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: 'var(--text-heading)', margin: '0 0 6px 0' }}>
+              Manuscript Traditions & Collections
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', margin: 0 }}>
+              Explore indexed recensions, canonical hymns, and metrical structures.
+            </p>
           </div>
 
           <Button
-            variant={completedLamps.trial ? 'ghost' : 'danger'}
-            icon={<Swords size={16} />}
+            variant="ghost"
+            icon={<ArrowUpRight size={16} />}
             onClick={() => {
-              setCompletedLamps((l) => ({ ...l, trial: true }));
-              sounds.playSuccess();
-              navigate('/campaign');
+              sounds.playTap();
+              navigate('/library');
             }}
           >
-            {completedLamps.trial ? 'Revisit Conquest (/campaign)' : 'Engage Asura (/campaign)'}
+            View Full Catalogue
           </Button>
-        </GlassCard>
+        </div>
 
-        {/* STEP 5: REVIEW QUEUE (SRS REKINDLE) */}
-        <GlassCard elevation={2} style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Chip label="Step 5" variant={completedLamps.review ? 'gold' : 'neutral'} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--soma)' }}>Memory Rekindle</span>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+          {CURATED_COLLECTIONS.map((c) => (
+            <div
+              key={c.id}
+              onClick={() => {
+                sounds.playTap();
+                navigate(c.route);
+              }}
+              style={{
+                padding: '24px 22px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(26, 27, 24, 0.75)',
+                border: '1px solid var(--border-hairline)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'border-color 0.25s, transform 0.25s, background 0.25s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-accent)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.background = 'rgba(34, 35, 31, 0.9)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-hairline)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.background = 'rgba(26, 27, 24, 0.75)';
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-amber-bright)', textTransform: 'uppercase' }}>
+                    {c.tag}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{c.ref}</span>
+                </div>
 
-          <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: '0 0 8px' }}>
-            7 Sacred Verses are Fading
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-1)', marginBottom: 16 }}>
-            Spaced repetition curves indicate retrievability has fallen below 80% on 7 verses.
-          </p>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: 'var(--text-heading)', margin: '0 0 4px 0' }}>
+                  {c.title}
+                </h4>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <Hourglass size={32} color="var(--soma)" />
-            <div>
-              <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>Adaptive 3-Minute Rekindle</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>Preserves your Tapasya mastery</div>
+                <div style={{ fontFamily: 'var(--font-sanskrit)', fontSize: '1.0rem', color: 'var(--color-silver-3)', marginBottom: 10 }}>
+                  {c.devanagari}
+                </div>
+
+                <p style={{ fontSize: '0.85rem', lineHeight: 1.55, color: 'var(--text-secondary)', margin: 0 }}>
+                  {c.desc}
+                </p>
+              </div>
+
+              <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--color-amber-bright)', fontSize: '0.85rem', fontWeight: 600 }}>
+                Explore Collection <ChevronRight size={15} />
+              </div>
             </div>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          <Button variant="primary" icon={<RotateCcw size={16} />} onClick={handleStartReview}>
-            Rekindle Verses
-          </Button>
-        </GlassCard>
-      </div>
+      {/* 5. SECONDARY PATHWAYS: STRUCTURED LEARNING, AI COMPANION & ARCADE */}
+      <section style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 36 }}>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--text-heading)', marginBottom: 16 }}>
+          Learning, Guided Dialogue & Practice Suites
+        </h3>
 
-      {/* BELOW THE FOLD: RELIC SHELF & WEEKLY STREAK */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
-        {/* Weekly Streak Ring & Grace Days */}
-        <GlassCard elevation={1} style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Flame size={18} color="var(--saffron)" /> Tapasya Flame & Grace Days
-            </h4>
-            <Chip label={`${graceDays} Grace Days Banked`} variant="cyan" icon={<Shield size={12} />} />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0' }}>
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => {
-              const isLit = idx < streak;
-              return (
-                <div key={day} style={{ textAlign: 'center' }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
-                      background: isLit ? 'rgba(255, 123, 0, 0.25)' : 'rgba(255,255,255,0.04)',
-                      border: isLit ? '1.5px solid var(--saffron)' : '1px solid rgba(255,255,255,0.1)',
-                      color: isLit ? 'var(--gold-bright)' : 'var(--text-2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto 6px'
-                    }}
-                  >
-                    <Flame size={18} />
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: isLit ? '#fff' : 'var(--text-2)' }}>{day}</span>
-                </div>
-              );
-            })}
-          </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-2)', margin: 0 }}>
-            Streak is never broken with guilt: Grace days auto-shield missed sessions so your thread never dims.
-          </p>
-        </GlassCard>
-
-        {/* Relic Shelf: Walnut Wood texture backing with carved golden-amber sockets */}
-        <GlassCard
-          elevation={1}
-          style={{
-            padding: 24,
-            background: 'linear-gradient(135deg, rgba(46, 33, 24, 0.85) 0%, rgba(20, 15, 11, 0.95) 100%)',
-            border: '1.5px solid var(--wood-border, rgba(139, 90, 43, 0.35))',
-            boxShadow: '0 12px 32px rgba(20, 14, 10, 0.7)'
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--amber-radiance, #FFE082)', margin: 0 }}>
-              Sacred Relics Shelf
-            </h4>
-            <span style={{ fontSize: '0.75rem', color: 'var(--silver-muted, #94A3B8)', fontStyle: 'italic' }}>
-              Walnut Altar Inlay
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            {relics.map((relic) => {
-              if (!relic || !relic.id) return null;
-              const shortName = (relic.name || 'Sacred Relic').split(' ')[0];
-              return (
-                <div
-                  key={relic.id}
-                  onClick={() => {
-                    sounds.playTap();
-                    setSelectedRelic(relic);
-                  }}
-                  style={{
-                    width: 82,
-                    height: 82,
-                    borderRadius: 14,
-                    background: 'radial-gradient(circle at 50% 30%, rgba(255, 176, 32, 0.15) 0%, rgba(30, 20, 14, 0.9) 100%)',
-                    border: '1px solid rgba(255, 176, 32, 0.35)',
-                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.6), 0 4px 12px rgba(20, 14, 10, 0.8)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                  }}
-                >
-                  <span style={{ fontSize: '1.8rem', marginBottom: 4 }}>{relic.icon || '📜'}</span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--amber-glow, #FFB020)', fontWeight: 600 }}>{shortName}</span>
-                </div>
-              );
-            })}
-          </div>
-        </GlassCard>
-      </div>
-
-      {/* Relic Inspect Modal */}
-      {selectedRelic && (
-        <Modal isOpen={Boolean(selectedRelic)} onClose={() => setSelectedRelic(null)} title={selectedRelic.name}>
-          <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: 12 }}>{selectedRelic.icon}</div>
-            <Chip label={selectedRelic.rarity} variant="gold" />
-            <p style={{ marginTop: 16, color: 'var(--text-1)', fontSize: '0.95rem' }}>
-              {selectedRelic.desc}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 18 }}>
+          {/* Pathway 1: Structured Learning Path */}
+          <GlassCard
+            style={{ padding: 20, cursor: 'pointer' }}
+            onClick={() => {
+              sounds.playTap();
+              navigate('/path');
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--color-sage-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Layers size={18} color="var(--color-sage-text)" />
+              </div>
+              <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-heading)', margin: 0, fontSize: '1.05rem' }}>
+                The Pada Spiral (Learning Path)
+              </h4>
+            </div>
+            <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Master Sanskrit word roots, Sandhi compound formations, and metrical patterns in progressive steps.
             </p>
-          </div>
-        </Modal>
-      )}
+          </GlassCard>
 
-      {/* Yajna Complete Modal */}
-      {yajnaCompleteModal && (
-        <Modal isOpen={yajnaCompleteModal} onClose={() => setYajnaCompleteModal(false)} title="Daily Yajna Consecrated">
-          <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <Award size={64} color="var(--gold-bright)" style={{ margin: '0 auto 16px' }} />
-            <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-bright)', fontSize: '1.6rem', margin: '0 0 8px' }}>
-              All 5 Lamps Illuminated
-            </h3>
-            <p style={{ color: 'var(--text-1)', fontSize: '0.95rem', marginBottom: 20 }}>
-              The Sutra thread has expanded throughout your Sanctum. +250 Radiance Points and Tapasya streak preserved!
+          {/* Pathway 2: AI Dialogical Companion */}
+          <GlassCard
+            style={{ padding: 20, cursor: 'pointer' }}
+            onClick={() => {
+              sounds.playTap();
+              navigate('/chat');
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--color-amber-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkles size={18} color="var(--color-amber-bright)" />
+              </div>
+              <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-heading)', margin: 0, fontSize: '1.05rem' }}>
+                Rishi AI Philosophical Inquiries
+              </h4>
+            </div>
+            <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Explore philosophical questions and thematic relationships with our Gemini-powered textual companion.
             </p>
-            <Button variant="primary" onClick={() => setYajnaCompleteModal(false)}>
-              Rejoice in Truth
-            </Button>
-          </div>
-        </Modal>
-      )}
+          </GlassCard>
 
-      {/* Active Lesson Modal */}
-      {activeLesson && (
-        <LessonPlayer
-          session={activeLesson}
-          onClose={() => setActiveLesson(null)}
-          onComplete={() => setActiveLesson(null)}
-        />
-      )}
+          {/* Pathway 3: Vedic Arcade Suite */}
+          <GlassCard
+            style={{ padding: 20, cursor: 'pointer' }}
+            onClick={() => {
+              sounds.playTap();
+              navigate('/arcade');
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'rgba(213, 211, 203, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Gamepad2 size={18} color="var(--color-silver-1)" />
+              </div>
+              <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-heading)', margin: 0, fontSize: '1.05rem' }}>
+                Vedic Arcade (9 Practice Games)
+              </h4>
+            </div>
+            <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Reinforce rhythm, Sandhi rules, and Devanagari speed recognition through interactive retro challenges.
+            </p>
+          </GlassCard>
+        </div>
+      </section>
     </div>
   );
 };
