@@ -26,7 +26,9 @@ import {
   Wind,
   RotateCcw,
   Bookmark,
-  BookmarkCheck
+  BookmarkCheck,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
@@ -46,6 +48,7 @@ export const VerseDetail = () => {
   const cornerstoneVerse = findCanonicalVerse(targetRef);
   const [corpusVerse, setCorpusVerse] = useState(null);
   const [loadingCorpus, setLoadingCorpus] = useState(false);
+  const [totalVersesInUnit, setTotalVersesInUnit] = useState(1);
 
   // Typography & Reading Preferences
   const [fontSize, setFontSize] = useState('medium'); // 'medium', 'large', 'huge'
@@ -63,6 +66,7 @@ export const VerseDetail = () => {
   useEffect(() => {
     if (cornerstoneVerse) {
       setCorpusVerse(null);
+      setTotalVersesInUnit(cornerstoneVerse.verses || 1);
       return;
     }
 
@@ -80,7 +84,9 @@ export const VerseDetail = () => {
       if (normVeda === 'rig' || normVeda === 'rigveda') {
         const sukta = divisionData.find((s) => s.sukta === parseInt(hymn, 10));
         if (sukta && sukta.verses) {
-          const vItem = sukta.verses.find((v) => v.verseNum === parseInt(verse, 10)) || sukta.verses[0];
+          setTotalVersesInUnit(sukta.verses.length);
+          const vNum = parseInt(verse, 10) || 1;
+          const vItem = sukta.verses.find((v) => v.verseNum === vNum) || sukta.verses[0];
           if (vItem) {
             foundVerse = {
               id: vItem.id,
@@ -110,7 +116,9 @@ export const VerseDetail = () => {
       } else if (normVeda === 'atharva' || normVeda === 'atharvaveda') {
         const sukta = divisionData.find((s) => s.sukta === parseInt(hymn, 10));
         if (sukta && sukta.verses) {
-          const vItem = sukta.verses.find((v) => v.verseNum === parseInt(verse, 10)) || sukta.verses[0];
+          setTotalVersesInUnit(sukta.verses.length);
+          const vNum = parseInt(verse, 10) || 1;
+          const vItem = sukta.verses.find((v) => v.verseNum === vNum) || sukta.verses[0];
           if (vItem) {
             foundVerse = {
               id: vItem.id,
@@ -140,7 +148,9 @@ export const VerseDetail = () => {
       } else if (normVeda === 'yajur' || normVeda === 'yajurveda') {
         const adhyaya = Array.isArray(divisionData) ? (divisionData.find((a) => a.adhyaya === parseInt(book, 10)) || divisionData[0]) : null;
         if (adhyaya && adhyaya.verses) {
-          const vItem = adhyaya.verses.find((v) => v.verseNum === parseInt(verse, 10)) || adhyaya.verses[0];
+          setTotalVersesInUnit(adhyaya.verses.length);
+          const vNum = parseInt(verse, 10) || parseInt(hymn, 10) || 1;
+          const vItem = adhyaya.verses.find((v) => v.verseNum === vNum) || adhyaya.verses[0];
           if (vItem) {
             foundVerse = {
               id: vItem.id,
@@ -166,8 +176,10 @@ export const VerseDetail = () => {
           }
         }
       } else if (normVeda === 'sama' || normVeda === 'samaveda') {
-        const vNum = parseInt(verse || hymn || 1, 10);
-        const vItem = Array.isArray(divisionData) ? (divisionData.find((v) => v.verseNum === vNum) || divisionData[0]) : null;
+        const totalSāmans = Array.isArray(divisionData) ? divisionData.length : 1;
+        setTotalVersesInUnit(totalSāmans);
+        const targetNum = parseInt(hymn, 10) || parseInt(verse, 10) || 1;
+        const vItem = Array.isArray(divisionData) ? (divisionData.find((v) => v.verseNum === targetNum) || divisionData[0]) : null;
         if (vItem) {
           foundVerse = {
             id: vItem.id,
@@ -238,6 +250,24 @@ export const VerseDetail = () => {
     } catch {
       // ignore
     }
+  };
+
+  const currentVerseNum = canonicalVerse?.verse || parseInt(verse, 10) || 1;
+
+  const handleJumpMantra = (targetNum) => {
+    const normVeda = (vedaParam || 'atharva').toLowerCase();
+    if (normVeda === 'sama' || normVeda === 'samaveda') {
+      navigate(`/verse/${book}/${targetNum}/1?veda=sama`);
+    } else if (normVeda === 'yajur' || normVeda === 'yajurveda') {
+      navigate(`/verse/${book}/1/${targetNum}?veda=yajur`);
+    } else {
+      navigate(`/verse/${book}/${hymn}/${targetNum}?veda=${normVeda}`);
+    }
+  };
+
+  const handleStepMantra = (delta) => {
+    const nextNum = Math.max(1, Math.min(totalVersesInUnit, currentVerseNum + delta));
+    handleJumpMantra(nextNum);
   };
 
   const recordMantraRecited = useGameStore((state) => state.recordMantraRecited);
@@ -432,7 +462,85 @@ export const VerseDetail = () => {
         </div>
       </div>
 
-      {/* 2. LIVING ARCHIVE READER STAGE */}
+      {/* 2. MANTRA STEPPER & FAST NAVIGATION BAR */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px 16px',
+        marginBottom: 20,
+        background: 'rgba(22, 23, 21, 0.85)',
+        border: '1px solid rgba(213, 211, 203, 0.14)',
+        borderRadius: 12,
+        flexWrap: 'wrap',
+        gap: 12
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={<ChevronLeft size={15} />}
+            disabled={currentVerseNum <= 1}
+            onClick={() => {
+              sounds.playTap();
+              handleStepMantra(-1);
+            }}
+          >
+            Previous
+          </Button>
+
+          <span style={{ fontSize: '0.86rem', color: 'var(--amber-warm, #C59A56)', fontWeight: 600 }}>
+            Mantra {currentVerseNum} of {totalVersesInUnit}
+          </span>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={<ChevronRight size={15} />}
+            disabled={currentVerseNum >= totalVersesInUnit}
+            onClick={() => {
+              sounds.playTap();
+              handleStepMantra(1);
+            }}
+          >
+            Next
+          </Button>
+        </div>
+
+        {/* Quick Verse Jump Dropdown */}
+        {totalVersesInUnit > 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--silver-muted, #94A3B8)' }}>
+              Jump to:
+            </span>
+            <select
+              value={currentVerseNum}
+              onChange={(e) => {
+                sounds.playTap();
+                handleJumpMantra(parseInt(e.target.value, 10));
+              }}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(213, 211, 203, 0.2)',
+                color: 'var(--silver-moon, #D5D3CB)',
+                borderRadius: 6,
+                padding: '4px 8px',
+                fontSize: '0.8rem',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {Array.from({ length: totalVersesInUnit }, (_, i) => i + 1).map((num) => (
+                <option key={num} value={num} style={{ background: '#161715', color: '#FFF' }}>
+                  Mantra {num}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* 3. LIVING ARCHIVE READER STAGE */}
       <div style={{ display: 'grid', gridTemplateColumns: showLivingMargins ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
         {/* Main Text Scroll Area */}
         <div ref={scrollRef}>

@@ -35,6 +35,7 @@ export const Library = () => {
   const [activeDivision, setActiveDivision] = useState(1);
   const [divisionSuktas, setDivisionSuktas] = useState([]);
   const [loadingDivision, setLoadingDivision] = useState(false);
+  const [displayCount, setDisplayCount] = useState(36);
 
   // Continue Reading state
   const [lastRead] = useState(() => {
@@ -419,15 +420,20 @@ export const Library = () => {
       {/* 6. HYMNS IN CURRENT DIVISION LISTING */}
       {divisionSuktas.length > 0 && !debouncedQuery && (
         <div style={{ marginBottom: 40 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{
-              fontFamily: 'var(--font-display, Cinzel)',
-              fontSize: '1.15rem',
-              color: 'var(--silver-moon, #D5D3CB)',
-              margin: 0
-            }}>
-              {currentVedaMeta.name} &bull; {divisionLabel} {activeDivision} ({divisionSuktas.length} {activeVeda === 'yajur' ? 'Adhyāyas' : 'Sūktas'})
-            </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+            <div>
+              <h3 style={{
+                fontFamily: 'var(--font-display, Cinzel)',
+                fontSize: '1.18rem',
+                color: 'var(--silver-moon, #D5D3CB)',
+                margin: '0 0 4px'
+              }}>
+                {currentVedaMeta.name} &bull; {divisionLabel} {activeDivision}
+              </h3>
+              <span style={{ fontSize: '0.8rem', color: 'var(--silver-muted, #94A3B8)' }}>
+                Showing {Math.min(displayCount, divisionSuktas.length)} of {divisionSuktas.length} {activeVeda === 'yajur' ? 'Adhyāyas' : activeVeda === 'sama' ? 'Sāmans' : 'Sūktas'}
+              </span>
+            </div>
             {loadingDivision && (
               <span style={{ fontSize: '0.75rem', color: 'var(--amber-warm, #C59A56)' }}>
                 Loading division partition...
@@ -438,20 +444,51 @@ export const Library = () => {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: 16
+            gap: 16,
+            marginBottom: 20
           }}>
-            {divisionSuktas.slice(0, 18).map((sukta, sIdx) => {
-              const suktaNum = sukta.sukta || sukta.adhyaya || (sIdx + 1);
-              const titleText = sukta.title || (sukta.deity ? `${sukta.deity} Sūkta` : `${divisionLabel} ${activeDivision} Sūkta ${suktaNum}`);
-              const firstVerse = sukta.verses?.[0];
-              const previewText = firstVerse ? (firstVerse.displayText || firstVerse.accentedText || '') : (sukta.translation || '');
+            {divisionSuktas.slice(0, displayCount).map((sukta, sIdx) => {
+              const isSamaveda = activeVeda === 'sama';
+              const isYajurveda = activeVeda === 'yajur';
+
+              let suktaNum;
+              let titleText;
+              let firstVerse;
+              let previewText;
+              let verseCountText;
+
+              if (isSamaveda) {
+                suktaNum = sukta.verseNum || (sIdx + 1);
+                titleText = sukta.deity ? `${sukta.deity} Sāman` : `Sāman ${suktaNum}`;
+                firstVerse = sukta;
+                previewText = sukta.displayText || sukta.accentedText || sukta.translation || '';
+                verseCountText = `Sāman #${suktaNum}`;
+              } else if (isYajurveda) {
+                suktaNum = sukta.adhyaya || (sIdx + 1);
+                titleText = sukta.title || `Adhyāya ${suktaNum}`;
+                firstVerse = sukta.verses?.[0];
+                previewText = firstVerse ? (firstVerse.displayText || firstVerse.accentedText || '') : '';
+                verseCountText = `${sukta.verses?.length || sukta.verseCount || 1} Mantras`;
+              } else {
+                suktaNum = sukta.sukta || (sIdx + 1);
+                titleText = sukta.title || (sukta.deity ? `${sukta.deity} Sūkta` : `${divisionLabel} ${activeDivision} Sūkta ${suktaNum}`);
+                firstVerse = sukta.verses?.[0];
+                previewText = firstVerse ? (firstVerse.displayText || firstVerse.accentedText || '') : '';
+                verseCountText = `${sukta.verses?.length || sukta.verseCount || 1} Mantras`;
+              }
 
               return (
                 <div
                   key={sukta.id || sIdx}
                   onClick={() => {
                     sounds.playTap();
-                    navigate(`/verse/${activeDivision}/${suktaNum}/1?veda=${activeVeda}`);
+                    if (isSamaveda) {
+                      navigate(`/verse/${activeDivision}/${suktaNum}/1?veda=sama`);
+                    } else if (isYajurveda) {
+                      navigate(`/verse/${activeDivision}/1/1?veda=yajur`);
+                    } else {
+                      navigate(`/verse/${activeDivision}/${suktaNum}/1?veda=${activeVeda}`);
+                    }
                   }}
                   style={{
                     background: 'rgba(22, 23, 21, 0.88)',
@@ -475,9 +512,9 @@ export const Library = () => {
                 >
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <Chip variant="gold" label={`${divisionLabel} ${activeDivision}.${suktaNum}`} />
+                      <Chip variant="gold" label={isSamaveda ? `Sāman ${suktaNum}` : `${divisionLabel} ${activeDivision}.${suktaNum}`} />
                       <span style={{ fontSize: '0.72rem', color: 'var(--silver-muted, #94A3B8)' }}>
-                        {sukta.verseCount || sukta.verses?.length || 1} Mantras
+                        {verseCountText}
                       </span>
                     </div>
 
@@ -517,7 +554,7 @@ export const Library = () => {
                     fontSize: '0.75rem',
                     color: 'var(--silver-muted, #94A3B8)'
                   }}>
-                    <span>{sukta.meter || 'Vedic Meter'}</span>
+                    <span>{sukta.meter || sukta.rishi || 'Vedic Tradition'}</span>
                     <span style={{ color: 'var(--amber-warm, #C59A56)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
                       Read & Recite <ChevronRight size={13} />
                     </span>
@@ -526,6 +563,32 @@ export const Library = () => {
               );
             })}
           </div>
+
+          {/* Pagination / Expand More Controls */}
+          {divisionSuktas.length > displayCount && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 12 }}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  sounds.playTap();
+                  setDisplayCount((prev) => prev + 36);
+                }}
+              >
+                Load More ({divisionSuktas.length - displayCount} remaining)
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  sounds.playTap();
+                  setDisplayCount(divisionSuktas.length);
+                }}
+              >
+                Show All ({divisionSuktas.length})
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

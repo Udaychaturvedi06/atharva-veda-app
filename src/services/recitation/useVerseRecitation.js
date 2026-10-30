@@ -19,6 +19,8 @@ export function useVerseRecitation(verseData) {
     activeWord: null
   });
 
+  const verseKey = verseData?.id || verseData?.ref || null;
+
   // Subscribe to controller state transitions
   useEffect(() => {
     const unsubscribe = playbackController.subscribe((snap) => {
@@ -37,14 +39,16 @@ export function useVerseRecitation(verseData) {
 
   // JIT Trigger: Automatically begin background preparation when verse opens
   useEffect(() => {
-    if (!verseData) return;
+    if (!verseData || !verseKey) return;
 
     playbackController.prepareVerse(verseData, { priority: 'background' });
 
     return () => {
       playbackController.cleanup();
     };
-  }, [verseData]);
+    // Re-prepare only when the active verse identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verseKey]);
 
   const play = useCallback(() => playbackController.play(), []);
   const pause = useCallback(() => playbackController.pause(), []);
