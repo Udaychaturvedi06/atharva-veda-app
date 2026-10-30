@@ -115,8 +115,9 @@ export const VerseDetail = () => {
 
     if (!canonicalVerse) return;
 
-    // Start recitation of authentic Devanagari text
+    // Start recitation with phonetic IAST fallback for universal browser speech support
     recitationEngine.recite(canonicalVerse.devanagari, {
+      phoneticFallback: canonicalVerse.iast,
       rate: playbackSpeed,
       pitch: 0.95,
       onStart: () => {
@@ -132,6 +133,7 @@ export const VerseDetail = () => {
         console.warn('Recitation Error:', err);
         setIsPlaying(false);
         setIsPaused(false);
+        setActiveCharIndex(null);
       },
       onBoundary: ({ charIndex }) => {
         setActiveCharIndex(charIndex);
@@ -150,10 +152,10 @@ export const VerseDetail = () => {
   const handleSpeedChange = (e) => {
     const newSpeed = parseFloat(e.target.value);
     setPlaybackSpeed(newSpeed);
-    if (isPlaying && !isPaused) {
-      // Re-trigger with updated speed
+    if (isPlaying && !isPaused && canonicalVerse) {
       recitationEngine.stop();
       recitationEngine.recite(canonicalVerse.devanagari, {
+        phoneticFallback: canonicalVerse.iast,
         rate: newSpeed,
         pitch: 0.95,
         onStart: () => setIsPlaying(true),
