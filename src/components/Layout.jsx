@@ -76,26 +76,34 @@ export const Layout = ({ children, theme, toggleTheme }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Initialize Lenis smooth scroll
+  // Initialize Lenis smooth scroll with prefers-reduced-motion protection
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      // Do not bind smooth scroll interception when user requests reduced motion
+      return undefined;
+    }
+
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.0,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.0,
-      touchMultiplier: 1.5
+      touchMultiplier: 1.2
     });
     lenisRef.current = lenis;
 
+    let rafId;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    const rafId = requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId) cancelAnimationFrame(rafId);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 

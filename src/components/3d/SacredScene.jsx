@@ -184,8 +184,20 @@ function checkWebGLSupport() {
 
 export const SacredScene = () => {
   const location = useLocation();
-  const [currentColor, setCurrentColor] = useState(new THREE.Color('#FFE259'));
+  const [currentColor, setCurrentColor] = useState(new THREE.Color('#D8AE6A'));
   const [supportsWebGL] = useState(checkWebGLSupport);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setPrefersReducedMotion(media.matches);
+
+      const listener = (e) => setPrefersReducedMotion(e.matches);
+      media.addEventListener('change', listener);
+      return () => media.removeEventListener('change', listener);
+    }
+  }, []);
 
   const targetMood = useMemo(() => {
     for (const [path, mood] of Object.entries(ROUTE_MOODS)) {
@@ -208,12 +220,13 @@ export const SacredScene = () => {
         height: '100vh',
         zIndex: -2,
         pointerEvents: 'none',
-        background: 'radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.08) 0%, rgba(7, 7, 13, 0.95) 70%)'
+        background: 'radial-gradient(circle at 50% 30%, rgba(197, 154, 86, 0.06) 0%, rgba(22, 23, 21, 0.98) 75%)'
       }}
     />
   );
 
-  if (!supportsWebGL) {
+  // If WebGL is unsupported OR user requests reduced motion, immediately render the dignified static mineral backdrop
+  if (!supportsWebGL || prefersReducedMotion) {
     return fallbackGradient;
   }
 

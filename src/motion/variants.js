@@ -1,28 +1,39 @@
-export const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 12,
-    filter: 'blur(6px)'
-  },
-  in: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: {
-      duration: 0.35,
-      ease: [0.16, 1, 0.3, 1]
+// Query prefers-reduced-motion once for fallback resolution
+const isReducedMotion = typeof window !== 'undefined' 
+  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+  : false;
+
+export const pageVariants = isReducedMotion
+  ? {
+      initial: { opacity: 0 },
+      in: { opacity: 1, transition: { duration: 0.15 } },
+      out: { opacity: 0, transition: { duration: 0.1 } }
     }
-  },
-  out: {
-    opacity: 0,
-    y: -8,
-    filter: 'blur(4px)',
-    transition: {
-      duration: 0.25,
-      ease: [0.16, 1, 0.3, 1]
-    }
-  }
-};
+  : {
+      initial: {
+        opacity: 0,
+        y: 10,
+        filter: 'blur(4px)'
+      },
+      in: {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        transition: {
+          duration: 0.28,
+          ease: [0.16, 1, 0.3, 1]
+        }
+      },
+      out: {
+        opacity: 0,
+        y: -6,
+        filter: 'blur(2px)',
+        transition: {
+          duration: 0.18,
+          ease: [0.16, 1, 0.3, 1]
+        }
+      }
+    };
 
 export const staggerContainer = (staggerDelay = 0.08, delayChildren = 0.05) => ({
   initial: {},
