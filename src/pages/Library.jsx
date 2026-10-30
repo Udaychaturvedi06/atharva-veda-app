@@ -2,241 +2,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sounds } from '../utils/soundEngine';
+import { dataAccess } from '../services/dataAccess';
 import {
   BookOpen,
   Search,
   ChevronRight,
   Filter,
   Sparkles,
-  RotateCcw
+  RotateCcw,
+  ShieldCheck,
+  Compass,
+  ArrowRight
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
-
-// Canonical Four Vedas Metadata
-const VEDAS = [
-  {
-    id: 'atharva',
-    name: 'Atharvaveda',
-    sanskrit: 'अथर्ववेद',
-    count: '730 Suktas',
-    color: '#FF5E1E',
-    desc: 'Spells of healing, domestic alchemy, ecology, and psychological harmony.'
-  },
-  {
-    id: 'rig',
-    name: 'Rigveda',
-    sanskrit: 'ऋग्वेद',
-    count: '1,028 Suktas',
-    color: '#FFE259',
-    desc: 'Primordial cosmic chants, solar revelations, and elemental deities.'
-  },
-  {
-    id: 'sama',
-    name: 'Samaveda',
-    sanskrit: 'सामवेद',
-    count: '1,875 Mantras',
-    color: '#63B3ED',
-    desc: 'Transcendent musical frequencies and chants that dissolve the mortal ego.'
-  },
-  {
-    id: 'yajur',
-    name: 'Yajurveda',
-    sanskrit: 'यजुर्वेद',
-    count: '1,975 Shlokas',
-    color: '#FF7B00',
-    desc: 'Alchemical inner and outer sacrificial rites and focused spiritual action.'
-  }
-];
-
-// Rich Suktas Database with Devanagari Excerpts, Meter & Translations
-const SUKTAS_DB = {
-  atharva: [
-    {
-      book: 12,
-      hymn: 1,
-      verse: 1,
-      title: 'Prithvi Sukta (Ode to Mother Earth)',
-      sanskrit: 'सत्यं बृहदृतमुग्रं दीक्षा तपो ब्रह्म यज्ञः पृथिवीं धारयन्ति',
-      translation: 'Truth, vast eternal cosmic order, austerity, dedication, and sacred sacrifice uphold the Earth.',
-      verses: 63,
-      meter: 'Trishtubh',
-      tag: 'Sacred Soil'
-    },
-    {
-      book: 1,
-      hymn: 1,
-      verse: 1,
-      title: 'Medha Sukta (Prayer for Divine Intellect)',
-      sanskrit: 'ये त्रिषप्ताः परियन्ति विश्वा रूपाणि बिभ्रतः',
-      translation: 'May the triple-seven divine forces infuse us with supreme wisdom, memory, and cognitive brilliance.',
-      verses: 4,
-      meter: 'Gayatri',
-      tag: 'Mind Clarity'
-    },
-    {
-      book: 9,
-      hymn: 2,
-      verse: 1,
-      title: 'Kama Sukta (Primordial Cosmic Desire)',
-      sanskrit: 'सपत्नहनमृषभो घृतेन कामं शिक्षामि हविषा स्वस्तये',
-      translation: 'I propitiate the primal desire that was the first seed of mind, transcending all inner conflicts.',
-      verses: 25,
-      meter: 'Anushtubh',
-      tag: 'Creation'
-    },
-    {
-      book: 19,
-      hymn: 53,
-      verse: 1,
-      title: 'Kala Sukta (The Mystery of Cosmic Time)',
-      sanskrit: 'कालो अश्वो वहति सप्तरश्मिः सहस्राक्षो अजरो भूरिरेताः',
-      translation: 'Time is the cosmic steed with seven reins, thousand-eyed, unaging, bearing the infinite universe.',
-      verses: 10,
-      meter: 'Trishtubh',
-      tag: 'Eternity'
-    },
-    {
-      book: 11,
-      hymn: 4,
-      verse: 1,
-      title: 'Prana Sukta (Universal Life Breath)',
-      sanskrit: 'नमस्ते प्राण प्राणते नमो अस्तु निमिषते',
-      translation: 'Salutations to Prana, the all-pervading life breath, when it exhales and when it gathers within.',
-      verses: 26,
-      meter: 'Jagati',
-      tag: 'Vital Force'
-    }
-  ],
-  rig: [
-    {
-      book: 1,
-      hymn: 1,
-      verse: 1,
-      title: 'Agni Sukta (Cosmic Flame of Aspiration)',
-      sanskrit: 'अग्निमीळे पुरोहितं यज्ञस्य देवमृत्विजम्',
-      translation: 'I magnify Agni, the cosmic priest, the divine minister of the sacrificial offering.',
-      verses: 9,
-      meter: 'Gayatri',
-      tag: 'Divine Will'
-    },
-    {
-      book: 10,
-      hymn: 129,
-      verse: 1,
-      title: 'Nasadiya Sukta (The Hymn of Creation)',
-      sanskrit: 'नासदासीन्नो सदासीत्तदानीं नासीद्रजो नो व्योमा परो यत्',
-      translation: 'Then there was neither non-existence nor existence; there was no realm of air, no sky beyond.',
-      verses: 7,
-      meter: 'Trishtubh',
-      tag: 'Cosmology'
-    },
-    {
-      book: 10,
-      hymn: 90,
-      verse: 1,
-      title: 'Purusha Sukta (The Universal Cosmic Being)',
-      sanskrit: 'सहस्रशीर्षा पुरुषः सहस्राक्षः सहस्रपात्',
-      translation: 'A thousand heads has the Cosmic Being, a thousand eyes, a thousand feet—pervading all realms.',
-      verses: 16,
-      meter: 'Anushtubh',
-      tag: 'Cosmic Form'
-    },
-    {
-      book: 3,
-      hymn: 62,
-      verse: 10,
-      title: 'Gayatri Sukta (Invocation of Savita)',
-      sanskrit: 'तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्',
-      translation: 'We meditate upon that adorable solar splendor; may that divine light illuminate our intellect.',
-      verses: 18,
-      meter: 'Gayatri',
-      tag: 'Illumination'
-    },
-    {
-      book: 10,
-      hymn: 191,
-      verse: 2,
-      title: 'Samjnana Sukta (Hymn of Unity & Concord)',
-      sanskrit: 'सं गच्छध्वं सं वदध्वं सं वो मनांसि जानताम्',
-      translation: 'Walk together, speak together, let your minds resonate in sacred mutual understanding.',
-      verses: 4,
-      meter: 'Anushtubh',
-      tag: 'Harmony'
-    }
-  ],
-  sama: [
-    {
-      book: 1,
-      hymn: 1,
-      verse: 1,
-      title: 'Purvarchika (Invocation to Agni and Indra)',
-      sanskrit: 'अग्न आयाहि वीतये गृणानो हव्यदातये',
-      translation: 'Come, O Agni, to the banquet of cosmic light, praised by our melodic chants.',
-      verses: 10,
-      meter: 'Gayatri',
-      tag: 'Rhythmic Chant'
-    },
-    {
-      book: 2,
-      hymn: 1,
-      verse: 1,
-      title: 'Uttararchika (Songs of Soma & Ecstasy)',
-      sanskrit: 'पुनानः सोम धारया पवित्रमन्वर्षसि',
-      translation: 'Clarified in rhythmic stream, O divine Soma, flow through the subtle spiritual filter of the heart.',
-      verses: 12,
-      meter: 'Trishtubh',
-      tag: 'Melodic Joy'
-    },
-    {
-      book: 1,
-      hymn: 4,
-      verse: 1,
-      title: 'Maha-Namni (The Great Sacred Names)',
-      sanskrit: 'ओम् भूः ओम् भुवः ओम् स्वः तत्सवितुः',
-      translation: 'Resonances of the primordial realms that uplift the spiritual subtle body beyond sorrow.',
-      verses: 8,
-      meter: 'Jagati',
-      tag: 'Transcendence'
-    }
-  ],
-  yajur: [
-    {
-      book: 40,
-      hymn: 1,
-      verse: 1,
-      title: 'Isha Upanishad (The All-Pervading Divine)',
-      sanskrit: 'ईशा वास्यमिदं सर्वं यत्किञ्च जगत्यां जगत्',
-      translation: 'All this, whatever moves in this changing world, is enveloped and permeated by the Supreme Divine.',
-      verses: 18,
-      meter: 'Anushtubh',
-      tag: 'Non-Duality'
-    },
-    {
-      book: 31,
-      hymn: 1,
-      verse: 1,
-      title: 'Purusha Medha (Cosmic Consciousness)',
-      sanskrit: 'वेदाहमेतं पुरुषं महान्तमादित्यवर्णं तमसः परस्तात्',
-      translation: 'I know this great Purusha, radiant as the golden sun beyond all darkness and ignorance.',
-      verses: 22,
-      meter: 'Trishtubh',
-      tag: 'Inner Dedication'
-    },
-    {
-      book: 1,
-      hymn: 1,
-      verse: 1,
-      title: 'Prarthana (Prayers for Energy & Strength)',
-      sanskrit: 'इषे त्वोर्जे त्वा वायव स्थ देवो वः सविता प्रार्पयतु',
-      translation: 'For food, for vital vigor, like cosmic winds may Savitr dispatch you toward highest excellence.',
-      verses: 14,
-      meter: 'Gayatri',
-      tag: 'Vitality'
-    }
-  ]
-};
 
 export const Library = () => {
   const navigate = useNavigate();
@@ -249,164 +29,272 @@ export const Library = () => {
   const [selectedBook, setSelectedBook] = useState('all');
   const [selectedTheme, setSelectedTheme] = useState('all');
 
-  const THEME_BUBBLES = ['All', 'Sacred Soil', 'Mind Clarity', 'Creation', 'Eternity', 'Illumination', 'Harmony', 'Cosmology'];
+  // Vedas catalog from single data access layer
+  const vedas = useMemo(() => dataAccess.getAllVedas(), []);
 
-  // Sync state if URL changes
+  // Sync state if URL search params change
   useEffect(() => {
     const v = searchParams.get('veda');
-    if (v && v !== activeVeda && SUKTAS_DB[v]) {
+    if (v && v !== activeVeda && dataAccess.getVeda(v)) {
       setActiveVeda(v);
     }
   }, [searchParams, activeVeda]);
 
-  // Debounce search input by 300ms
+  // Debounce search input by 250ms
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchInput);
-    }, 300);
+    }, 250);
     return () => clearTimeout(handler);
   }, [searchInput]);
 
   const handleVedaChange = (vedaId) => {
-    sounds.playTibetanBowl();
+    sounds.playTap();
     setActiveVeda(vedaId);
     setSelectedBook('all');
+    setSelectedTheme('all');
     setSearchParams({ veda: vedaId });
   };
 
-  const suktas = useMemo(() => SUKTAS_DB[activeVeda] || [], [activeVeda]);
-
-  // Available books for current active Veda
+  // Manuscripts for the current active Veda
   const availableBooks = useMemo(() => {
-    const books = new Set(suktas.map((s) => s.book));
-    return Array.from(books).sort((a, b) => a - b);
-  }, [suktas]);
+    return dataAccess.getAvailableBooks(activeVeda);
+  }, [activeVeda]);
 
-  // Filtered Suktas
+  const allThemes = useMemo(() => {
+    return ['All', ...dataAccess.getAllThemes()];
+  }, []);
+
+  // Filtered Suktas through data access multi-vocal search
   const filteredSuktas = useMemo(() => {
-    return suktas.filter((s) => {
-      const matchesBook = selectedBook === 'all' || s.book.toString() === selectedBook;
-      if (!matchesBook) return false;
-
-      const matchesTheme = selectedTheme === 'all' || selectedTheme === 'All' || s.tag.toLowerCase().includes(selectedTheme.toLowerCase());
-      if (!matchesTheme) return false;
-
-      if (!debouncedQuery.trim()) return true;
-
-      const q = debouncedQuery.toLowerCase();
-      const matchTitle = s.title.toLowerCase().includes(q);
-      const matchTag = s.tag.toLowerCase().includes(q);
-      const matchSanskrit = s.sanskrit.toLowerCase().includes(q);
-      const matchTrans = s.translation.toLowerCase().includes(q);
-      const matchNum = `book ${s.book} hymn ${s.hymn}`.toLowerCase().includes(q);
-
-      return matchTitle || matchTag || matchSanskrit || matchTrans || matchNum;
+    return dataAccess.searchManuscripts(debouncedQuery, {
+      veda: activeVeda,
+      book: selectedBook,
+      theme: selectedTheme
     });
-  }, [suktas, selectedBook, selectedTheme, debouncedQuery]);
+  }, [activeVeda, selectedBook, selectedTheme, debouncedQuery]);
+
+  const currentVedaMeta = useMemo(() => {
+    return dataAccess.getVeda(activeVeda);
+  }, [activeVeda]);
 
   return (
-    <div className="library-container">
-      {/* Header */}
-      <div className="library-header">
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--gold-bright)' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px 120px' }}>
+      {/* 1. ARCHIVAL HEADER */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--amber-warm, #C59A56)', marginBottom: 8 }}>
           <BookOpen size={16} />
-          <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Sacred Canonical Archives
+          <span style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700 }}>
+            Scriptural Digital Archive
           </span>
         </div>
-        <h1 className="library-title">The Four Sacred Vedas</h1>
-        <p className="library-subtitle">
-          Explore verbatim Sanskrit hymns, analytical translations, and meter structures preserved
-          across thousands of years of oral and written transmission.
+        <h1 style={{
+          fontFamily: 'var(--font-display, Cinzel)',
+          fontSize: 'clamp(2rem, 3.5vw, 2.8rem)',
+          color: 'var(--silver-moon, #D5D3CB)',
+          margin: '0 0 10px',
+          fontWeight: 700,
+          letterSpacing: '0.02em'
+        }}>
+          Manuscripts of the Four Vedas
+        </h1>
+        <p style={{
+          color: 'var(--silver-muted, #94A3B8)',
+          fontSize: '1rem',
+          maxWidth: 720,
+          lineHeight: 1.6,
+          margin: 0
+        }}>
+          Verbatim Sanskrit hymns, IAST transliteration, accent-aware svara notation, and critical translations. Compare canonical scope with digitized archival transcriptions.
         </p>
       </div>
 
-      {/* 4 Veda Portal Tabs with Shared layoutId */}
-      <div className="veda-portals-grid">
-        {VEDAS.map((v) => {
+      {/* 2. FOUR VEDA ARCHIVAL PORTALS */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gap: 16,
+        marginBottom: 28
+      }}>
+        {vedas.map((v) => {
           const isActive = activeVeda === v.id;
           return (
             <button
               key={v.id}
               type="button"
-              className={`veda-portal-card ${isActive ? 'active' : ''}`}
               onClick={() => handleVedaChange(v.id)}
+              style={{
+                background: isActive ? 'rgba(22, 23, 21, 0.95)' : 'rgba(16, 17, 15, 0.65)',
+                border: '1px solid ' + (isActive ? 'var(--amber-warm, #C59A56)' : 'rgba(213, 211, 203, 0.12)'),
+                borderRadius: 14,
+                padding: '20px 18px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.2s ease',
+                boxShadow: isActive ? '0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(197, 154, 86, 0.12)' : 'none'
+              }}
             >
               {isActive && (
-                <motion.div
-                  layoutId="veda-portal-glow"
-                  className="veda-portal-active-glow"
-                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                />
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 3,
+                  background: 'var(--amber-warm, #C59A56)'
+                }} />
               )}
 
-              <div>
-                <div className="veda-portal-header">
-                  <span className="veda-portal-name">{v.name}</span>
-                  <span className="veda-portal-count" style={{ color: v.color }}>
-                    {v.count}
-                  </span>
-                </div>
-                <div style={{ fontFamily: 'var(--font-sanskrit)', fontSize: '1rem', color: v.color, marginBottom: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                <span style={{
+                  fontFamily: 'var(--font-display, Cinzel)',
+                  fontWeight: 700,
+                  fontSize: '1.05rem',
+                  color: isActive ? '#FFFFFF' : 'var(--silver-moon, #D5D3CB)'
+                }}>
+                  {v.name}
+                </span>
+                <span style={{
+                  fontFamily: 'var(--font-sanskrit, "Noto Serif Devanagari", serif)',
+                  fontSize: '0.95rem',
+                  color: 'var(--amber-warm, #C59A56)'
+                }}>
                   {v.sanskrit}
-                </div>
-                <p className="veda-portal-desc">{v.desc}</p>
+                </span>
+              </div>
+
+              {/* Recension & Honest Counts */}
+              <div style={{ fontSize: '0.75rem', color: 'var(--silver-muted, #94A3B8)', marginBottom: 10, lineHeight: 1.4 }}>
+                <strong>{v.recension}</strong> &bull; {v.canonicalScope}
+              </div>
+
+              <p style={{
+                fontSize: '0.82rem',
+                color: 'var(--silver-muted, #94A3B8)',
+                lineHeight: 1.5,
+                margin: '0 0 12px',
+                height: 38,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                {v.desc}
+              </p>
+
+              {/* Honest Archival Inventory Badge */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: '0.72rem',
+                padding: '3px 8px',
+                borderRadius: 4,
+                background: v.status === 'verified' ? 'rgba(135, 148, 122, 0.16)' : 'rgba(213, 211, 203, 0.08)',
+                border: '1px solid ' + (v.status === 'verified' ? 'rgba(135, 148, 122, 0.35)' : 'rgba(213, 211, 203, 0.15)'),
+                color: v.status === 'verified' ? 'var(--sage-soft, #87947A)' : 'var(--silver-muted, #94A3B8)',
+                fontWeight: 600
+              }}>
+                {v.status === 'verified' ? <ShieldCheck size={12} /> : <Compass size={12} />}
+                {v.archivalCount} Transcribed Manuscripts
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Search and Book/Mandala Filters Bar */}
-      <GlassCard spotlight className="library-filters-bar">
-        {/* Debounced Search Input */}
-        <div className="library-search-wrap">
-          <Search size={18} style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder={`Search ${activeVeda.toUpperCase()} by Sanskrit hymn, English concept, or Book #...`}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="library-search-input"
-          />
-          {searchInput && (
-            <button
-              type="button"
-              onClick={() => setSearchInput('')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-            >
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
+      {/* 3. MULTI-STRATEGY SEARCH & FILTERS BAR */}
+      <GlassCard elevation={2} style={{
+        padding: '16px 20px',
+        marginBottom: 20,
+        background: 'rgba(22, 23, 21, 0.92)',
+        border: '1px solid var(--border-subtle, rgba(213, 211, 203, 0.14))',
+        borderRadius: 14
+      }}>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* Search Box */}
+          <div style={{
+            flex: '1 1 300px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            background: 'rgba(10, 11, 10, 0.6)',
+            padding: '10px 14px',
+            borderRadius: 8,
+            border: '1px solid rgba(213, 211, 203, 0.12)'
+          }}>
+            <Search size={18} color="var(--amber-warm, #C59A56)" />
+            <input
+              type="text"
+              placeholder={`Search ${currentVedaMeta.name} by Devanagari (सत्यं), English (Earth), or Ref (12.1.1)...`}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--silver-moon, #D5D3CB)',
+                fontFamily: 'var(--font-body, serif)',
+                fontSize: '0.95rem',
+                outline: 'none'
+              }}
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput('')}
+                style={{ background: 'none', border: 'none', color: 'var(--silver-muted, #94A3B8)', cursor: 'pointer', padding: 2 }}
+                title="Clear Search"
+              >
+                <RotateCcw size={14} />
+              </button>
+            )}
+          </div>
 
-        {/* Book / Mandala Selector */}
-        <div className="library-select-wrap">
-          <Filter size={16} style={{ color: 'var(--gold)' }} />
-          <select
-            value={selectedBook}
-            onChange={(e) => {
-              sounds.playTibetanBowl();
-              setSelectedBook(e.target.value);
-            }}
-            className="library-select"
-          >
-            <option value="all">All Books / Mandalas</option>
-            {availableBooks.map((b) => (
-              <option key={b} value={b.toString()}>
-                Book / Mandala {b}
-              </option>
-            ))}
-          </select>
+          {/* Book / Kāṇḍa / Maṇḍala Filter */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'rgba(10, 11, 10, 0.6)',
+            padding: '10px 14px',
+            borderRadius: 8,
+            border: '1px solid rgba(213, 211, 203, 0.12)'
+          }}>
+            <Filter size={15} color="var(--amber-warm, #C59A56)" />
+            <select
+              value={selectedBook}
+              onChange={(e) => {
+                sounds.playTap();
+                setSelectedBook(e.target.value);
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--silver-moon, #D5D3CB)',
+                fontFamily: 'var(--font-body, serif)',
+                fontSize: '0.85rem',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all" style={{ background: '#161715' }}>All Books / Kāṇḍas</option>
+              {availableBooks.map((b) => (
+                <option key={b} value={b.toString()} style={{ background: '#161715' }}>
+                  Book / Kāṇḍa {b}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </GlassCard>
 
-      {/* Theme Lens Bubble Cloud */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '14px 0 24px' }}>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 4, marginRight: 6 }}>
-          <Sparkles size={14} color="var(--gold)" /> Themes:
+      {/* 4. THEME & HERMENEUTIC TAG PILLS */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 28 }}>
+        <span style={{ fontSize: '0.78rem', color: 'var(--silver-muted, #94A3B8)', display: 'flex', alignItems: 'center', gap: 5, marginRight: 4 }}>
+          <Sparkles size={13} color="var(--amber-warm, #C59A56)" /> Themes:
         </span>
-        {THEME_BUBBLES.map((t) => {
+        {allThemes.map((t) => {
           const isAct = selectedTheme === t;
           return (
             <button
@@ -417,11 +305,11 @@ export const Library = () => {
               }}
               style={{
                 padding: '4px 12px',
-                borderRadius: 'var(--radius-full)',
-                background: isAct ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255, 255, 255, 0.04)',
-                border: isAct ? '1px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.08)',
-                color: isAct ? 'var(--gold-bright)' : 'var(--text-2)',
-                fontSize: '0.8rem',
+                borderRadius: 20,
+                background: isAct ? 'rgba(197, 154, 86, 0.22)' : 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid ' + (isAct ? 'var(--amber-warm, #C59A56)' : 'rgba(213, 211, 203, 0.1)'),
+                color: isAct ? 'var(--amber-warm, #C59A56)' : 'var(--silver-muted, #94A3B8)',
+                fontSize: '0.78rem',
                 fontWeight: isAct ? 600 : 400,
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
@@ -433,87 +321,175 @@ export const Library = () => {
         })}
       </div>
 
-      {/* Suktas / Verses Grid */}
+      {/* 5. MANUSCRIPTS GRID */}
       {filteredSuktas.length > 0 ? (
-        <div className="library-grid">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 20
+        }}>
           <AnimatePresence mode="popLayout">
-            {filteredSuktas.map((sukta) => (
+            {filteredSuktas.map((m) => (
               <motion.div
-                key={`${activeVeda}-${sukta.book}-${sukta.hymn}`}
+                key={`${m.veda}-${m.book}-${m.hymn}`}
                 layout
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.25 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.2 }}
               >
-                <GlassCard
-                  tilt
-                  spotlight
-                  className="sukta-card"
+                <div
                   onClick={() => {
-                    sounds.playUnlockChime();
-                    navigate(`/verse/${sukta.book}/${sukta.hymn}/${sukta.verse || 1}?veda=${activeVeda}`);
+                    sounds.playTap();
+                    navigate(`/verse/${m.book}/${m.hymn}/${m.verse || 1}?veda=${m.veda}`);
+                  }}
+                  style={{
+                    background: 'rgba(22, 23, 21, 0.92)',
+                    border: '1px solid var(--border-subtle, rgba(213, 211, 203, 0.14))',
+                    borderRadius: 14,
+                    padding: 24,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 220,
+                    transition: 'all 0.2s ease',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--amber-warm, #C59A56)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(213, 211, 203, 0.14)';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
                   <div>
-                    <div className="sukta-card-meta">
-                      <span className="sukta-coord-badge">
-                        BOOK {sukta.book} • HYMN {sukta.hymn}
+                    {/* Top Row: Coordinates & Theme */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: 'var(--amber-warm, #C59A56)',
+                        fontFamily: 'var(--font-hud, monospace)'
+                      }}>
+                        {m.veda.toUpperCase()} • KĀṆḌA {m.book} • SŪKTA {m.hymn}
                       </span>
-                      <Chip variant="gold" icon={Sparkles}>
-                        {sukta.tag}
-                      </Chip>
+                      <Chip variant="gold" label={m.tag || 'Sacred Text'} />
                     </div>
 
-                    <h3 className="sukta-card-title">{sukta.title}</h3>
+                    {/* Title */}
+                    <h3 style={{
+                      fontFamily: 'var(--font-display, Cinzel)',
+                      fontSize: '1.15rem',
+                      color: 'var(--silver-moon, #D5D3CB)',
+                      margin: '0 0 10px',
+                      fontWeight: 600
+                    }}>
+                      {m.title}
+                    </h3>
 
-                    <div className="sukta-preview-sanskrit">
-                      {sukta.sanskrit}
+                    {/* Sanskrit Snippet */}
+                    <div style={{
+                      fontFamily: 'var(--font-sanskrit, "Noto Serif Devanagari", serif)',
+                      fontSize: '1.15rem',
+                      color: 'var(--amber-warm, #C59A56)',
+                      lineHeight: 1.5,
+                      marginBottom: 10
+                    }}>
+                      {m.sanskrit}
                     </div>
 
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, margin: '8px 0 0' }}>
-                      "{sukta.translation}"
+                    {/* Translation Snippet */}
+                    <p style={{
+                      fontSize: '0.88rem',
+                      color: 'var(--silver-muted, #94A3B8)',
+                      lineHeight: 1.6,
+                      margin: 0,
+                      fontFamily: 'var(--font-body, serif)'
+                    }}>
+                      &ldquo;{m.translation}&rdquo;
                     </p>
                   </div>
 
-                  <div className="sukta-card-footer">
+                  {/* Card Footer */}
+                  <div style={{
+                    marginTop: 18,
+                    paddingTop: 14,
+                    borderTop: '1px solid rgba(213, 211, 203, 0.08)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '0.78rem',
+                    color: 'var(--silver-muted, #94A3B8)'
+                  }}>
                     <div>
-                      <span style={{ color: 'var(--soma)', marginRight: '8px' }}>
-                        {sukta.meter}
-                      </span>
-                      <span>• {sukta.verses} Mantras</span>
+                      <span>{m.meter}</span> &bull; <span>{m.verses || 1} Verses</span>
                     </div>
-
-                    <div className="sukta-study-action">
-                      <span>Study Verse</span>
-                      <ChevronRight size={15} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--amber-warm, #C59A56)', fontWeight: 600 }}>
+                      Study in Reader <ChevronRight size={14} />
                     </div>
                   </div>
-                </GlassCard>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
       ) : (
-        <GlassCard spotlight className="library-empty-state">
-          <BookOpen size={48} style={{ color: 'var(--text-muted)', marginBottom: '14px' }} />
-          <h3 style={{ fontFamily: 'var(--font-display)', color: '#FFF', margin: '0 0 8px' }}>
-            No Hymns Found
+        /* 6. WELCOMING EMPTY STATE WITH HELPFUL SUGGESTIONS */
+        <div style={{
+          textAlign: 'center',
+          padding: '48px 24px',
+          background: 'rgba(22, 23, 21, 0.85)',
+          border: '1px solid var(--border-subtle, rgba(213, 211, 203, 0.12))',
+          borderRadius: 16
+        }}>
+          <BookOpen size={44} color="var(--amber-warm, #C59A56)" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
+          <h3 style={{ fontFamily: 'var(--font-display, Cinzel)', color: 'var(--silver-moon, #D5D3CB)', margin: '0 0 10px' }}>
+            No Archival Manuscripts Found
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '420px', margin: '0 auto 20px' }}>
-            No matching verses for "{debouncedQuery}". Try searching by another concept, hymn title, or clear your filters.
+          <p style={{ color: 'var(--silver-muted, #94A3B8)', fontSize: '0.92rem', maxWidth: 460, margin: '0 auto 20px', lineHeight: 1.6 }}>
+            No transcribed hymns matched &ldquo;{debouncedQuery}&rdquo; in {currentVedaMeta.name}. Try a broader concept or consult one of the foundational suktas below.
           </p>
+
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
+            {['Earth', '12.1.1', 'सत्यं', 'Peace', 'Prana'].map((sugg) => (
+              <button
+                key={sugg}
+                onClick={() => {
+                  sounds.playTap();
+                  setSearchInput(sugg);
+                }}
+                style={{
+                  background: 'rgba(197, 154, 86, 0.15)',
+                  border: '1px solid rgba(197, 154, 86, 0.3)',
+                  borderRadius: 6,
+                  color: 'var(--amber-warm, #C59A56)',
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Try &ldquo;{sugg}&rdquo;
+              </button>
+            ))}
+          </div>
+
           <Button
-            variant="cyber"
-            icon={RotateCcw}
+            variant="primary"
+            icon={<RotateCcw size={14} />}
             onClick={() => {
+              sounds.playTap();
               setSearchInput('');
               setSelectedBook('all');
+              setSelectedTheme('all');
             }}
           >
-            Clear All Filters
+            Reset All Filters
           </Button>
-        </GlassCard>
+        </div>
       )}
     </div>
   );
