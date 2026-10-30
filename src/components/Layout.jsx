@@ -26,15 +26,15 @@ const SacredScene = lazy(() => import('./3d/SacredScene'));
 
 const PRIMARY_NAV = [
   { to: '/dashboard', label: 'Sanctuary', icon: Compass },
+  { to: '/library', label: 'Manuscripts', icon: BookOpen },
   { to: '/path', label: 'Path', icon: ArrowRightCircle },
-  { to: '/arcade', label: 'Arcade', icon: Gamepad2 },
-  { to: '/chat', label: 'Rishi AI', icon: MessageSquareQuote }
+  { to: '/arcade', label: 'Arcade', icon: Gamepad2 }
 ];
 
 const SECONDARY_NAV = [
-  { to: '/library', label: 'Manuscripts', icon: BookOpen },
+  { to: '/chat', label: 'Rishi AI', icon: MessageSquareQuote },
   { to: '/rankings', label: 'Sangha Leagues', icon: Trophy },
-  { to: '/settings', label: 'Sanctum Altar', icon: SettingsIcon }
+  { to: '/settings', label: 'Settings', icon: SettingsIcon }
 ];
 
 const ALL_NAV = [...PRIMARY_NAV, ...SECONDARY_NAV];

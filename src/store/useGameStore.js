@@ -14,13 +14,13 @@ const RANKS = [
 export const useGameStore = create(
   persist(
     (set, get) => ({
-      // Player Core Vitals
-      rp: 120, // Radiance Points (XP)
+      // Player Core Vitals (Initialized clean for authentic progression)
+      rp: 0, // Radiance Points (Grounded in genuine activity)
       hp: 100, // Spiritual Vitality / Fortitude
       maxHp: 100,
-      prana: 85, // Mana / Focus energy for chanting
+      prana: 100, // Focus energy for chanting
       maxPrana: 100,
-      streak: 3,
+      streak: 0,
       graceDays: 2,
       lastYajnaDate: null,
       sankalpa: null,
@@ -28,25 +28,21 @@ export const useGameStore = create(
       soundEnabled: true,
       hapticsEnabled: true,
 
-      // Inventory & Sacred Relics
-      relics: [
-        { id: 'rudraksha', name: 'Gauri Shankar Rudraksha', desc: '+15% Tapasya resonance on meditation', rarity: 'Legendary', icon: '📿', count: 1 },
-        { id: 'conch', name: 'Panchajanya Conch Shell', desc: 'Emits a sound wave that dispels doubts', rarity: 'Epic', icon: '🐚', count: 1 },
-        { id: 'palm_leaf', name: 'Ancient Birch Bark Folio', desc: 'Contains fragments of Atharva healing hymns', rarity: 'Rare', icon: '📜', count: 2 }
-      ],
+      // Inventory & Sacred Relics (Empty by default; unlocked through study)
+      relics: [],
 
       // Campaign Progression (Arishadvarga Inner Trials)
-      unlockedRealms: 2,
+      unlockedRealms: 1,
       activeTrial: null,
-      completedTrials: ['trial-1'],
+      completedTrials: [],
 
-      // Stats
-      versesMastered: 14,
-      quizzesWon: 8,
-      mantrasRecited: 36,
+      // Genuine Derived Stats (No fabricated numbers)
+      versesMastered: 0,
+      quizzesWon: 0,
+      mantrasRecited: 0,
 
       // Store Actions
-      addRp: (amount) => set((state) => ({ rp: state.rp + amount })),
+      addRp: (amount) => set((state) => ({ rp: Math.max(0, state.rp + amount) })),
       
       takeDamage: (amount) => set((state) => ({
         hp: Math.max(0, state.hp - amount)

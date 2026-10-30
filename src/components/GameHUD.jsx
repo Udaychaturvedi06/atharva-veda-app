@@ -6,7 +6,7 @@ import { Flame, Zap, Heart, Volume2, VolumeX, Sun, Moon, Sparkles, User, LogOut,
 import { motion, AnimatePresence } from 'framer-motion';
 import RankMedallion from './ui/RankMedallion';
 import LiquidOrb from './ui/LiquidOrb';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Rank-Up Fullscreen Celebration Canvas
 const RankUpCanvas = () => {
@@ -121,6 +121,9 @@ export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
     ? Math.min(100, Math.max(0, ((rp - currentThreshold) / (nextThreshold - currentThreshold)) * 100))
     : 100;
 
+  const location = useLocation();
+  const isReaderRoute = location.pathname.startsWith('/verse/') || location.pathname.startsWith('/library');
+
   // Collapse on scroll down, expand on scroll up
   useEffect(() => {
     const handleScroll = () => {
@@ -207,89 +210,102 @@ export const GameHUD = ({ theme = 'dark', toggleTheme }) => {
           )}
         </div>
 
-        {/* CENTER: Sutra Thread Progress Meter */}
-        <div
-          style={{
-            flex: 1,
-            maxWidth: 360,
-            margin: '0 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative'
-          }}
-        >
-          {rpGainSpark && (
-            <motion.div
-              initial={{ opacity: 0, y: 0 }}
-              animate={{ opacity: 1, y: -20 }}
-              exit={{ opacity: 0 }}
-              style={{
-                position: 'absolute',
-                top: -16,
-                color: 'var(--gold-bright)',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                fontFamily: 'var(--font-hud)'
-              }}
-            >
-              +RP Elevated!
-            </motion.div>
-          )}
-
-          {/* Glowing horizontal Sutra Thread */}
+        {/* CENTER: Context-Aware Meter (Hidden on reading routes to ensure serene study) */}
+        {!isReaderRoute ? (
           <div
             style={{
-              width: '100%',
-              height: 3,
-              background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: 2,
-              position: 'relative',
-              overflow: 'hidden'
+              flex: 1,
+              maxWidth: 360,
+              margin: '0 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              position: 'relative'
             }}
           >
+            {rpGainSpark && (
+              <motion.div
+                initial={{ opacity: 0, y: 0 }}
+                animate={{ opacity: 1, y: -20 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: 'absolute',
+                  top: -16,
+                  color: 'var(--gold-bright)',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-hud)'
+                }}
+              >
+                +RP Elevated!
+              </motion.div>
+            )}
+
+            {/* Glowing horizontal Sutra Thread */}
             <div
               style={{
-                width: `${progressToNext}%`,
-                height: '100%',
-                background: 'linear-gradient(90deg, var(--gold), var(--gold-bright))',
-                boxShadow: '0 0 10px rgba(255, 226, 89, 0.8)',
-                transition: 'width 0.4s ease'
+                width: '100%',
+                height: 3,
+                background: 'rgba(255, 255, 255, 0.08)',
+                borderRadius: 2,
+                position: 'relative',
+                overflow: 'hidden'
               }}
-            />
+            >
+              <div
+                style={{
+                  width: `${progressToNext}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, var(--gold), var(--gold-bright))',
+                  boxShadow: '0 0 10px rgba(255, 226, 89, 0.8)',
+                  transition: 'width 0.4s ease'
+                }}
+              />
+            </div>
+            {!collapsed && (
+              <span style={{ fontSize: '0.7rem', color: 'var(--silver-muted, #94A3B8)', marginTop: 4, fontFamily: 'var(--font-hud)' }}>
+                TAPASYA ASCENSION &bull; {Math.round(progressToNext)}%
+              </span>
+            )}
           </div>
-          {!collapsed && (
-            <span style={{ fontSize: '0.7rem', color: 'var(--silver-muted, #94A3B8)', marginTop: 4, fontFamily: 'var(--font-hud)' }}>
-              TAPASYA ASCENSION &bull; {Math.round(progressToNext)}%
+        ) : (
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-display)', color: 'var(--color-silver-3)', letterSpacing: '0.08em' }}>
+              THE LIVING ARCHIVE &bull; CONTEMPLATIVE STUDY
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* RIGHT: Vitals Orbs + Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Liquid Orb: Fortitude (Signal Red) */}
-          <LiquidOrb
-            type="hp"
-            current={hp}
-            max={maxHp}
-            icon={<Heart size={16} />}
-            label="Fortitude (HP)"
-            color="var(--signal-red, #EF4444)"
-            secondaryColor="var(--signal-red-glow, rgba(239, 68, 68, 0.4))"
-            details="Your spiritual endurance. Regenerates during calm and sacred homa rituals."
-          />
+          {/* Combat Vitals Orbs (Fortitude & Prana) are hidden during contemplative reading */}
+          {!isReaderRoute && (
+            <>
+              {/* Liquid Orb: Fortitude (Signal Red) */}
+              <LiquidOrb
+                type="hp"
+                current={hp}
+                max={maxHp}
+                icon={<Heart size={16} />}
+                label="Fortitude (HP)"
+                color="var(--signal-red, #EF4444)"
+                secondaryColor="var(--signal-red-glow, rgba(239, 68, 68, 0.4))"
+                details="Your spiritual endurance. Regenerates during calm and sacred homa rituals."
+              />
 
-          {/* Liquid Orb: Prana (Sage Green) */}
-          <LiquidOrb
-            type="prana"
-            current={prana}
-            max={maxPrana}
-            icon={<Zap size={16} />}
-            label="Prana (Mana)"
-            color="var(--sage-healing, #769E84)"
-            secondaryColor="var(--sage-glow, rgba(118, 158, 132, 0.35))"
-            details="Breath and focus energy used for chanting, invocations, and arcade abilities."
-          />
+              {/* Liquid Orb: Prana (Sage Green) */}
+              <LiquidOrb
+                type="prana"
+                current={prana}
+                max={maxPrana}
+                icon={<Zap size={16} />}
+                label="Prana (Mana)"
+                color="var(--sage-healing, #769E84)"
+                secondaryColor="var(--sage-glow, rgba(118, 158, 132, 0.35))"
+                details="Breath and focus energy used for chanting, invocations, and arcade abilities."
+              />
+            </>
+          )}
 
           {/* Liquid Orb: Streak (Amber Glow) */}
           <LiquidOrb
