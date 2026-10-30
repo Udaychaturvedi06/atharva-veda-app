@@ -1,0 +1,9 @@
+{
+  "_notice": "This is a synthetic schema example for development. Do not place production credentials in this file.",
+  "demo_user": {
+    "username": "demo_user",
+    "passwordHash": "$2a$10$exampleSyntheticBcryptHashPlaceholderOnly00000000000",
+    "role": "user",
+    "createdAt": "2026-10-30T00:00:00.000Z"
+  }
+}

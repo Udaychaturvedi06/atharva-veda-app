@@ -13,7 +13,18 @@ import { z } from 'zod';
 dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const JWT_SECRET = process.env.JWT_SECRET || 'sutra-dev-secret-key-321-vedas-wisdom';
+
+// Fail-closed JWT verification: In production, missing JWT_SECRET MUST throw a fatal error
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is missing in production environment.');
+  throw new Error('FATAL: JWT_SECRET environment variable is mandatory in production.');
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === 'test' 
+    ? 'test-jwt-secret-for-automated-suites-min32' 
+    : 'sutra-dev-secret-key-local-only-not-for-prod'
+);
 
 const { RigVeda, Atharvaveda, Samaveda } = divineBooks;
 
@@ -118,6 +129,10 @@ const usersPath = process.env.NODE_ENV === 'production'
     ? '/tmp/users.json'
     : path.join(__dirname, '..', 'users.json');
 
+if (process.env.NODE_ENV === 'production') {
+    console.warn('⚠️ PERSISTENCE NOTICE: Server is configured with ephemeral file storage (/tmp/users.json). Durable managed database is recommended for production accounts.');
+}
+
 let usersDb = {};
 const loadUsers = () => {
     try {
@@ -125,20 +140,29 @@ const loadUsers = () => {
             usersDb = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
             console.log(`Loaded ${Object.keys(usersDb).length} user accounts.`);
         } else {
-            // Seed a default admin on first run (properly hashed, no plaintext in code)
-            const hashedAdminPassword = bcrypt.hashSync('admin123', 10);
-            usersDb = {
-                'admin': {
-                    username: 'admin',
-                    passwordHash: hashedAdminPassword,
-                    role: 'admin'
-                }
-            };
-            fs.writeFileSync(usersPath, JSON.stringify(usersDb, null, 2));
-            console.log("Seeded default admin account securely.");
+            // Secure explicit bootstrap: Never seed default credentials in code
+            if (process.env.ADMIN_INIT_USERNAME && process.env.ADMIN_INIT_PASSWORD) {
+                const initUser = process.env.ADMIN_INIT_USERNAME.toLowerCase().trim();
+                const initHash = bcrypt.hashSync(process.env.ADMIN_INIT_PASSWORD, 12);
+                usersDb = {
+                    [initUser]: {
+                        username: process.env.ADMIN_INIT_USERNAME.trim(),
+                        passwordHash: initHash,
+                        role: 'admin',
+                        createdAt: new Date().toISOString()
+                    }
+                };
+                fs.writeFileSync(usersPath, JSON.stringify(usersDb, null, 2));
+                console.log("Initialized designated administrator account from environment variables.");
+            } else {
+                // Initialize clean empty store without hardcoded accounts
+                usersDb = {};
+                fs.writeFileSync(usersPath, JSON.stringify(usersDb, null, 2));
+                console.log("Initialized clean empty user store.");
+            }
         }
     } catch (e) {
-        console.error("Failed to load or seed users DB:", e);
+        console.error("Failed to load or initialize users DB:", e);
     }
 };
 loadUsers();
@@ -328,7 +352,7 @@ app.post('/api/auth/guest', (req, res) => {
   try {
     const guestUsername = `Guest_${Math.floor(1000 + Math.random() * 9000)}`;
     const token = jwt.sign(
-      { username: guestUsername, role: 'user', isGuest: true },
+      { username: guestUsername, role: 'guest', isGuest: true },
       JWT_SECRET,
       { expiresIn: '12h' }
     );
@@ -336,7 +360,7 @@ app.post('/api/auth/guest', (req, res) => {
     res.json({
       success: true,
       token,
-      user: { username: guestUsername, role: 'user', isGuest: true }
+      user: { username: guestUsername, role: 'guest', isGuest: true }
     });
   } catch (error) {
     console.error("Guest session error:", error);

@@ -32,3 +32,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Application State & User Persistence (Sensitive / Ephemeral)
+users.json
+contact-messages.json
+translation_cache.json
+*.tmp

@@ -39,17 +39,14 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('sutra_user', JSON.stringify(data.user));
       return { success: true };
     } catch (err) {
-      // Offline fallback: if backend is unreachable, allow seamless demo login
-      if (err.message.includes('fetch') || err.message.includes('Failed to fetch')) {
-        const fallbackUser = { username: username.trim(), role: 'user', isOffline: true };
-        const dummyToken = 'offline_token_' + Date.now();
-        setToken(dummyToken);
-        setUser(fallbackUser);
-        localStorage.setItem('sutra_token', dummyToken);
-        localStorage.setItem('sutra_user', JSON.stringify(fallbackUser));
-        return { success: true };
-      }
-      return { success: false, error: err.message };
+      // Truthful error reporting: Do not fake successful logins when server is unreachable or rejects
+      const isNetworkError = err.message?.includes('fetch') || err.message?.includes('Failed to fetch') || err.name === 'TypeError';
+      return {
+        success: false,
+        error: isNetworkError
+          ? 'Authentication service is unreachable. Please verify your connection or explore as Guest.'
+          : (err.message || 'Login failed. Please check your credentials.')
+      };
     }
   };
 
@@ -69,16 +66,13 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('sutra_user', JSON.stringify(data.user));
       return { success: true };
     } catch (err) {
-      if (err.message.includes('fetch') || err.message.includes('Failed to fetch')) {
-        const fallbackUser = { username: username.trim(), role: 'user', isOffline: true };
-        const dummyToken = 'offline_token_' + Date.now();
-        setToken(dummyToken);
-        setUser(fallbackUser);
-        localStorage.setItem('sutra_token', dummyToken);
-        localStorage.setItem('sutra_user', JSON.stringify(fallbackUser));
-        return { success: true };
-      }
-      return { success: false, error: err.message };
+      const isNetworkError = err.message?.includes('fetch') || err.message?.includes('Failed to fetch') || err.name === 'TypeError';
+      return {
+        success: false,
+        error: isNetworkError
+          ? 'Registration service is unreachable. Please verify your connection or explore as Guest.'
+          : (err.message || 'Registration failed.')
+      };
     }
   };
 
@@ -94,13 +88,19 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('sutra_user', JSON.stringify(data.user));
       return { success: true };
     } catch {
+      // Explicit offline demo guest mode: Visibly labeled, never masquerades as a verified account or JWT
       const guestId = Math.floor(1000 + Math.random() * 9000);
-      const guestUser = { username: `Seeker_${guestId}`, role: 'user', isGuest: true };
-      const dummyToken = 'guest_token_' + Date.now();
-      setToken(dummyToken);
-      setUser(guestUser);
-      localStorage.setItem('sutra_token', dummyToken);
-      localStorage.setItem('sutra_user', JSON.stringify(guestUser));
+      const offlineGuestUser = {
+        username: `Guest_${guestId}`,
+        role: 'guest',
+        isGuest: true,
+        isOfflineDemo: true
+      };
+      const demoToken = 'demo_guest_offline_' + Date.now();
+      setToken(demoToken);
+      setUser(offlineGuestUser);
+      localStorage.setItem('sutra_token', demoToken);
+      localStorage.setItem('sutra_user', JSON.stringify(offlineGuestUser));
       return { success: true };
     }
   };

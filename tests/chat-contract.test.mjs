@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import app from '../api/index.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sutra-dev-secret-key-321-vedas-wisdom';
+const JWT_SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === 'test' 
+    ? 'test-jwt-secret-for-automated-suites-min32' 
+    : 'sutra-dev-secret-key-local-only-not-for-prod'
+);
 
 describe('AI Chat Contract & Regression Suite', () => {
   let server;

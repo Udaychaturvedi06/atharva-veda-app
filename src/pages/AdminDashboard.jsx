@@ -60,9 +60,8 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Allow admin access if user.role === 'admin' or if development override is toggled
-  const [devAdminBypass, setDevAdminBypass] = useState(false);
-  const isAdmin = user?.role === 'admin' || devAdminBypass;
+  // Strict role enforcement: Only authenticated users with role === 'admin' can access
+  const isAdmin = user?.role === 'admin';
 
   const [users, setUsers] = useState(INITIAL_USERS);
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,13 +146,6 @@ export const AdminDashboard = () => {
               onClick={() => navigate('/dashboard')}
             >
               Return to Sanctuary
-            </Button>
-            <Button
-              variant="cyber"
-              icon={Sparkles}
-              onClick={() => setDevAdminBypass(true)}
-            >
-              Simulate Admin Access (Dev Mode)
             </Button>
           </div>
         </GlassCard>
