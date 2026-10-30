@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { sounds } from '../utils/soundEngine';
 import { recitationEngine } from '../utils/recitationEngine';
+import { useGameStore } from '../store/useGameStore';
 import { CANONICAL_VERSES, findCanonicalVerse } from '../data/canonicalVerses';
 import { useSutraAnchor } from '../systems/sutraContext';
 import {
@@ -38,6 +39,8 @@ export const VerseDetail = () => {
   // Verse Data Resolution
   const targetRef = `${book}.${hymn}.${verse}`;
   const canonicalVerse = findCanonicalVerse(targetRef);
+
+  const recordMantraRecited = useGameStore((state) => state.recordMantraRecited);
 
   // Reading & Display States
   const [activeTab, setActiveTab] = useState('meaning'); // 'meaning', 'anatomy', 'context', 'notes'
@@ -128,6 +131,7 @@ export const VerseDetail = () => {
         setIsPlaying(false);
         setIsPaused(false);
         setActiveCharIndex(null);
+        recordMantraRecited();
       },
       onError: (err) => {
         console.warn('Recitation Error:', err);
@@ -139,7 +143,7 @@ export const VerseDetail = () => {
         setActiveCharIndex(charIndex);
       }
     });
-  }, [isPlaying, isPaused, canonicalVerse, playbackSpeed]);
+  }, [isPlaying, isPaused, canonicalVerse, playbackSpeed, recordMantraRecited]);
 
   const handleStopRecitation = () => {
     sounds.playTap();

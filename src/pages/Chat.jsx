@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sounds } from '../utils/soundEngine';
+import { recitationEngine } from '../utils/recitationEngine';
 import {
   Send,
   Sparkles,
@@ -29,6 +31,7 @@ const INQUIRY_PRESETS = [
 ];
 
 export const Chat = () => {
+  const navigate = useNavigate();
   const [selectedPersona, setSelectedPersona] = useState(RISHI_PERSONAS[0]);
   const [messages, setMessages] = useState([
     {
@@ -218,26 +221,57 @@ export const Chat = () => {
                         maxWidth: '82%',
                         padding: '16px 20px',
                         borderRadius: 12,
-                        background: isRishi ? 'rgba(21, 18, 32, 0.9)' : 'rgba(212, 175, 55, 0.15)',
-                        border: isRishi ? '1px solid rgba(212, 175, 55, 0.25)' : '1px solid rgba(212, 175, 55, 0.4)',
-                        color: 'var(--text-0)',
+                        background: isRishi ? 'rgba(22, 23, 21, 0.94)' : 'rgba(197, 154, 86, 0.16)',
+                        border: isRishi ? '1px solid var(--border-subtle, rgba(213, 211, 203, 0.16))' : '1px solid rgba(197, 154, 86, 0.35)',
+                        color: 'var(--silver-moon, #D5D3CB)',
                         fontSize: '0.95rem',
                         lineHeight: 1.6,
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.45)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: '0.75rem', color: isRishi ? 'var(--gold-bright)' : 'var(--cyan)' }}>
-                        <span>{isRishi ? 'ॐ Rishi Voice' : 'Seeker Inquiry'}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.75rem', gap: 8 }}>
+                        <span style={{ color: isRishi ? 'var(--amber-warm, #C59A56)' : 'var(--sage-soft, #87947A)', fontWeight: 600 }}>
+                          {isRishi ? `ॐ ${selectedPersona.name.split(' (')[0]}` : 'Seeker Inquiry'}
+                        </span>
+                        {isRishi && (
+                          <span style={{
+                            fontSize: '0.66rem',
+                            padding: '2px 6px',
+                            borderRadius: 4,
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            color: 'var(--silver-muted, #94A3B8)',
+                            fontWeight: 600
+                          }}>
+                            AI Synthesis &bull; Not Canonical Scripture
+                          </span>
+                        )}
                       </div>
                       <div style={{ whiteSpace: 'pre-line' }}>{m.content}</div>
 
-                      {/* If response contains Sanskrit, render action buttons */}
+                      {/* If response contains Sanskrit, render real chant and library navigation */}
                       {isRishi && hasDevanagari && (
-                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 8 }}>
-                          <Button size="sm" variant="ghost" icon={<Volume2 size={12} />} onClick={() => sounds.playSuccess()}>
-                            Hear Chanted
+                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(213, 211, 203, 0.08)', display: 'flex', gap: 8 }}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            icon={<Volume2 size={12} />}
+                            onClick={() => {
+                              sounds.playTap();
+                              recitationEngine.recite(m.content);
+                            }}
+                          >
+                            Recite Mantra
                           </Button>
-                          <Button size="sm" variant="ghost" icon={<BookOpen size={12} />} onClick={() => window.location.href = '/library'}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            icon={<BookOpen size={12} />}
+                            onClick={() => {
+                              sounds.playTap();
+                              navigate('/library');
+                            }}
+                          >
                             Open in Library
                           </Button>
                         </div>

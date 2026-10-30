@@ -40,9 +40,26 @@ export const useGameStore = create(
       versesMastered: 0,
       quizzesWon: 0,
       mantrasRecited: 0,
+      masteredVerseRefs: [],
 
       // Store Actions
       addRp: (amount) => set((state) => ({ rp: Math.max(0, state.rp + amount) })),
+
+      recordVerseMastered: (verseRef) => set((state) => {
+        const setRefs = new Set(state.masteredVerseRefs || []);
+        if (verseRef) setRefs.add(verseRef);
+        const updated = Array.from(setRefs);
+        return {
+          masteredVerseRefs: updated,
+          versesMastered: updated.length,
+          rp: state.rp + 100
+        };
+      }),
+
+      recordMantraRecited: () => set((state) => ({
+        mantrasRecited: (state.mantrasRecited || 0) + 1,
+        rp: state.rp + 25
+      })),
       
       takeDamage: (amount) => set((state) => ({
         hp: Math.max(0, state.hp - amount)
@@ -165,6 +182,8 @@ export const useGameStore = create(
         unlockedRealms: state.unlockedRealms,
         completedTrials: state.completedTrials,
         versesMastered: state.versesMastered,
+        masteredVerseRefs: state.masteredVerseRefs,
+        mantrasRecited: state.mantrasRecited,
         quizzesWon: state.quizzesWon,
         soundEnabled: state.soundEnabled
       })
