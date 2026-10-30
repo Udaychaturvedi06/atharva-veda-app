@@ -1,0 +1,71 @@
+{
+  "startedAt": "2026-10-30T08:34:20.818Z",
+  "options": {
+    "veda": "atharva",
+    "division": 1,
+    "limit": 5,
+    "concurrency": 2,
+    "resume": false
+  },
+  "completed": [
+    {
+      "verseId": "av-1-1-1",
+      "canonicalRef": "1.1.1",
+      "cacheKey": "435dc1d49a324a27166d8690c86f6bea",
+      "audioUrl": "/api/audio/435dc1d49a324a27166d8690c86f6bea.wav",
+      "durationMs": 16530,
+      "engine": "local-acoustic-vedic",
+      "generationTimeMs": 73,
+      "timestamp": "2026-10-30T08:34:20.896Z"
+    },
+    {
+      "verseId": "av-1-1-2",
+      "canonicalRef": "1.1.2",
+      "cacheKey": "772e3033145dc6b9f9e57c19e0d14ea0",
+      "audioUrl": "/api/audio/772e3033145dc6b9f9e57c19e0d14ea0.wav",
+      "durationMs": 14170,
+      "engine": "local-acoustic-vedic",
+      "generationTimeMs": 29,
+      "timestamp": "2026-10-30T08:34:20.897Z"
+    },
+    {
+      "verseId": "av-1-1-4",
+      "canonicalRef": "1.1.4",
+      "cacheKey": "3ca19069cd200382dff010248fe581f4",
+      "audioUrl": "/api/audio/3ca19069cd200382dff010248fe581f4.wav",
+      "durationMs": 15990,
+      "engine": "local-acoustic-vedic",
+      "generationTimeMs": 32,
+      "timestamp": "2026-10-30T08:34:20.958Z"
+    },
+    {
+      "verseId": "av-1-1-3",
+      "canonicalRef": "1.1.3",
+      "cacheKey": "b6395ee7e63bb1a0701279361a48e4ee",
+      "audioUrl": "/api/audio/b6395ee7e63bb1a0701279361a48e4ee.wav",
+      "durationMs": 15690,
+      "engine": "local-acoustic-vedic",
+      "generationTimeMs": 63,
+      "timestamp": "2026-10-30T08:34:20.960Z"
+    },
+    {
+      "verseId": "av-1-2-1",
+      "canonicalRef": "1.2.1",
+      "cacheKey": "50c34b2ad1f04ced6c6a0419735b3531",
+      "audioUrl": "/api/audio/50c34b2ad1f04ced6c6a0419735b3531.wav",
+      "durationMs": 15610,
+      "engine": "local-acoustic-vedic",
+      "generationTimeMs": 28,
+      "timestamp": "2026-10-30T08:34:20.988Z"
+    }
+  ],
+  "failed": [],
+  "metrics": {
+    "totalRequested": 5,
+    "totalCompleted": 5,
+    "totalFailed": 0,
+    "elapsedMs": 166,
+    "avgMsPerVerse": 33,
+    "timestamp": "2026-10-30T08:34:20.989Z"
+  }
+}

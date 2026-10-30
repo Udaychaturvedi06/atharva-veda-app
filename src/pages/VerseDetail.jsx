@@ -5,6 +5,7 @@ import { recitationEngine } from '../utils/recitationEngine';
 import { useVerseRecitation } from '../services/recitation/useVerseRecitation.js';
 import { useGameStore } from '../store/useGameStore';
 import { CANONICAL_VERSES, findCanonicalVerse } from '../data/canonicalVerses';
+import { dataAccess } from '../services/dataAccess';
 import { useSutraAnchor } from '../systems/sutraContext';
 import {
   Volume2,
@@ -23,7 +24,9 @@ import {
   Radio,
   Sliders,
   Wind,
-  RotateCcw
+  RotateCcw,
+  Bookmark,
+  BookmarkCheck
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
@@ -40,8 +43,202 @@ export const VerseDetail = () => {
 
   // Verse Data Resolution
   const targetRef = `${book}.${hymn}.${verse}`;
-  const canonicalVerse = findCanonicalVerse(targetRef);
+  const cornerstoneVerse = findCanonicalVerse(targetRef);
+  const [corpusVerse, setCorpusVerse] = useState(null);
+  const [loadingCorpus, setLoadingCorpus] = useState(false);
+
+  // Typography & Reading Preferences
+  const [fontSize, setFontSize] = useState('medium'); // 'medium', 'large', 'huge'
+  const [readingTheme, setReadingTheme] = useState('dark'); // 'dark', 'manuscript', 'sand'
+  const [isBookmarked, setIsBookmarked] = useState(() => {
+    try {
+      const bmarks = JSON.parse(localStorage.getItem('sutra_bookmarks') || '[]');
+      return bmarks.includes(`${vedaParam}-${targetRef}`);
+    } catch {
+      return false;
+    }
+  });
+
+  // On-demand partition resolution for any of the 20,081 mantras across all 4 Vedas
+  useEffect(() => {
+    if (cornerstoneVerse) {
+      setCorpusVerse(null);
+      return;
+    }
+
+    let isMounted = true;
+    setLoadingCorpus(true);
+
+    dataAccess.loadDivision(vedaParam, book).then((divisionData) => {
+      if (!isMounted) return;
+      setLoadingCorpus(false);
+      if (!divisionData) return;
+
+      const normVeda = (vedaParam || 'atharva').toLowerCase();
+      let foundVerse = null;
+
+      if (normVeda === 'rig' || normVeda === 'rigveda') {
+        const sukta = divisionData.find((s) => s.sukta === parseInt(hymn, 10));
+        if (sukta && sukta.verses) {
+          const vItem = sukta.verses.find((v) => v.verseNum === parseInt(verse, 10)) || sukta.verses[0];
+          if (vItem) {
+            foundVerse = {
+              id: vItem.id,
+              veda: 'Rigveda',
+              recension: 'Śākala Śākhā',
+              ref: `${book}.${hymn}.${vItem.verseNum}`,
+              book: parseInt(book, 10),
+              hymn: parseInt(hymn, 10),
+              verse: vItem.verseNum,
+              title: `${sukta.deity ? sukta.deity + ' Sūkta' : 'Rigveda Sūkta'} (RV ${book}.${hymn})`,
+              meter: sukta.meter || 'Vedic Chhandas',
+              rishi: sukta.rishi,
+              deity: sukta.deity,
+              devanagari: vItem.accentedText,
+              displayText: vItem.displayText,
+              iast: vItem.displayText,
+              translation: vItem.translation || `Verse ${vItem.verseNum} of Maṇḍala ${book}, Sūkta ${hymn} invoking ${sukta.deity || 'the divine'}.`,
+              translatorAttribution: 'Ralph T. H. Griffith / Max Müller',
+              words: vItem.displayText.split(/\s+/).map((wText) => ({
+                text: wText,
+                gloss: 'Vedic pada',
+                swara: ['udatta']
+              }))
+            };
+          }
+        }
+      } else if (normVeda === 'atharva' || normVeda === 'atharvaveda') {
+        const sukta = divisionData.find((s) => s.sukta === parseInt(hymn, 10));
+        if (sukta && sukta.verses) {
+          const vItem = sukta.verses.find((v) => v.verseNum === parseInt(verse, 10)) || sukta.verses[0];
+          if (vItem) {
+            foundVerse = {
+              id: vItem.id,
+              veda: 'Atharvaveda',
+              recension: 'Śaunaka Śākhā',
+              ref: `${book}.${hymn}.${vItem.verseNum}`,
+              book: parseInt(book, 10),
+              hymn: parseInt(hymn, 10),
+              verse: vItem.verseNum,
+              title: sukta.title || `Atharvaveda Kāṇḍa ${book} Sūkta ${hymn}`,
+              meter: sukta.meter || 'Anuṣṭubh / Triṣṭubh',
+              rishi: sukta.rishi,
+              deity: sukta.deity,
+              devanagari: vItem.accentedText,
+              displayText: vItem.displayText,
+              iast: vItem.displayText,
+              translation: vItem.translation || `Verse ${vItem.verseNum} of Kāṇḍa ${book}, Sūkta ${hymn}.`,
+              translatorAttribution: 'Whitney & Roth / Griffith',
+              words: vItem.displayText.split(/\s+/).map((wText) => ({
+                text: wText,
+                gloss: 'Vedic pada',
+                swara: ['udatta']
+              }))
+            };
+          }
+        }
+      } else if (normVeda === 'yajur' || normVeda === 'yajurveda') {
+        const adhyaya = Array.isArray(divisionData) ? (divisionData.find((a) => a.adhyaya === parseInt(book, 10)) || divisionData[0]) : null;
+        if (adhyaya && adhyaya.verses) {
+          const vItem = adhyaya.verses.find((v) => v.verseNum === parseInt(verse, 10)) || adhyaya.verses[0];
+          if (vItem) {
+            foundVerse = {
+              id: vItem.id,
+              veda: 'Yajurveda',
+              recension: 'Vājasaneyi Mādhyandina',
+              ref: `${book}.${vItem.verseNum}`,
+              book: parseInt(book, 10),
+              hymn: 1,
+              verse: vItem.verseNum,
+              title: adhyaya.title || `Yajurveda Adhyāya ${book}`,
+              meter: 'Yajuḥ Mantra',
+              devanagari: vItem.accentedText,
+              displayText: vItem.displayText,
+              iast: vItem.displayText,
+              translation: vItem.translation || `Mantra ${vItem.verseNum} of Adhyāya ${book} (Vājasaneyi Mādhyandina Saṁhitā).`,
+              translatorAttribution: 'Griffith White Yajurveda',
+              words: vItem.displayText.split(/\s+/).map((wText) => ({
+                text: wText,
+                gloss: 'Yajuḥ pada',
+                swara: ['udatta']
+              }))
+            };
+          }
+        }
+      } else if (normVeda === 'sama' || normVeda === 'samaveda') {
+        const vNum = parseInt(verse || hymn || 1, 10);
+        const vItem = Array.isArray(divisionData) ? (divisionData.find((v) => v.verseNum === vNum) || divisionData[0]) : null;
+        if (vItem) {
+          foundVerse = {
+            id: vItem.id,
+            veda: 'Samaveda',
+            recension: 'Kauthuma Śākhā',
+            ref: vItem.canonicalRef,
+            book: parseInt(book, 10),
+            hymn: parseInt(hymn, 10),
+            verse: vItem.verseNum,
+            title: `Sāmaveda Sāman ${vItem.verseNum} (${vItem.deity || 'Agni/Soma'})`,
+            meter: 'Sāmagāna Metric Lyric',
+            deity: vItem.deity,
+            devanagari: vItem.accentedText,
+            displayText: vItem.displayText,
+            iast: vItem.displayText,
+            translation: vItem.translation,
+            translatorAttribution: 'Ralph T. H. Griffith (1893)',
+            words: vItem.displayText.split(/\s+/).map((wText) => ({
+              text: wText,
+              gloss: 'Sāman pada',
+              swara: ['udatta']
+            }))
+          };
+        }
+      }
+
+      setCorpusVerse(foundVerse);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cornerstoneVerse, vedaParam, book, hymn, verse]);
+
+  const canonicalVerse = cornerstoneVerse || corpusVerse;
   const recitation = useVerseRecitation(canonicalVerse);
+
+  // Reading Persistence
+  useEffect(() => {
+    if (canonicalVerse) {
+      localStorage.setItem('sutra_last_read', JSON.stringify({
+        veda: vedaParam,
+        book,
+        hymn,
+        verse,
+        title: canonicalVerse.title,
+        ref: canonicalVerse.ref,
+        timestamp: new Date().toISOString()
+      }));
+    }
+  }, [canonicalVerse, vedaParam, book, hymn, verse]);
+
+  // Bookmark toggle
+  const toggleBookmark = () => {
+    sounds.playTap();
+    try {
+      const key = `${vedaParam}-${targetRef}`;
+      const bmarks = JSON.parse(localStorage.getItem('sutra_bookmarks') || '[]');
+      let updated;
+      if (bmarks.includes(key)) {
+        updated = bmarks.filter((b) => b !== key);
+        setIsBookmarked(false);
+      } else {
+        updated = [...bmarks, key];
+        setIsBookmarked(true);
+      }
+      localStorage.setItem('sutra_bookmarks', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
 
   const recordMantraRecited = useGameStore((state) => state.recordMantraRecited);
 
@@ -135,6 +332,28 @@ export const VerseDetail = () => {
   };
 
   // UNMATCHED / UNAVAILABLE VERSE FALLBACK
+  if (loadingCorpus) {
+    return (
+      <div style={{ padding: '80px 24px', maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{
+          width: 38,
+          height: 38,
+          borderRadius: '50%',
+          border: '2px solid rgba(197, 154, 86, 0.2)',
+          borderTopColor: 'var(--amber-warm, #C59A56)',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 16px'
+        }} />
+        <h3 style={{ fontFamily: 'var(--font-display, Cinzel)', color: 'var(--amber-warm, #C59A56)', marginBottom: 8 }}>
+          Illuminating Vaidika Manuscript...
+        </h3>
+        <p style={{ color: 'var(--silver-muted, #94A3B8)', fontSize: '0.9rem' }}>
+          Retrieving {vedaParam} division {book} from the canonical Four Vedas partition cache.
+        </p>
+      </div>
+    );
+  }
+
   if (!canonicalVerse) {
     return (
       <div style={{ padding: '60px 24px', maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
@@ -177,6 +396,25 @@ export const VerseDetail = () => {
           <span style={{ fontSize: '0.8rem', color: 'var(--silver-muted, #94A3B8)' }}>
             {canonicalVerse.recension}
           </span>
+          <button
+            onClick={toggleBookmark}
+            style={{
+              background: isBookmarked ? 'rgba(197, 154, 86, 0.22)' : 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid ' + (isBookmarked ? 'var(--amber-warm, #C59A56)' : 'rgba(213, 211, 203, 0.15)'),
+              borderRadius: 6,
+              color: isBookmarked ? 'var(--amber-warm, #C59A56)' : 'var(--silver-muted, #94A3B8)',
+              padding: '4px 10px',
+              fontSize: '0.75rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            {isBookmarked ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
+            {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+          </button>
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -201,27 +439,70 @@ export const VerseDetail = () => {
           <GlassCard elevation={3} style={{
             padding: '36px 32px',
             border: '1px solid var(--border-subtle, rgba(213, 211, 203, 0.16))',
-            background: 'rgba(22, 23, 21, 0.92)'
+            background: readingTheme === 'manuscript' ? 'rgba(32, 24, 16, 0.95)' : readingTheme === 'sand' ? 'rgba(240, 235, 222, 0.96)' : 'rgba(22, 23, 21, 0.92)',
+            color: readingTheme === 'sand' ? '#1A1A1A' : 'var(--silver-moon, #D5D3CB)'
           }}>
             {/* Header: Title & Controls */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, borderBottom: '1px solid rgba(213, 211, 203, 0.08)', paddingBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, borderBottom: '1px solid rgba(213, 211, 203, 0.08)', paddingBottom: 16, flexWrap: 'wrap', gap: 12 }}>
               <div>
                 <h2 style={{ fontFamily: 'var(--font-display, Cinzel)', color: 'var(--amber-warm, #C59A56)', margin: 0, fontSize: '1.25rem' }}>
                   {canonicalVerse.title}
                 </h2>
-                <span style={{ fontSize: '0.8rem', color: 'var(--silver-muted, #94A3B8)' }}>
+                <span style={{ fontSize: '0.8rem', color: readingTheme === 'sand' ? '#4A4A4A' : 'var(--silver-muted, #94A3B8)' }}>
                   Chandas (Meter): <strong>{canonicalVerse.meter}</strong>
                 </span>
               </div>
 
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* Theme Selector */}
+                <select
+                  value={readingTheme}
+                  onChange={(e) => setReadingTheme(e.target.value)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(213, 211, 203, 0.15)',
+                    color: readingTheme === 'sand' ? '#222' : 'var(--silver-moon, #D5D3CB)',
+                    borderRadius: 6,
+                    fontSize: '0.75rem',
+                    padding: '5px 8px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                  title="Reading Theme"
+                >
+                  <option value="dark" style={{ background: '#161715', color: '#FFF' }}>Theme: Dark</option>
+                  <option value="manuscript" style={{ background: '#161715', color: '#FFF' }}>Theme: Manuscript</option>
+                  <option value="sand" style={{ background: '#161715', color: '#FFF' }}>Theme: Sand</option>
+                </select>
+
+                {/* Font Size Adjuster */}
+                <select
+                  value={fontSize}
+                  onChange={(e) => setFontSize(e.target.value)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(213, 211, 203, 0.15)',
+                    color: readingTheme === 'sand' ? '#222' : 'var(--silver-moon, #D5D3CB)',
+                    borderRadius: 6,
+                    fontSize: '0.75rem',
+                    padding: '5px 8px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                  title="Devanagari Font Size"
+                >
+                  <option value="medium" style={{ background: '#161715', color: '#FFF' }}>Size: Normal</option>
+                  <option value="large" style={{ background: '#161715', color: '#FFF' }}>Size: Large</option>
+                  <option value="huge" style={{ background: '#161715', color: '#FFF' }}>Size: Huge</option>
+                </select>
+
                 <button
                   onClick={() => setColorSwara(!colorSwara)}
                   style={{
                     background: colorSwara ? 'rgba(197, 154, 86, 0.14)' : 'rgba(255, 255, 255, 0.04)',
                     border: '1px solid ' + (colorSwara ? 'var(--amber-warm, #C59A56)' : 'rgba(255, 255, 255, 0.1)'),
                     borderRadius: 6,
-                    color: colorSwara ? 'var(--amber-warm, #C59A56)' : 'var(--silver-muted, #94A3B8)',
+                    color: colorSwara ? 'var(--amber-warm, #C59A56)' : readingTheme === 'sand' ? '#444' : 'var(--silver-muted, #94A3B8)',
                     fontSize: '0.75rem',
                     padding: '6px 10px',
                     cursor: 'pointer',
@@ -238,7 +519,7 @@ export const VerseDetail = () => {
                     background: showLivingMargins ? 'rgba(135, 148, 122, 0.16)' : 'rgba(255, 255, 255, 0.04)',
                     border: '1px solid ' + (showLivingMargins ? 'var(--sage-soft, #87947A)' : 'rgba(255, 255, 255, 0.1)'),
                     borderRadius: 6,
-                    color: showLivingMargins ? 'var(--sage-soft, #87947A)' : 'var(--silver-muted, #94A3B8)',
+                    color: showLivingMargins ? 'var(--sage-soft, #87947A)' : readingTheme === 'sand' ? '#444' : 'var(--silver-muted, #94A3B8)',
                     fontSize: '0.75rem',
                     padding: '6px 10px',
                     cursor: 'pointer',
@@ -287,7 +568,7 @@ export const VerseDetail = () => {
                     onMouseEnter={() => sounds.playHover()}
                     style={{
                       fontFamily: 'var(--font-sanskrit, "Noto Serif Devanagari", serif)',
-                      fontSize: 'clamp(1.5rem, 3.2vw, 2.2rem)',
+                      fontSize: fontSize === 'huge' ? 'clamp(2rem, 4vw, 3rem)' : fontSize === 'large' ? 'clamp(1.75rem, 3.5vw, 2.5rem)' : 'clamp(1.5rem, 3.2vw, 2.2rem)',
                       color: tokenColor,
                       background: isRecitingThisWord
                         ? 'rgba(197, 154, 86, 0.4)'

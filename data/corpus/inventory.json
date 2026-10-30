@@ -1,0 +1,434 @@
+{
+  "generatedAt": "2026-10-30T08:18:32.729Z",
+  "totalVedas": 4,
+  "totalMantras": 20081,
+  "totalSuktas": 1818,
+  "corpora": {
+    "rigveda": {
+      "veda": "rigveda",
+      "recension": "Śākala Śākhā",
+      "totalDivisions": 10,
+      "totalSuktas": 1027,
+      "totalMantras": 10201,
+      "divisions": [
+        {
+          "mandala": 1,
+          "suktaCount": 191,
+          "mantraCount": 1838,
+          "partitionFile": "/corpus/rigveda/mandala_1.json"
+        },
+        {
+          "mandala": 2,
+          "suktaCount": 43,
+          "mantraCount": 402,
+          "partitionFile": "/corpus/rigveda/mandala_2.json"
+        },
+        {
+          "mandala": 3,
+          "suktaCount": 62,
+          "mantraCount": 614,
+          "partitionFile": "/corpus/rigveda/mandala_3.json"
+        },
+        {
+          "mandala": 4,
+          "suktaCount": 58,
+          "mantraCount": 569,
+          "partitionFile": "/corpus/rigveda/mandala_4.json"
+        },
+        {
+          "mandala": 5,
+          "suktaCount": 87,
+          "mantraCount": 725,
+          "partitionFile": "/corpus/rigveda/mandala_5.json"
+        },
+        {
+          "mandala": 6,
+          "suktaCount": 75,
+          "mantraCount": 743,
+          "partitionFile": "/corpus/rigveda/mandala_6.json"
+        },
+        {
+          "mandala": 7,
+          "suktaCount": 104,
+          "mantraCount": 829,
+          "partitionFile": "/corpus/rigveda/mandala_7.json"
+        },
+        {
+          "mandala": 8,
+          "suktaCount": 102,
+          "mantraCount": 1657,
+          "partitionFile": "/corpus/rigveda/mandala_8.json"
+        },
+        {
+          "mandala": 9,
+          "suktaCount": 114,
+          "mantraCount": 1094,
+          "partitionFile": "/corpus/rigveda/mandala_9.json"
+        },
+        {
+          "mandala": 10,
+          "suktaCount": 191,
+          "mantraCount": 1730,
+          "partitionFile": "/corpus/rigveda/mandala_10.json"
+        }
+      ]
+    },
+    "atharvaveda": {
+      "veda": "atharvaveda",
+      "recension": "Śaunaka Śākhā",
+      "totalDivisions": 20,
+      "totalSuktas": 736,
+      "totalMantras": 6121,
+      "divisions": [
+        {
+          "kaanda": 1,
+          "suktaCount": 35,
+          "mantraCount": 153,
+          "partitionFile": "/corpus/atharvaveda/kaanda_1.json"
+        },
+        {
+          "kaanda": 2,
+          "suktaCount": 36,
+          "mantraCount": 204,
+          "partitionFile": "/corpus/atharvaveda/kaanda_2.json"
+        },
+        {
+          "kaanda": 3,
+          "suktaCount": 31,
+          "mantraCount": 230,
+          "partitionFile": "/corpus/atharvaveda/kaanda_3.json"
+        },
+        {
+          "kaanda": 4,
+          "suktaCount": 40,
+          "mantraCount": 331,
+          "partitionFile": "/corpus/atharvaveda/kaanda_4.json"
+        },
+        {
+          "kaanda": 5,
+          "suktaCount": 31,
+          "mantraCount": 376,
+          "partitionFile": "/corpus/atharvaveda/kaanda_5.json"
+        },
+        {
+          "kaanda": 6,
+          "suktaCount": 142,
+          "mantraCount": 453,
+          "partitionFile": "/corpus/atharvaveda/kaanda_6.json"
+        },
+        {
+          "kaanda": 7,
+          "suktaCount": 118,
+          "mantraCount": 286,
+          "partitionFile": "/corpus/atharvaveda/kaanda_7.json"
+        },
+        {
+          "kaanda": 8,
+          "suktaCount": 10,
+          "mantraCount": 288,
+          "partitionFile": "/corpus/atharvaveda/kaanda_8.json"
+        },
+        {
+          "kaanda": 9,
+          "suktaCount": 10,
+          "mantraCount": 258,
+          "partitionFile": "/corpus/atharvaveda/kaanda_9.json"
+        },
+        {
+          "kaanda": 10,
+          "suktaCount": 10,
+          "mantraCount": 350,
+          "partitionFile": "/corpus/atharvaveda/kaanda_10.json"
+        },
+        {
+          "kaanda": 11,
+          "suktaCount": 10,
+          "mantraCount": 419,
+          "partitionFile": "/corpus/atharvaveda/kaanda_11.json"
+        },
+        {
+          "kaanda": 12,
+          "suktaCount": 5,
+          "mantraCount": 304,
+          "partitionFile": "/corpus/atharvaveda/kaanda_12.json"
+        },
+        {
+          "kaanda": 13,
+          "suktaCount": 9,
+          "mantraCount": 188,
+          "partitionFile": "/corpus/atharvaveda/kaanda_13.json"
+        },
+        {
+          "kaanda": 14,
+          "suktaCount": 2,
+          "mantraCount": 139,
+          "partitionFile": "/corpus/atharvaveda/kaanda_14.json"
+        },
+        {
+          "kaanda": 15,
+          "suktaCount": 18,
+          "mantraCount": 229,
+          "partitionFile": "/corpus/atharvaveda/kaanda_15.json"
+        },
+        {
+          "kaanda": 16,
+          "suktaCount": 9,
+          "mantraCount": 175,
+          "partitionFile": "/corpus/atharvaveda/kaanda_16.json"
+        },
+        {
+          "kaanda": 17,
+          "suktaCount": 1,
+          "mantraCount": 30,
+          "partitionFile": "/corpus/atharvaveda/kaanda_17.json"
+        },
+        {
+          "kaanda": 18,
+          "suktaCount": 4,
+          "mantraCount": 283,
+          "partitionFile": "/corpus/atharvaveda/kaanda_18.json"
+        },
+        {
+          "kaanda": 19,
+          "suktaCount": 72,
+          "mantraCount": 452,
+          "partitionFile": "/corpus/atharvaveda/kaanda_19.json"
+        },
+        {
+          "kaanda": 20,
+          "suktaCount": 143,
+          "mantraCount": 973,
+          "partitionFile": "/corpus/atharvaveda/kaanda_20.json"
+        }
+      ]
+    },
+    "yajurveda": {
+      "veda": "yajurveda",
+      "recension": "Vājasaneyi Mādhyandina Saṁhitā",
+      "totalDivisions": 40,
+      "totalSuktas": 40,
+      "totalMantras": 1965,
+      "divisions": [
+        {
+          "adhyaya": 1,
+          "mantraCount": 31,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 2,
+          "mantraCount": 34,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 3,
+          "mantraCount": 63,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 4,
+          "mantraCount": 37,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 5,
+          "mantraCount": 43,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 6,
+          "mantraCount": 37,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 7,
+          "mantraCount": 48,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 8,
+          "mantraCount": 63,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 9,
+          "mantraCount": 40,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 10,
+          "mantraCount": 34,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_1.json"
+        },
+        {
+          "adhyaya": 11,
+          "mantraCount": 83,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 12,
+          "mantraCount": 117,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 13,
+          "mantraCount": 58,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 14,
+          "mantraCount": 30,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 15,
+          "mantraCount": 63,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 16,
+          "mantraCount": 66,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 17,
+          "mantraCount": 99,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 18,
+          "mantraCount": 76,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 19,
+          "mantraCount": 95,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 20,
+          "mantraCount": 89,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_2.json"
+        },
+        {
+          "adhyaya": 21,
+          "mantraCount": 60,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 22,
+          "mantraCount": 34,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 23,
+          "mantraCount": 64,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 24,
+          "mantraCount": 38,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 25,
+          "mantraCount": 47,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 26,
+          "mantraCount": 26,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 27,
+          "mantraCount": 45,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 28,
+          "mantraCount": 46,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 29,
+          "mantraCount": 60,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 30,
+          "mantraCount": 22,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_3.json"
+        },
+        {
+          "adhyaya": 31,
+          "mantraCount": 22,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 32,
+          "mantraCount": 16,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 33,
+          "mantraCount": 96,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 34,
+          "mantraCount": 58,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 35,
+          "mantraCount": 22,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 36,
+          "mantraCount": 24,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 37,
+          "mantraCount": 21,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 38,
+          "mantraCount": 28,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 39,
+          "mantraCount": 13,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        },
+        {
+          "adhyaya": 40,
+          "mantraCount": 17,
+          "partitionFile": "/corpus/yajurveda/madhyandina_part_4.json"
+        }
+      ]
+    },
+    "samaveda": {
+      "veda": "samaveda",
+      "recension": "Kauthuma Śākhā",
+      "totalDivisions": 2,
+      "totalSuktas": 15,
+      "totalMantras": 1794,
+      "divisions": [
+        {
+          "name": "Pūrvārcika (First Part - Chhanda Ārcika)",
+          "mantraCount": 650,
+          "partitionFile": "/corpus/samaveda/purvarcika.json"
+        },
+        {
+          "name": "Uttarārcika (Second Part)",
+          "mantraCount": 1144,
+          "partitionFile": "/corpus/samaveda/uttararcika.json"
+        }
+      ]
+    }
+  }
+}

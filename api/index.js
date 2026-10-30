@@ -275,6 +275,7 @@ const saveCache = () => {
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/corpus', express.static(path.join(__dirname, '..', 'public', 'corpus')));
 
 const PORT = 5001;
 
