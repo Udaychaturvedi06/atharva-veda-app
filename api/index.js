@@ -691,6 +691,21 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+// Safe 404 Handler for undefined API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API route not found.' });
+});
+
+// Centralized Safe Error Handler (Never leak stack traces in responses)
+app.use((err, req, res, next) => {
+  console.error('Unhandled API exception:', err.message);
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production'
+      ? 'An unexpected error occurred in the sacred sanctum.'
+      : err.message || 'Internal server error'
+  });
+});
+
 // Vercel handles frontend hosting, but locally we need to start the server
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
